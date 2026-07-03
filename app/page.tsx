@@ -1,65 +1,98 @@
-import Image from "next/image";
+"use client";
+
+import { useEffect, useState } from "react";
+import Loader from "@/components/site/Loader";
+import AuthModal from "@/components/site/AuthModal";
+import PromoPopup from "@/components/site/PromoPopup";
+import Header from "@/components/site/Header";
+import Footer from "@/components/site/Footer";
+import AmbientBackground from "@/components/site/AmbientBackground";
+import BackToTop from "@/components/ui/BackToTop";
+import Reveal from "@/components/ui/Reveal";
+import HeroSlider from "@/components/home/HeroSlider";
+import ProviderStrip from "@/components/home/ProviderStrip";
+import LiveWinsTicker from "@/components/home/LiveWinsTicker";
+import CategoryChips from "@/components/home/CategoryChips";
+import HotGames from "@/components/home/HotGames";
+import GameSection from "@/components/home/GameSection";
+import LiveSports from "@/components/home/LiveSports";
+import { SLOT_GAMES, LIVE_CASINO_GAMES, POKER_GAMES } from "@/lib/data";
+import JackpotBanner from "@/components/home/JackpotBanner";
+import WelcomeBonus from "@/components/home/WelcomeBonus";
+import HowItWorks from "@/components/home/HowItWorks";
+import PaymentMethods from "@/components/home/PaymentMethods";
+import CtaStrip from "@/components/home/CtaStrip";
+import ChatSupport from "@/components/site/ChatSupport";
+import { useLang } from "@/lib/language";
 
 export default function Home() {
+  const [loading, setLoading] = useState(true);
+  const [authMode, setAuthMode] = useState<"login" | "register" | null>(null);
+  const { t } = useLang();
+
+  useEffect(() => {
+    const tm = setTimeout(() => setLoading(false), 2200);
+    return () => clearTimeout(tm);
+  }, []);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+    <>
+      <Loader done={!loading} />
+      <PromoPopup trigger={!loading} onOpenAuth={setAuthMode} />
+
+      {authMode && (
+        <AuthModal mode={authMode} onClose={() => setAuthMode(null)} onSwitch={(m) => setAuthMode(m)} />
+      )}
+
+      <div className="relative min-h-screen overflow-x-hidden bg-[#0A0612] text-white antialiased">
+        <AmbientBackground />
+        <Header onOpenAuth={setAuthMode} />
+
+        <HeroSlider />
+        <ProviderStrip />
+        <LiveWinsTicker />
+        <CategoryChips />
+
+        <Reveal><HotGames /></Reveal>
+
+        <Reveal>
+          <GameSection
+            title={<>{t.slotsWord} <span className="text-[#9B30FF]">{t.slotsHighlight}</span></>}
+            games={SLOT_GAMES}
+            barFrom="#9B30FF"
+            barTo="#D4AF37"
+            eyebrowColor="#C9B8E8"
+          />
+        </Reveal>
+
+        <Reveal>
+          <GameSection
+            title={<>{t.lcWord} <span className="text-[#22d3ee]">{t.lcHighlight}</span></>}
+            games={LIVE_CASINO_GAMES}
+            barFrom="#22d3ee"
+            barTo="#3b82f6"
+            eyebrowColor="#7DCFEF"
+          />
+        </Reveal>
+
+        <Reveal>
+          <GameSection
+            title={<>{t.pokerWord} <span className="text-[#F5C842]">{t.pokerHighlight}</span></>}
+            games={POKER_GAMES}
+          />
+        </Reveal>
+
+        <Reveal><LiveSports /></Reveal>
+        <Reveal><JackpotBanner run={!loading} /></Reveal>
+        <Reveal><WelcomeBonus onOpenAuth={setAuthMode} /></Reveal>
+        <Reveal><HowItWorks /></Reveal>
+        <Reveal><PaymentMethods /></Reveal>
+        <Reveal><CtaStrip onOpenAuth={setAuthMode} /></Reveal>
+
+        <Footer />
+        <ChatSupport />
+        <BackToTop />
+      </div>
+    </>
   );
 }
