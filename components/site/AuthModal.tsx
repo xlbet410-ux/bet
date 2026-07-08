@@ -23,6 +23,8 @@ export default function AuthModal({
   const [referral, setReferral] = useState("");
   const [agree, setAgree] = useState(false);
   const [error, setError] = useState("");
+  const [showPwd, setShowPwd] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const { t } = useLang();
   const { login } = useAuth();
 
@@ -49,7 +51,35 @@ export default function AuthModal({
   };
 
   const inputBase =
-    "w-full rounded-xl border border-[#7B2FBE]/40 bg-white/[0.04] px-4 py-3 text-sm text-white placeholder-[#8A7DB0] outline-none transition-all focus:border-[#D4AF37] focus:bg-white/[0.07]";
+    "w-full rounded-xl border border-[#7B2FBE]/40 bg-white/[0.04] px-4 py-3 pr-11 text-sm text-white placeholder-[#8A7DB0] outline-none transition-all focus:border-[#D4AF37] focus:bg-white/[0.07]";
+
+  function EyeBtn({ visible, onToggle }: { visible: boolean; onToggle: () => void }) {
+    return (
+      <button
+        type="button"
+        tabIndex={-1}
+        onClick={onToggle}
+        className="absolute right-3 top-1/2 -translate-y-1/2 flex h-7 w-7 items-center justify-center rounded-lg text-[#8A7DB0] transition-colors hover:text-[#D4AF37]"
+        aria-label={visible ? "Hide password" : "Show password"}
+      >
+        {visible ? (
+          /* eye-off */
+          <svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-2">
+            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" strokeLinecap="round"/>
+            <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" strokeLinecap="round"/>
+            <path d="M14.12 14.12a3 3 0 1 1-4.24-4.24" strokeLinecap="round"/>
+            <line x1="1" y1="1" x2="23" y2="23" strokeLinecap="round"/>
+          </svg>
+        ) : (
+          /* eye */
+          <svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-2">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+        )}
+      </button>
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-[110] flex items-center justify-center p-4" onClick={onClose}>
@@ -112,13 +142,16 @@ export default function AuthModal({
         {/* password */}
         <div className="relative mb-4">
           <label className="mb-1.5 block text-xs font-medium text-[#C9B8E8]">{t.authPasswordLabel}</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder={t.authPasswordPlaceholder}
-            className={inputBase}
-          />
+          <div className="relative">
+            <input
+              type={showPwd ? "text" : "password"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder={t.authPasswordPlaceholder}
+              className={inputBase}
+            />
+            <EyeBtn visible={showPwd} onToggle={() => setShowPwd((v) => !v)} />
+          </div>
         </div>
 
         {/* register-only fields */}
@@ -126,13 +159,16 @@ export default function AuthModal({
           <>
             <div className="relative mb-4">
               <label className="mb-1.5 block text-xs font-medium text-[#C9B8E8]">{t.authConfirmLabel}</label>
-              <input
-                type="password"
-                value={confirm}
-                onChange={(e) => setConfirm(e.target.value)}
-                placeholder={t.authPasswordPlaceholder}
-                className={inputBase}
-              />
+              <div className="relative">
+                <input
+                  type={showConfirm ? "text" : "password"}
+                  value={confirm}
+                  onChange={(e) => setConfirm(e.target.value)}
+                  placeholder={t.authPasswordPlaceholder}
+                  className={inputBase}
+                />
+                <EyeBtn visible={showConfirm} onToggle={() => setShowConfirm((v) => !v)} />
+              </div>
             </div>
             <div className="relative mb-4">
               <label className="mb-1.5 block text-xs font-medium text-[#C9B8E8]">
