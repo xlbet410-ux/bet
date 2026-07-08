@@ -102,10 +102,17 @@ export type Translations = {
   authNoAccount: string;
   authSwitchToLogin: string;
   authSwitchToSignup: string;
+  authNameLabel: string;
+  authNamePlaceholder: string;
   authErrPhone: string;
   authErrPassword: string;
   authErrMatch: string;
   authErrTerms: string;
+  authErrName: string;
+  logout: string;
+  balance: string;
+  myProfile: string;
+  deposit: string;
 };
 
 const T: Record<Lang, Translations> = {
@@ -225,9 +232,16 @@ const T: Record<Lang, Translations> = {
     authSwitchToLogin: "Log In",
     authSwitchToSignup: "Sign Up",
     authErrPhone: "Please enter a valid phone number.",
+    authNameLabel: "Full Name",
+    authNamePlaceholder: "Enter your full name",
+    authErrName: "Please enter your name.",
     authErrPassword: "Password must be at least 6 characters.",
     authErrMatch: "Passwords do not match.",
     authErrTerms: "Please agree to the terms.",
+    logout: "Log Out",
+    balance: "Balance",
+    myProfile: "My Profile",
+    deposit: "Deposit",
   },
 
   bn: {
@@ -345,9 +359,16 @@ const T: Record<Lang, Translations> = {
     authSwitchToLogin: "লগইন করুন",
     authSwitchToSignup: "নিবন্ধন করুন",
     authErrPhone: "সঠিক ফোন নম্বর দিন।",
+    authNameLabel: "পূর্ণ নাম",
+    authNamePlaceholder: "আপনার পূর্ণ নাম লিখুন",
+    authErrName: "আপনার নাম লিখুন।",
     authErrPassword: "পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে।",
     authErrMatch: "পাসওয়ার্ড মিলছে না।",
     authErrTerms: "শর্তাবলীতে সম্মত হন।",
+    logout: "লগআউট",
+    balance: "ব্যালেন্স",
+    myProfile: "আমার প্রোফাইল",
+    deposit: "ডিপোজিট",
   },
 };
 

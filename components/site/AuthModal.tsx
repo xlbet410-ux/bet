@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { FaXmark } from "react-icons/fa6";
 import { useLang } from "@/lib/language";
+import { useAuth } from "@/lib/auth";
 
 export default function AuthModal({
   mode,
@@ -15,6 +16,7 @@ export default function AuthModal({
   onSwitch: (m: "login" | "register") => void;
 }) {
   const isLogin = mode === "login";
+  const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -22,6 +24,7 @@ export default function AuthModal({
   const [agree, setAgree] = useState(false);
   const [error, setError] = useState("");
   const { t } = useLang();
+  const { login } = useAuth();
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
@@ -33,13 +36,15 @@ export default function AuthModal({
   const handleSubmit = () => {
     setError("");
     const digits = phone.replace(/\D/g, "");
+    if (!isLogin && name.trim().length < 2) { setError(t.authErrName); return; }
     if (digits.length < 7) { setError(t.authErrPhone); return; }
     if (password.length < 6) { setError(t.authErrPassword); return; }
     if (!isLogin) {
       if (password !== confirm) { setError(t.authErrMatch); return; }
       if (!agree) { setError(t.authErrTerms); return; }
     }
-    alert(`${isLogin ? t.authLoginBtn : t.authSignupBtn} OK\nPhone: ${digits}`);
+    const displayName = isLogin ? "Player " + digits.slice(-4) : name.trim();
+    login(displayName, digits);
     onClose();
   };
 
@@ -76,6 +81,20 @@ export default function AuthModal({
         <p className="relative mb-6 mt-1 text-center text-sm text-[#9B8EC4]">
           {isLogin ? t.authLoginSub : t.authRegisterSub}
         </p>
+
+        {/* name — register only */}
+        {!isLogin && (
+          <div className="relative mb-4">
+            <label className="mb-1.5 block text-xs font-medium text-[#C9B8E8]">{t.authNameLabel}</label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder={t.authNamePlaceholder}
+              className={inputBase}
+            />
+          </div>
+        )}
 
         {/* phone */}
         <div className="relative mb-4">
@@ -137,7 +156,6 @@ export default function AuthModal({
               <span>
                 {t.authConsent}{" "}
                 <span className="text-[#D4AF37]">{t.authTerms}</span>{" "}
-                {/* "and" connector varies by language — use a simple separator */}
                 <span className="text-[#D4AF37]">{t.authPrivacy}</span>.
               </span>
             </label>
