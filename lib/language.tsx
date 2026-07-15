@@ -69,7 +69,19 @@ export type Translations = {
   ctaButton: string;
   // live wins ticker
   liveWinsLabel: string;
-  wins: string[];
+  liveWinsSub: string;
+  wins: { name: string; game: string; amount: string; value: number }[];
+  // leaderboard page
+  lbBreadcrumb: string;
+  lbEyebrow: string;
+  lbTitleWord: string;
+  lbTitleHighlight: string;
+  lbDesc: string;
+  lbGames: string;
+  lbWagered: string;
+  lbPlace1: string;
+  lbPlace2: string;
+  lbPlace3: string;
   // footer
   footerDesc: string;
   footerGroups: { heading: string; links: string[] }[];
@@ -117,7 +129,7 @@ export type Translations = {
 
 const T: Record<Lang, Translations> = {
   en: {
-    nav: ["Home", "Live Casino", "Slots", "Sports", "Promotions"],
+    nav: ["Home", "Live Casino", "Slots", "Sports", "Promotions", "Leaderboard"],
     login: "Log In",
     register: "Sign Up",
     dropdownLabels: {
@@ -185,14 +197,26 @@ const T: Record<Lang, Translations> = {
     ctaButton: "Create Free Account",
 
     liveWinsLabel: "Live Wins",
+    liveWinsSub: "Real players, real payouts — right now",
     wins: [
-      "Mike won $1,240 — Aviator",
-      "Sara won $890 — Sweet Bonanza",
-      "John won $5,210 — Lightning Roulette",
-      "Nadia won $325 — Crazy Time",
-      "Alex won $11,200 — Mega Jackpot",
-      "Tania won $678 — Blackjack VIP",
+      { name: "Mike", game: "Aviator", amount: "$1,240", value: 1240 },
+      { name: "Sara", game: "Sweet Bonanza", amount: "$890", value: 890 },
+      { name: "John", game: "Lightning Roulette", amount: "$5,210", value: 5210 },
+      { name: "Nadia", game: "Crazy Time", amount: "$325", value: 325 },
+      { name: "Alex", game: "Mega Jackpot", amount: "$11,200", value: 11200 },
+      { name: "Tania", game: "Blackjack VIP", amount: "$678", value: 678 },
     ],
+
+    lbBreadcrumb: "Leaderboard",
+    lbEyebrow: "This Week",
+    lbTitleWord: "Top",
+    lbTitleHighlight: "Winners",
+    lbDesc: "Ranked by total winnings this week — climb the ranks and earn bonus rewards.",
+    lbGames: "games",
+    lbWagered: "wagered",
+    lbPlace1: "Champion",
+    lbPlace2: "Runner-up",
+    lbPlace3: "3rd Place",
 
     footerDesc:
       "2XLbet is a premium online casino and sportsbook offering live casino games, slots, and sports betting with fast, secure payouts.",
@@ -245,7 +269,7 @@ const T: Record<Lang, Translations> = {
   },
 
   bn: {
-    nav: ["হোম", "লাইভ ক্যাসিনো", "স্লট", "স্পোর্টস", "প্রমোশন"],
+    nav: ["হোম", "লাইভ ক্যাসিনো", "স্লট", "স্পোর্টস", "প্রমোশন", "লিডারবোর্ড"],
     login: "লগইন",
     register: "নিবন্ধন",
     dropdownLabels: {
@@ -313,14 +337,26 @@ const T: Record<Lang, Translations> = {
     ctaButton: "বিনামূল্যে অ্যাকাউন্ট তৈরি করুন",
 
     liveWinsLabel: "লাইভ জয়",
+    liveWinsSub: "আসল খেলোয়াড়, আসল পেআউট — এই মুহূর্তে",
     wins: [
-      "মাইক জিতেছেন $১,২৪০ — Aviator",
-      "সারা জিতেছেন $৮৯০ — Sweet Bonanza",
-      "জন জিতেছেন $৫,২১০ — Lightning Roulette",
-      "নাদিয়া জিতেছেন $৩২৫ — Crazy Time",
-      "অ্যালেক্স জিতেছেন $১১,২০০ — Mega Jackpot",
-      "তানিয়া জিতেছেন $৬৭৮ — Blackjack VIP",
+      { name: "মাইক", game: "Aviator", amount: "$১,২৪০", value: 1240 },
+      { name: "সারা", game: "Sweet Bonanza", amount: "$৮৯০", value: 890 },
+      { name: "জন", game: "Lightning Roulette", amount: "$৫,২১০", value: 5210 },
+      { name: "নাদিয়া", game: "Crazy Time", amount: "$৩২৫", value: 325 },
+      { name: "অ্যালেক্স", game: "Mega Jackpot", amount: "$১১,২০০", value: 11200 },
+      { name: "তানিয়া", game: "Blackjack VIP", amount: "$৬৭৮", value: 678 },
     ],
+
+    lbBreadcrumb: "লিডারবোর্ড",
+    lbEyebrow: "এই সপ্তাহে",
+    lbTitleWord: "সেরা",
+    lbTitleHighlight: "বিজয়ীরা",
+    lbDesc: "এই সপ্তাহের মোট জয়ের ভিত্তিতে র‍্যাংক করা হয়েছে — র‍্যাংক বাড়ান এবং বোনাস পুরস্কার অর্জন করুন।",
+    lbGames: "গেমস",
+    lbWagered: "বাজি",
+    lbPlace1: "চ্যাম্পিয়ন",
+    lbPlace2: "রানার-আপ",
+    lbPlace3: "৩য় স্থান",
 
     footerDesc:
       "2XLbet হলো একটি প্রিমিয়াম অনলাইন ক্যাসিনো এবং স্পোর্টসবুক যা লাইভ ক্যাসিনো গেমস, স্লট এবং স্পোর্টস বেটিং অফার করে দ্রুত, নিরাপদ পেআউট সহ।",

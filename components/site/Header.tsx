@@ -7,7 +7,7 @@ import { FaBars, FaXmark, FaChevronDown } from "react-icons/fa6";
 import { useLang } from "@/lib/language";
 import { useAuth } from "@/lib/auth";
 import { useScrolled } from "@/lib/hooks";
-import { NAV_DROPDOWNS } from "@/lib/data";
+import { NAV_DROPDOWNS, NAV_HREFS } from "@/lib/data";
 
 function LangPill({ compact = false }: { compact?: boolean }) {
   const { lang, toggle } = useLang();
@@ -113,8 +113,8 @@ export default function Header({
                   onMouseEnter={() => handleMouseEnter(idx)}
                   onMouseLeave={handleMouseLeave}
                 >
-                  <a
-                    href="#"
+                  <Link
+                    href={NAV_HREFS[idx] ?? "#"}
                     className={`flex items-center gap-1 whitespace-nowrap transition-colors hover:text-[#F5C842] ${
                       isOpen ? "text-[#F5C842]" : ""
                     }`}
@@ -125,7 +125,7 @@ export default function Header({
                         className={`h-2.5 w-2.5 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
                       />
                     )}
-                  </a>
+                  </Link>
 
                   {/* dropdown panel */}
                   {hasDropdown && isOpen && (
@@ -197,7 +197,7 @@ export default function Header({
           </nav>
 
           {/* right controls */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2">
             <LangPill />
 
             {user ? (
@@ -323,13 +323,13 @@ export default function Header({
               <>
                 <button
                   onClick={() => onOpenAuth("login")}
-                  className="hidden rounded-full border border-[#D4AF37]/60 px-4 py-2 text-sm font-medium text-[#E8CF7A] transition-all hover:bg-[#D4AF37]/10 sm:inline-flex"
+                  className="inline-flex rounded-full border border-[#D4AF37]/60 px-2.5 py-1.5 text-xs font-medium text-[#E8CF7A] transition-all hover:bg-[#D4AF37]/10 sm:px-4 sm:py-2 sm:text-sm"
                 >
                   {t.login}
                 </button>
                 <button
                   onClick={() => onOpenAuth("register")}
-                  className="hidden rounded-full bg-gradient-to-r from-[#9B30FF] via-[#7B2FBE] to-[#4A0E8F] px-5 py-2 text-sm font-semibold shadow-[0_0_18px_#7B2FBE70] transition-all hover:shadow-[0_0_28px_#9B30FFAA] sm:inline-flex"
+                  className="inline-flex rounded-full bg-gradient-to-r from-[#9B30FF] via-[#7B2FBE] to-[#4A0E8F] px-2.5 py-1.5 text-xs font-semibold shadow-[0_0_14px_#7B2FBE60] transition-all hover:shadow-[0_0_22px_#9B30FF90] sm:px-5 sm:py-2 sm:text-sm"
                 >
                   {t.register}
                 </button>
@@ -379,13 +379,13 @@ export default function Header({
                 return (
                   <div key={n}>
                     <div className="flex items-center rounded-xl hover:bg-white/5">
-                      <a
-                        href="#"
+                      <Link
+                        href={NAV_HREFS[idx] ?? "#"}
                         onClick={() => { if (!hasDropdown) setMobileOpen(false); }}
                         className="flex-1 px-3 py-3 transition-colors hover:text-[#F5C842]"
                       >
                         {n}
-                      </a>
+                      </Link>
                       {hasDropdown && (
                         <button
                           onClick={() => toggleMobileExpand(idx)}
