@@ -3,25 +3,40 @@
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa6";
-import { SLIDES } from "@/lib/data";
 import { useLang } from "@/lib/language";
+import { getSliderImages, sliderImageUrl, type SliderImage } from "@/lib/sliderImages";
 
 export default function HeroSlider() {
   const [active, setActive] = useState(0);
+  const [slides, setSlides] = useState<SliderImage[]>([]);
+  const [loading, setLoading] = useState(true);
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
   const { t } = useLang();
 
+  useEffect(() => {
+    getSliderImages()
+      .then(setSlides)
+      .finally(() => setLoading(false));
+  }, []);
+
+  const slideCount = slides.length;
+
   const restart = useCallback(() => {
     if (timer.current) clearInterval(timer.current);
-    timer.current = setInterval(() => setActive((p) => (p + 1) % SLIDES.length), 5000);
-  }, []);
+    if (slideCount === 0) return;
+    timer.current = setInterval(() => setActive((p) => (p + 1) % slideCount), 5000);
+  }, [slideCount]);
 
   useEffect(() => {
     restart();
     return () => { if (timer.current) clearInterval(timer.current); };
   }, [restart]);
 
-  const handleNav = (i: number) => { setActive((i + SLIDES.length) % SLIDES.length); restart(); };
+  const handleNav = (i: number) => {
+    if (slideCount === 0) return;
+    setActive((i + slideCount) % slideCount);
+    restart();
+  };
 
   return (
     <section className="relative z-10 w-full px-3 pt-16 sm:px-4 sm:pt-20 md:px-6">
@@ -29,54 +44,64 @@ export default function HeroSlider() {
         className="relative mx-auto w-full max-w-6xl overflow-hidden rounded-2xl bg-[#1B0838] shadow-[0_0_60px_#7B2FBE30] sm:rounded-3xl"
         style={{ aspectRatio: "16/7" }}
       >
-        {SLIDES.map((s, i) => (
+        {slides.map((s, i) => (
           <div
-            key={i}
+            key={s.id}
             className="absolute inset-0 transition-opacity duration-700 ease-in-out"
             style={{ opacity: i === active ? 1 : 0, zIndex: i === active ? 10 : 0 }}
             aria-hidden={i !== active}
           >
             <Image
-              src={s.img}
-              alt={s.title}
+              src={sliderImageUrl(s)}
+              alt={s.originalName}
               fill
               priority={i === 0}
               sizes="(max-width: 640px) 100vw, (max-width: 1152px) 100vw, 1152px"
               className="object-cover object-center"
+              unoptimized
             />
-            <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/60 to-transparent" />
           </div>
         ))}
 
-        <button
-          onClick={() => handleNav(active - 1)}
-          aria-label="Previous slide"
-          className="absolute left-2 top-1/2 z-20 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/50 text-sm text-white backdrop-blur transition-all hover:bg-[#7B2FBE]/60 sm:left-4 sm:h-10 sm:w-10 sm:text-base"
-        >
-          <FaChevronLeft />
-        </button>
-        <button
-          onClick={() => handleNav(active + 1)}
-          aria-label="Next slide"
-          className="absolute right-2 top-1/2 z-20 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/50 text-sm text-white backdrop-blur transition-all hover:bg-[#7B2FBE]/60 sm:right-4 sm:h-10 sm:w-10 sm:text-base"
-        >
-          <FaChevronRight />
-        </button>
+        {!loading && slideCount === 0 && (
+          <div className="absolute inset-0 flex items-center justify-center text-sm text-[#7B5EA7]">
+            No slider images yet.
+          </div>
+        )}
 
-        <div className="absolute bottom-3 left-1/2 z-20 flex -translate-x-1/2 gap-2 sm:bottom-4">
-          {SLIDES.map((_, i) => (
+        {slideCount > 1 && (
+          <>
             <button
-              key={i}
-              onClick={() => handleNav(i)}
-              aria-label={`Slide ${i + 1}`}
-              className={`h-1.5 rounded-full transition-all duration-300 sm:h-2 ${
-                i === active
-                  ? "w-6 bg-gradient-to-r from-[#D4AF37] to-[#F5C842] sm:w-8"
-                  : "w-1.5 bg-white/40 hover:bg-white/70 sm:w-2"
-              }`}
-            />
-          ))}
-        </div>
+              onClick={() => handleNav(active - 1)}
+              aria-label="Previous slide"
+              className="absolute left-2 top-1/2 z-20 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/50 text-sm text-white backdrop-blur transition-all hover:bg-[#7B2FBE]/60 sm:left-4 sm:h-10 sm:w-10 sm:text-base"
+            >
+              <FaChevronLeft />
+            </button>
+            <button
+              onClick={() => handleNav(active + 1)}
+              aria-label="Next slide"
+              className="absolute right-2 top-1/2 z-20 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/50 text-sm text-white backdrop-blur transition-all hover:bg-[#7B2FBE]/60 sm:right-4 sm:h-10 sm:w-10 sm:text-base"
+            >
+              <FaChevronRight />
+            </button>
+
+            <div className="absolute bottom-3 left-1/2 z-20 flex -translate-x-1/2 gap-2 sm:bottom-4">
+              {slides.map((s, i) => (
+                <button
+                  key={s.id}
+                  onClick={() => handleNav(i)}
+                  aria-label={`Slide ${i + 1}`}
+                  className={`h-1.5 rounded-full transition-all duration-300 sm:h-2 ${
+                    i === active
+                      ? "w-6 bg-gradient-to-r from-[#D4AF37] to-[#F5C842] sm:w-8"
+                      : "w-1.5 bg-white/40 hover:bg-white/70 sm:w-2"
+                  }`}
+                />
+              ))}
+            </div>
+          </>
+        )}
       </div>
 
       {/* stat row */}

@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import logo from "@/assets/logo.png";
 import { useEffect, useState } from "react";
 import { FaXmark } from "react-icons/fa6";
 import { useLang } from "@/lib/language";
@@ -10,23 +11,26 @@ export default function AuthModal({
   mode,
   onClose,
   onSwitch,
+  initialReferralCode,
 }: {
   mode: "login" | "register";
   onClose: () => void;
   onSwitch: (m: "login" | "register") => void;
+  initialReferralCode?: string;
 }) {
   const isLogin = mode === "login";
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
-  const [referral, setReferral] = useState("");
+  const [referral, setReferral] = useState(initialReferralCode ?? "");
   const [agree, setAgree] = useState(false);
   const [error, setError] = useState("");
   const [showPwd, setShowPwd] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const { t } = useLang();
-  const { login } = useAuth();
+  const { login, register } = useAuth();
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
@@ -35,7 +39,7 @@ export default function AuthModal({
     return () => { window.removeEventListener("keydown", onKey); document.body.style.overflow = ""; };
   }, [onClose]);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setError("");
     const digits = phone.replace(/\D/g, "");
     if (!isLogin && name.trim().length < 2) { setError(t.authErrName); return; }
@@ -45,9 +49,26 @@ export default function AuthModal({
       if (password !== confirm) { setError(t.authErrMatch); return; }
       if (!agree) { setError(t.authErrTerms); return; }
     }
-    const displayName = isLogin ? "Player " + digits.slice(-4) : name.trim();
-    login(displayName, digits);
-    onClose();
+
+    setSubmitting(true);
+    try {
+      if (isLogin) {
+        await login({ phoneNumber: digits, password });
+      } else {
+        await register({
+          fullName: name.trim(),
+          phoneNumber: digits,
+          password,
+          referralCode: referral.trim() || undefined,
+          agreedTerms: agree,
+        });
+      }
+      onClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const inputBase =
@@ -100,7 +121,7 @@ export default function AuthModal({
         </button>
 
         <div className="relative mb-5 flex justify-center">
-          <Image src="/logo.png" alt="2XLbet Casino" width={220} height={220} className="h-20 w-auto drop-shadow-[0_0_18px_#9B30FF66]" />
+          <Image src={logo} alt="2XLbet Casino" width={220} height={220} className="h-20 w-auto drop-shadow-[0_0_18px_#9B30FF66]" />
         </div>
 
         <h2 className="relative text-center text-2xl font-extrabold">
@@ -212,9 +233,10 @@ export default function AuthModal({
 
         <button
           onClick={handleSubmit}
-          className="relative w-full rounded-full bg-gradient-to-r from-[#D4AF37] to-[#F5C842] py-3.5 text-base font-bold text-[#0A0612] shadow-[0_0_25px_#D4AF3760] transition-all hover:scale-[1.02]"
+          disabled={submitting}
+          className="relative w-full rounded-full bg-gradient-to-r from-[#D4AF37] to-[#F5C842] py-3.5 text-base font-bold text-[#0A0612] shadow-[0_0_25px_#D4AF3760] transition-all hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {isLogin ? t.authLoginBtn : t.authSignupBtn}
+          {submitting ? "..." : isLogin ? t.authLoginBtn : t.authSignupBtn}
         </button>
 
         <p className="relative mt-5 text-center text-sm text-[#9B8EC4]">

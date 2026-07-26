@@ -1,4 +1,5 @@
 import Image from "next/image";
+import logo from "@/assets/logo.png";
 
 export default function Loader({ done }: { done: boolean }) {
   return (
@@ -28,7 +29,7 @@ export default function Loader({ done }: { done: boolean }) {
         }}
       >
         <Image
-          src="/logo.png"
+          src={logo}
           alt="2XLbet Casino"
           width={320}
           height={320}

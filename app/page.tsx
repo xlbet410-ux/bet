@@ -28,6 +28,7 @@ import { useLang } from "@/lib/language";
 export default function Home() {
   const [loading, setLoading] = useState(true);
   const [authMode, setAuthMode] = useState<"login" | "register" | null>(null);
+  const [refCode, setRefCode] = useState<string | null>(null);
   const { t } = useLang();
 
   useEffect(() => {
@@ -35,13 +36,27 @@ export default function Home() {
     return () => clearTimeout(tm);
   }, []);
 
+  useEffect(() => {
+    const ref = new URLSearchParams(window.location.search).get("ref");
+    if (ref) setRefCode(ref);
+  }, []);
+
+  useEffect(() => {
+    if (!loading && refCode) setAuthMode("register");
+  }, [loading, refCode]);
+
   return (
     <>
       <Loader done={!loading} />
-      <PromoPopup trigger={!loading} onOpenAuth={setAuthMode} />
+      <PromoPopup trigger={!loading && !refCode} />
 
       {authMode && (
-        <AuthModal mode={authMode} onClose={() => setAuthMode(null)} onSwitch={(m) => setAuthMode(m)} />
+        <AuthModal
+          mode={authMode}
+          onClose={() => setAuthMode(null)}
+          onSwitch={(m) => setAuthMode(m)}
+          initialReferralCode={refCode ?? undefined}
+        />
       )}
 
       <div className="relative min-h-screen overflow-x-hidden bg-[#0A0612] text-white antialiased">
@@ -90,7 +105,7 @@ export default function Home() {
         <Reveal><CtaStrip onOpenAuth={setAuthMode} /></Reveal>
 
         <Footer />
-        <ChatSupport />
+        <ChatSupport onOpenAuth={setAuthMode} />
         <BackToTop />
       </div>
     </>

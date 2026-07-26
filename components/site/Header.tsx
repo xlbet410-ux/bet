@@ -8,6 +8,7 @@ import { useLang } from "@/lib/language";
 import { useAuth } from "@/lib/auth";
 import { useScrolled } from "@/lib/hooks";
 import { NAV_DROPDOWNS, NAV_HREFS } from "@/lib/data";
+import logo from "@/assets/logo.png";
 
 function LangPill({ compact = false }: { compact?: boolean }) {
   const { lang, toggle } = useLang();
@@ -92,7 +93,7 @@ export default function Header({
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-2.5 sm:px-5">
           <Link href="/" aria-label="Go to home">
             <Image
-              src="/logo.png"
+              src={logo}
               alt="2XLbet Casino"
               width={96}
               height={96}
@@ -357,7 +358,7 @@ export default function Header({
           <div className="absolute right-0 top-0 flex h-full w-[78%] max-w-xs flex-col overflow-y-auto border-l border-[#D4AF37]/20 bg-gradient-to-b from-[#1B0838] to-[#0A0612] p-6 shadow-[0_0_40px_#00000080] animate-[slideIn_0.25s_ease]">
             <div className="mb-5 flex items-center justify-between">
               <Link href="/" onClick={() => setMobileOpen(false)} aria-label="Go to home">
-                <Image src="/logo.png" alt="2XLbet Casino" width={80} height={80} className="h-9 w-auto" />
+                <Image src={logo} alt="2XLbet Casino" width={80} height={80} className="h-9 w-auto" />
               </Link>
               <button
                 onClick={() => setMobileOpen(false)}

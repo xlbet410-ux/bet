@@ -17,38 +17,6 @@ import {
 import { GiCricketBat, GiTennisBall, GiCardJoker } from "react-icons/gi";
 import { MdCasino } from "react-icons/md";
 
-export type Slide = {
-  img: string;
-  eyebrow: string;
-  title: string;
-  desc: string;
-  cta: string;
-};
-
-export const SLIDES: Slide[] = [
-  {
-    img: "/hero1.png",
-    eyebrow: "Welcome Bonus",
-    title: "100% up to $500",
-    desc: "Double your first deposit and get 100 free spins.",
-    cta: "Claim Bonus",
-  },
-  {
-    img: "/hero2.png",
-    eyebrow: "Live Casino",
-    title: "Real Dealers, Real Thrills",
-    desc: "Roulette, Blackjack & Baccarat — streamed live.",
-    cta: "Play Live",
-  },
-  {
-    img: "/hero3.png",
-    eyebrow: "Mega Jackpot",
-    title: "Your Big Win Is Waiting",
-    desc: "3000+ slots and jackpot games in one place.",
-    cta: "Play Now",
-  },
-];
-
 export const NAV_LINKS = ["Home", "Live Casino", "Slots", "Sports", "Promotions", "Leaderboard"];
 
 /** Nav index → target href. "#" entries have no dedicated page yet. */

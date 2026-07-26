@@ -8,37 +8,75 @@ import AuthModal from "@/components/site/AuthModal";
 import AmbientBackground from "@/components/site/AmbientBackground";
 import { useAuth } from "@/lib/auth";
 import { useLang } from "@/lib/language";
+import { getMyKyc, submitKyc, type KycStatus } from "@/lib/kyc";
 
-type Tab     = "profile" | "wallet" | "deposit" | "kyc";
+type Tab     = "profile" | "wallet" | "deposit" | "withdraw" | "settings" | "kyc";
 type KycStep = "idle" | "phone" | "otp" | "docType" | "upload" | "selfie" | "done";
 
 const TRANSACTIONS = [
-  { id:"TXN8821", type:"deposit",  label:"VISA Deposit",       amount:"+$500.00", date:"Jul 6, 2026",  status:"completed" },
-  { id:"TXN8820", type:"win",      label:"Sweet Bonanza Win",   amount:"+$250.00", date:"Jul 5, 2026",  status:"completed" },
-  { id:"TXN8819", type:"withdraw", label:"PayPal Withdrawal",   amount:"-$100.00", date:"Jul 3, 2026",  status:"pending"   },
-  { id:"TXN8818", type:"deposit",  label:"USDT Deposit",        amount:"+$200.00", date:"Jul 1, 2026",  status:"completed" },
-  { id:"TXN8817", type:"win",      label:"Lightning Roulette",  amount:"+$400.00", date:"Jun 28, 2026", status:"completed" },
-  { id:"TXN8816", type:"deposit",  label:"Mastercard Deposit",  amount:"+$300.00", date:"Jun 25, 2026", status:"completed" },
+  { id:"TXN8821", type:"deposit",  label:"VISA Deposit",       amount:"+৳500",   date:"Jul 6, 2026",  status:"completed" },
+  { id:"TXN8820", type:"win",      label:"Sweet Bonanza Win",   amount:"+৳250",   date:"Jul 5, 2026",  status:"completed" },
+  { id:"TXN8819", type:"withdraw", label:"bKash Withdrawal",    amount:"-৳1,000", date:"Jul 3, 2026",  status:"pending"   },
+  { id:"TXN8818", type:"deposit",  label:"USDT Deposit",        amount:"+৳2,000", date:"Jul 1, 2026",  status:"completed" },
+  { id:"TXN8817", type:"win",      label:"Lightning Roulette",  amount:"+৳400",   date:"Jun 28, 2026", status:"completed" },
+  { id:"TXN8816", type:"deposit",  label:"Nagad Deposit",       amount:"+৳3,000", date:"Jun 25, 2026", status:"completed" },
 ];
 
 const PAYMENT_METHODS = [
-  { id:"visa",       name:"VISA",       accent:"#1565C0" },
-  { id:"mastercard", name:"Mastercard", accent:"#D32F2F" },
-  { id:"paypal",     name:"PayPal",     accent:"#0288D1" },
-  { id:"usdt",       name:"USDT",       accent:"#26A17B" },
   { id:"bkash",      name:"bKash",      accent:"#E2136E" },
   { id:"nagad",      name:"Nagad",      accent:"#F2631F" },
+  { id:"rocket",     name:"Rocket",     accent:"#8C3494" },
+  { id:"usdt",       name:"USDT",       accent:"#26A17B" },
+  { id:"visa",       name:"VISA",       accent:"#1565C0" },
+  { id:"mastercard", name:"Mastercard", accent:"#D32F2F" },
 ];
 
-const QUICK_AMOUNTS = [20, 50, 100, 200, 500, 1000];
+const QUICK_AMOUNTS = [100, 200, 500, 1000, 2000, 5000];
+
+const MERCHANT_ACCOUNTS: Record<string, { number: string; note: string }> = {
+  bkash:      { number: "01700-000000", note: "Send Money (Personal)" },
+  nagad:      { number: "01800-000000", note: "Send Money (Personal)" },
+  rocket:     { number: "01900-0000000-2", note: "Send Money" },
+  usdt:       { number: "TQn9Y2khEsLMWD8VnQ3Sk7XampLeAddr", note: "USDT (TRC20) wallet address" },
+  visa:       { number: "4532 1122 3344 1090", note: "Casino merchant card" },
+  mastercard: { number: "5412 4455 6677 7734", note: "Casino merchant card" },
+};
 
 const DOC_TYPES = [
-  { id:"nid",      label:"National ID",       icon:"🪪" },
-  { id:"passport", label:"Passport",          icon:"📘" },
-  { id:"license",  label:"Driver's License",  icon:"🚗" },
+  { id:"nid",      label:"National ID" },
+  { id:"passport", label:"Passport" },
+  { id:"license",  label:"Driver's License" },
 ];
 
 const KYC_STEPS_LABELS = ["Phone", "OTP", "Document", "Upload", "Selfie"];
+
+function DocTypeIcon({ id, className = "" }: { id: string; className?: string }) {
+  if (id === "passport") {
+    return (
+      <svg viewBox="0 0 24 24" className={`h-7 w-7 fill-none stroke-current stroke-[1.5] ${className}`}>
+        <rect x="4" y="3" width="16" height="18" rx="2"/>
+        <circle cx="12" cy="10" r="3"/>
+        <path d="M9 16.5h6" strokeLinecap="round"/>
+      </svg>
+    );
+  }
+  if (id === "license") {
+    return (
+      <svg viewBox="0 0 24 24" className={`h-7 w-7 fill-none stroke-current stroke-[1.5] ${className}`}>
+        <rect x="2" y="6" width="20" height="12" rx="2"/>
+        <circle cx="7.5" cy="12" r="1.8"/>
+        <path d="M12.5 9.5h6.5M12.5 12h5M12.5 14.5h3.5" strokeLinecap="round"/>
+      </svg>
+    );
+  }
+  return (
+    <svg viewBox="0 0 24 24" className={`h-7 w-7 fill-none stroke-current stroke-[1.5] ${className}`}>
+      <rect x="2" y="5" width="20" height="14" rx="2"/>
+      <circle cx="8" cy="12" r="2.5"/>
+      <path d="M14 9.5h5M14 12h5M14 14.5h3" strokeLinecap="round"/>
+    </svg>
+  );
+}
 
 function Tick({ size = 10, className = "" }: { size?: number; className?: string }) {
   return (
@@ -48,11 +86,39 @@ function Tick({ size = 10, className = "" }: { size?: number; className?: string
   );
 }
 
+function EyeBtn({ visible, onToggle }: { visible: boolean; onToggle: () => void }) {
+  return (
+    <button
+      type="button"
+      tabIndex={-1}
+      onClick={onToggle}
+      className="absolute right-3 top-1/2 -translate-y-1/2 flex h-7 w-7 items-center justify-center rounded-lg text-[#8A7DB0] transition-colors hover:text-[#D4AF37]"
+      aria-label={visible ? "Hide password" : "Show password"}
+    >
+      {visible ? (
+        /* eye-off */
+        <svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-2">
+          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" strokeLinecap="round"/>
+          <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" strokeLinecap="round"/>
+          <path d="M14.12 14.12a3 3 0 1 1-4.24-4.24" strokeLinecap="round"/>
+          <line x1="1" y1="1" x2="23" y2="23" strokeLinecap="round"/>
+        </svg>
+      ) : (
+        /* eye */
+        <svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-2">
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+          <circle cx="12" cy="12" r="3"/>
+        </svg>
+      )}
+    </button>
+  );
+}
+
 const CARD  = { background:"linear-gradient(145deg,rgba(27,8,56,.65),rgba(10,6,18,.85))", border:"1px solid rgba(255,255,255,.07)", boxShadow:"0 8px 32px rgba(0,0,0,.4)" };
 const INNER = { background:"rgba(255,255,255,.03)", border:"1px solid rgba(255,255,255,.06)" };
 
 export default function ProfilePage() {
-  const { user } = useAuth();
+  const { user, loading: authLoading, changePassword } = useAuth();
   const { t } = useLang();
   const router = useRouter();
 
@@ -60,17 +126,49 @@ export default function ProfilePage() {
   const [tab, setTab]                 = useState<Tab>("profile");
 
   // deposit
-  const [selMethod, setSelMethod]     = useState("visa");
+  const [selMethod, setSelMethod]     = useState("bkash");
   const [depositAmt, setDepositAmt]   = useState("");
+  const [depositError, setDepositError] = useState("");
+
+  // deposit request panel (opens after clicking Deposit, can minimize to a floating bubble)
+  const [depositPanelOpen, setDepositPanelOpen]     = useState(false);
+  const [depositMinimized, setDepositMinimized]     = useState(false);
+  const [depositTrxId, setDepositTrxId]             = useState("");
+  const [depositRequestSubmitted, setDepositRequestSubmitted] = useState(false);
+  const [numberCopied, setNumberCopied]             = useState(false);
+
+  // withdraw
+  const [selWMethod, setSelWMethod]   = useState("bkash");
+  const [withdrawAmt, setWithdrawAmt] = useState("");
+
+  // settings — update password
+  const [oldPassword, setOldPassword]   = useState("");
+  const [newPassword, setNewPassword]   = useState("");
+  const [confirmNewPwd, setConfirmNewPwd] = useState("");
+  const [pwdError, setPwdError]         = useState("");
+  const [pwdSuccess, setPwdSuccess]     = useState("");
+  const [pwdSubmitting, setPwdSubmitting] = useState(false);
+  const [showOldPwd, setShowOldPwd]       = useState(false);
+  const [showNewPwd, setShowNewPwd]       = useState(false);
+  const [showConfirmPwd, setShowConfirmPwd] = useState(false);
+
+  // settings — share & earn
+  const [codeCopied, setCodeCopied]   = useState(false);
+  const [linkCopied, setLinkCopied]   = useState(false);
 
   // KYC
-  const [kycVerified, setKycVerified] = useState(false);
+  const [kycStatus, setKycStatus]         = useState<KycStatus>(null);
+  const [kycStatusLoading, setKycStatusLoading] = useState(true);
+  const [kycSubmitting, setKycSubmitting] = useState(false);
+  const [kycSubmitError, setKycSubmitError] = useState("");
   const [kycStep, setKycStep]         = useState<KycStep>("idle");
   const [kycPhone, setKycPhone]       = useState("");
   const [otpDigits, setOtpDigits]     = useState(["","","","","",""]);
   const [docType, setDocType]         = useState("");
+  const [docSide, setDocSide]         = useState<"front"|"back">("front");
   const [frontImg, setFrontImg]       = useState<string|null>(null);
   const [backImg, setBackImg]         = useState<string|null>(null);
+  const [docReviewReady, setDocReviewReady] = useState(false);
   const [selfieImg, setSelfieImg]     = useState<string|null>(null);
   const [camError, setCamError]       = useState("");
   const [capturing, setCapturing]     = useState(false);
@@ -79,18 +177,35 @@ export default function ProfilePage() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream|null>(null);
 
-  useEffect(() => { if (!user) router.replace("/"); }, [user, router]);
+  useEffect(() => { if (!authLoading && !user) router.replace("/"); }, [authLoading, user, router]);
 
   useEffect(() => {
-    setKycVerified(localStorage.getItem("2xlbet:kyc") === "true");
-  }, []);
+    if (!depositPanelOpen || depositMinimized) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setDepositMinimized(true); };
+    window.addEventListener("keydown", onKey);
+    document.body.style.overflow = "hidden";
+    return () => { window.removeEventListener("keydown", onKey); document.body.style.overflow = ""; };
+  }, [depositPanelOpen, depositMinimized]);
 
-  // start/stop camera when entering/leaving selfie step
   useEffect(() => {
-    if (kycStep === "selfie" && !selfieImg) {
+    if (!user) return;
+    getMyKyc()
+      .then((s) => setKycStatus(s))
+      .catch(() => setKycStatus(null))
+      .finally(() => setKycStatusLoading(false));
+  }, [user]);
+
+  // start/stop camera when entering a step that needs a live capture:
+  // document front/back (upload step) or the selfie step
+  useEffect(() => {
+    const needsFrontCam  = kycStep === "upload" && docSide === "front" && !frontImg;
+    const needsBackCam   = kycStep === "upload" && docSide === "back"  && !backImg;
+    const needsSelfieCam = kycStep === "selfie" && !selfieImg;
+
+    if (needsFrontCam || needsBackCam || needsSelfieCam) {
       setCamError("");
       navigator.mediaDevices
-        .getUserMedia({ video: { facingMode:"user" }, audio: false })
+        .getUserMedia({ video: { facingMode: needsSelfieCam ? "user" : "environment" }, audio: false })
         .then((stream) => {
           streamRef.current = stream;
           if (videoRef.current) {
@@ -104,7 +219,7 @@ export default function ProfilePage() {
       streamRef.current?.getTracks().forEach((t) => t.stop());
       streamRef.current = null;
     };
-  }, [kycStep, selfieImg]);
+  }, [kycStep, docSide, frontImg, backImg, selfieImg]);
 
   if (!user) return null;
 
@@ -123,15 +238,22 @@ export default function ProfilePage() {
     if (e.key === "Backspace" && !otpDigits[idx] && idx > 0)
       (document.getElementById(`otp-${idx-1}`) as HTMLInputElement)?.focus();
   }
-  function handleFile(side: "front"|"back", e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      const src = ev.target?.result as string;
-      side === "front" ? setFrontImg(src) : setBackImg(src);
-    };
-    reader.readAsDataURL(file);
+  function captureDocument() {
+    if (!videoRef.current || !canvasRef.current) return;
+    setCapturing(true);
+    const v = videoRef.current, c = canvasRef.current;
+    c.width = v.videoWidth; c.height = v.videoHeight;
+    c.getContext("2d")?.drawImage(v, 0, 0);
+    const dataUrl = c.toDataURL("image/jpeg");
+    if (docSide === "front") setFrontImg(dataUrl); else setBackImg(dataUrl);
+    streamRef.current?.getTracks().forEach((t) => t.stop());
+    streamRef.current = null;
+    setCapturing(false);
+  }
+  function retakeDocument(side: "front"|"back") {
+    if (side === "front") setFrontImg(null); else setBackImg(null);
+    setDocSide(side);
+    setDocReviewReady(false);
   }
   function captureSelfie() {
     if (!videoRef.current || !canvasRef.current) return;
@@ -144,18 +266,71 @@ export default function ProfilePage() {
     streamRef.current = null;
     setCapturing(false);
   }
-  function completeKyc() {
-    localStorage.setItem("2xlbet:kyc", "true");
-    setKycVerified(true);
-    setKycStep("done");
+  async function submitVerification() {
+    if (!docType || !frontImg || !backImg || !selfieImg) return;
+    setKycSubmitting(true);
+    setKycSubmitError("");
+    try {
+      const status = await submitKyc(docType, frontImg, backImg, selfieImg);
+      setKycStatus(status);
+      resetKycFlow();
+    } catch (e) {
+      setKycSubmitError(e instanceof Error ? e.message : "Submission failed. Please try again.");
+    } finally {
+      setKycSubmitting(false);
+    }
   }
-  function resetKyc() {
-    localStorage.removeItem("2xlbet:kyc");
-    setKycVerified(false);
+  function resetKycFlow() {
     setKycStep("idle");
     setOtpDigits(["","","","","",""]);
+    setDocSide("front");
+    setDocReviewReady(false);
     setFrontImg(null); setBackImg(null); setSelfieImg(null);
     setDocType(""); setKycPhone("");
+  }
+
+  async function handleChangePassword() {
+    setPwdError(""); setPwdSuccess("");
+    if (oldPassword.length === 0) { setPwdError("Enter your current password."); return; }
+    if (newPassword.length < 6) { setPwdError("New password must be at least 6 characters."); return; }
+    if (newPassword !== confirmNewPwd) { setPwdError("New passwords do not match."); return; }
+
+    setPwdSubmitting(true);
+    try {
+      await changePassword({ oldPassword, newPassword });
+      setPwdSuccess("Password updated successfully.");
+      setOldPassword(""); setNewPassword(""); setConfirmNewPwd("");
+    } catch (err) {
+      setPwdError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+    } finally {
+      setPwdSubmitting(false);
+    }
+  }
+
+  function copyText(value: string, onDone: (v: boolean) => void) {
+    navigator.clipboard.writeText(value).then(() => {
+      onDone(true);
+      setTimeout(() => onDone(false), 2000);
+    });
+  }
+
+  function openDepositRequest() {
+    if (!depositAmt || Number(depositAmt) <= 0) { setDepositError("Please select or enter an amount first."); return; }
+    setDepositError("");
+    setDepositTrxId("");
+    setDepositRequestSubmitted(false);
+    setDepositMinimized(false);
+    setDepositPanelOpen(true);
+  }
+
+  function closeDepositRequest() {
+    setDepositPanelOpen(false);
+    setDepositMinimized(false);
+  }
+
+  function submitDepositRequest() {
+    if (!depositTrxId.trim()) return;
+    setDepositRequestSubmitted(true);
   }
 
   // ── tabs ─────────────────────────────────────────────────
@@ -163,6 +338,8 @@ export default function ProfilePage() {
     { id:"profile", label:"Profile", icon:<svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" strokeLinecap="round"/></svg> },
     { id:"wallet",  label:"Wallet",  icon:<svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 3H8a2 2 0 0 0-2 4h12a2 2 0 0 0-2-4z"/><circle cx="16" cy="14" r="1.5" className="fill-current stroke-none"/></svg> },
     { id:"deposit", label:"Deposit", icon:<svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-2"><path d="M12 3v12m0 0-4-4m4 4 4-4" strokeLinecap="round" strokeLinejoin="round"/><path d="M20 21H4" strokeLinecap="round"/></svg> },
+    { id:"withdraw",label:"Withdraw",icon:<svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-2"><path d="M12 21V9m0 0 4 4m-4-4-4 4" strokeLinecap="round" strokeLinejoin="round"/><path d="M20 3H4" strokeLinecap="round"/></svg> },
+    { id:"settings",label:"Settings",icon:<svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> },
     { id:"kyc",     label:"KYC",     icon:<svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9,12 11,14 15,10" strokeLinecap="round" strokeLinejoin="round"/></svg> },
   ];
 
@@ -171,6 +348,101 @@ export default function ProfilePage() {
       <AmbientBackground />
       <Header onOpenAuth={(m) => setAuthMode(m)} />
       {authMode && <AuthModal mode={authMode} onClose={() => setAuthMode(null)} onSwitch={(m) => setAuthMode(m)} />}
+
+      {/* ── Deposit request panel ── */}
+      {depositPanelOpen && !depositMinimized && (
+        <div className="fixed inset-0 z-[130] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm animate-[fadeIn_0.2s_ease]" onClick={() => setDepositMinimized(true)} />
+
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="relative w-full max-w-md animate-[popIn_0.25s_ease] overflow-hidden rounded-3xl border border-[#D4AF37]/30 bg-gradient-to-b from-[#1B0838] to-[#0A0612] p-6 shadow-[0_0_60px_#7B2FBE40]"
+          >
+            <div className="mb-5 flex items-center justify-between gap-2">
+              <div className="flex min-w-0 items-center gap-2.5">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-black text-white"
+                  style={{ background: PAYMENT_METHODS.find((m) => m.id === selMethod)?.accent ?? "#7B2FBE" }}>
+                  {PAYMENT_METHODS.find((m) => m.id === selMethod)?.name[0]}
+                </span>
+                <div className="min-w-0">
+                  <h3 className="truncate text-base font-extrabold text-white">Complete Your Deposit</h3>
+                  <p className="text-xs text-[#9B8EC4]">{PAYMENT_METHODS.find((m) => m.id === selMethod)?.name} · ৳{Number(depositAmt || 0).toLocaleString()}</p>
+                </div>
+              </div>
+              <div className="flex shrink-0 items-center gap-1.5">
+                <button onClick={() => setDepositMinimized(true)} aria-label="Minimize"
+                  className="flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-white/5 text-[#C9B8E8] transition-all hover:bg-white/10">
+                  <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 fill-none stroke-current stroke-2"><line x1="5" y1="12" x2="19" y2="12" strokeLinecap="round"/></svg>
+                </button>
+                <button onClick={closeDepositRequest} aria-label="Close"
+                  className="flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-white/5 text-[#C9B8E8] transition-all hover:bg-white/10">
+                  <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 fill-none stroke-current stroke-2"><path d="M18 6 6 18"/><path d="M6 6l12 12"/></svg>
+                </button>
+              </div>
+            </div>
+
+            {!depositRequestSubmitted ? (
+              <>
+                <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#7B5EA7]">Send Money To</p>
+                <div className="mb-4 flex items-center gap-2 rounded-xl px-4 py-3" style={INNER}>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-mono text-lg font-bold text-[#F5C842]">{MERCHANT_ACCOUNTS[selMethod]?.number}</p>
+                    <p className="text-[11px] text-[#9B8EC4]">{MERCHANT_ACCOUNTS[selMethod]?.note}</p>
+                  </div>
+                  <button onClick={() => copyText(MERCHANT_ACCOUNTS[selMethod]?.number ?? "", setNumberCopied)}
+                    className="shrink-0 rounded-lg px-3 py-2 text-xs font-bold text-[#0A0612] transition-all hover:scale-105"
+                    style={{ background:"linear-gradient(to right,#D4AF37,#F5C842)" }}>
+                    {numberCopied ? "Copied!" : "Copy"}
+                  </button>
+                </div>
+                <p className="mb-5 text-xs leading-relaxed text-[#9B8EC4]">
+                  Send ৳{Number(depositAmt || 0).toLocaleString()} to the {PAYMENT_METHODS.find((m) => m.id === selMethod)?.name} number above, then enter the Transaction ID (TrxID) you received below to confirm your deposit.
+                </p>
+
+                <label className="mb-1.5 block text-xs font-medium text-[#C9B8E8]">Transaction ID</label>
+                <input value={depositTrxId} onChange={(e) => setDepositTrxId(e.target.value)}
+                  placeholder="e.g. 8N7QK3PLXD"
+                  className="mb-5 w-full rounded-xl border border-[#7B2FBE]/40 bg-white/4 px-4 py-3 text-sm text-white placeholder-[#8A7DB0] outline-none transition-all focus:border-[#D4AF37] focus:bg-white/[.07]" />
+
+                <button onClick={submitDepositRequest} disabled={!depositTrxId.trim()}
+                  className="w-full rounded-full py-3.5 text-sm font-bold text-[#0A0612] transition-all hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-40"
+                  style={{ background:"linear-gradient(to right,#D4AF37,#F5C842)" }}>
+                  Confirm Deposit
+                </button>
+              </>
+            ) : (
+              <div className="py-2 text-center">
+                <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full text-white"
+                  style={{ background:"linear-gradient(135deg,#22c55e,#16a34a)", boxShadow:"0 0 30px rgba(34,197,94,.35)" }}>
+                  <Tick size={20} />
+                </div>
+                <h4 className="mb-1 text-lg font-extrabold text-white">Request Submitted</h4>
+                <p className="mb-6 text-sm text-[#9B8EC4]">
+                  Your deposit of ৳{Number(depositAmt || 0).toLocaleString()} is pending verification. This usually takes a few minutes.
+                </p>
+                <button onClick={closeDepositRequest}
+                  className="w-full rounded-full py-3.5 text-sm font-bold text-[#0A0612] transition-all hover:scale-[1.02]"
+                  style={{ background:"linear-gradient(to right,#D4AF37,#F5C842)" }}>
+                  Done
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── Minimized floating bubble ── */}
+      {depositPanelOpen && depositMinimized && (
+        <button onClick={() => setDepositMinimized(false)} aria-label="Resume deposit request"
+          className="fixed bottom-20 right-5 z-[130] flex items-center gap-2.5 rounded-full py-3 pl-4 pr-5 text-sm font-bold text-[#0A0612] shadow-[0_0_28px_#D4AF3780] transition-all hover:scale-105 sm:bottom-24"
+          style={{ background:"linear-gradient(to right,#D4AF37,#F5C842)" }}>
+          <span className="relative flex h-2.5 w-2.5">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#0A0612]/40" />
+            <span className="relative h-2.5 w-2.5 rounded-full bg-[#0A0612]/70" />
+          </span>
+          {depositRequestSubmitted ? "Deposit submitted" : `Deposit ৳${Number(depositAmt || 0).toLocaleString()}`}
+        </button>
+      )}
 
       <main className="relative z-10 min-h-screen px-4 pb-20 pt-24 sm:px-5 lg:pt-28">
         <div className="mx-auto max-w-6xl">
@@ -207,8 +479,8 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* ══ MOBILE: always-visible 4-col tab grid ══ */}
-          <div className="mb-4 grid grid-cols-4 gap-1.5 rounded-2xl p-1.5 lg:hidden" style={CARD}>
+          {/* ══ MOBILE: always-visible tab grid ══ */}
+          <div className="mb-4 grid grid-cols-3 gap-1.5 rounded-2xl p-1.5 lg:hidden" style={CARD}>
             {tabs.map((tb) => (
               <button key={tb.id} onClick={() => setTab(tb.id)}
                 className="flex flex-col items-center gap-1.5 rounded-xl py-3 transition-all"
@@ -369,22 +641,158 @@ export default function ProfilePage() {
                         style={depositAmt === String(amt)
                           ? { background:"rgba(212,175,55,.15)", border:"1px solid rgba(212,175,55,.5)", color:"#F5C842" }
                           : { background:"rgba(255,255,255,.03)", border:"1px solid rgba(255,255,255,.07)", color:"#9B8EC4" }}>
-                        ${amt}
+                        ৳{amt.toLocaleString()}
                       </button>
                     ))}
                   </div>
                   <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#7B5EA7]">Custom Amount</p>
                   <div className="relative mb-6">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-[#9B8EC4]">$</span>
-                    <input type="number" min="10" value={depositAmt} onChange={(e) => setDepositAmt(e.target.value)}
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-[#9B8EC4]">৳</span>
+                    <input type="number" min="100" value={depositAmt} onChange={(e) => setDepositAmt(e.target.value)}
                       placeholder="Enter amount"
                       className="w-full rounded-xl border border-[#7B2FBE]/40 bg-white/4 py-3 pl-8 pr-4 text-sm text-white placeholder-[#8A7DB0] outline-none transition-all focus:border-[#D4AF37] focus:bg-white/[.07]" />
                   </div>
-                  <button className="w-full rounded-full py-4 text-base font-bold text-[#0A0612] transition-all hover:scale-[1.02]"
+                  <button onClick={openDepositRequest} disabled={depositAmt !== "" && Number(depositAmt) < 100}
+                    className="w-full rounded-full py-4 text-base font-bold text-[#0A0612] transition-all hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:scale-100"
                     style={{ background:"linear-gradient(to right,#D4AF37,#F5C842)", boxShadow:"0 0 32px rgba(212,175,55,.35)" }}>
-                    Deposit{depositAmt ? ` $${depositAmt}` : " Now"}
+                    Deposit{depositAmt ? ` ৳${Number(depositAmt).toLocaleString()}` : " Now"}
                   </button>
-                  <p className="mt-3 text-center text-[11px] text-[#7B5EA7]">Minimum $10 · SSL encrypted · Instant processing</p>
+                  {depositError && (
+                    <p className="mt-3 text-center text-[11px] text-red-400">{depositError}</p>
+                  )}
+                  <p className="mt-3 text-center text-[11px] text-[#7B5EA7]">Minimum ৳100 · SSL encrypted · Instant processing</p>
+                </div>
+              )}
+
+              {/* ════ WITHDRAW ════ */}
+              {tab === "withdraw" && (
+                <div className="rounded-2xl p-6" style={CARD}>
+                  <h3 className="mb-5 text-lg font-extrabold text-white">Withdraw Funds</h3>
+                  <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#7B5EA7]">Withdraw Method</p>
+                  <div className="mb-6 grid grid-cols-3 gap-2 sm:grid-cols-6">
+                    {PAYMENT_METHODS.map((m) => (
+                      <button key={m.id} onClick={() => setSelWMethod(m.id)}
+                        className="rounded-xl py-3 text-xs font-bold transition-all"
+                        style={selWMethod === m.id
+                          ? { background:`${m.accent}25`, border:`1px solid ${m.accent}70`, color:"#fff", boxShadow:`0 0 20px ${m.accent}25` }
+                          : { background:"rgba(255,255,255,.03)", border:"1px solid rgba(255,255,255,.07)", color:"#9B8EC4" }}>
+                        {m.name}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#7B5EA7]">Quick Amount</p>
+                  <div className="mb-4 grid grid-cols-3 gap-2 sm:grid-cols-6">
+                    {QUICK_AMOUNTS.map((amt) => (
+                      <button key={amt} onClick={() => setWithdrawAmt(String(amt))}
+                        className="rounded-xl py-2.5 text-sm font-bold transition-all"
+                        style={withdrawAmt === String(amt)
+                          ? { background:"rgba(212,175,55,.15)", border:"1px solid rgba(212,175,55,.5)", color:"#F5C842" }
+                          : { background:"rgba(255,255,255,.03)", border:"1px solid rgba(255,255,255,.07)", color:"#9B8EC4" }}>
+                        ৳{amt.toLocaleString()}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#7B5EA7]">Custom Amount</p>
+                  <div className="relative mb-6">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-[#9B8EC4]">৳</span>
+                    <input type="number" min="100" value={withdrawAmt} onChange={(e) => setWithdrawAmt(e.target.value)}
+                      placeholder="Enter amount"
+                      className="w-full rounded-xl border border-[#7B2FBE]/40 bg-white/4 py-3 pl-8 pr-4 text-sm text-white placeholder-[#8A7DB0] outline-none transition-all focus:border-[#D4AF37] focus:bg-white/[.07]" />
+                  </div>
+                  <button disabled={withdrawAmt !== "" && Number(withdrawAmt) < 100}
+                    className="w-full rounded-full py-4 text-base font-bold text-[#0A0612] transition-all hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:scale-100"
+                    style={{ background:"linear-gradient(to right,#D4AF37,#F5C842)", boxShadow:"0 0 32px rgba(212,175,55,.35)" }}>
+                    Withdraw{withdrawAmt ? ` ৳${Number(withdrawAmt).toLocaleString()}` : " Now"}
+                  </button>
+                  <p className="mt-3 text-center text-[11px] text-[#7B5EA7]">Minimum ৳100 · KYC required · Processed within 24 hours</p>
+                </div>
+              )}
+
+              {/* ════ SETTINGS ════ */}
+              {tab === "settings" && (
+                <div className="space-y-4">
+
+                  {/* Update Password */}
+                  <div className="rounded-2xl p-6" style={CARD}>
+                    <h3 className="mb-1 text-lg font-extrabold text-white">Update Password</h3>
+                    <p className="mb-5 text-sm text-[#9B8EC4]">Change the password you use to log in to your account.</p>
+
+                    <div className="mx-auto max-w-sm space-y-4">
+                      <div>
+                        <label className="mb-1.5 block text-xs font-medium text-[#C9B8E8]">Current Password</label>
+                        <div className="relative">
+                          <input type={showOldPwd ? "text" : "password"} value={oldPassword} onChange={(e) => setOldPassword(e.target.value)}
+                            placeholder="Enter current password"
+                            className="w-full rounded-xl border border-[#7B2FBE]/40 bg-white/4 px-4 py-3 pr-11 text-sm text-white placeholder-[#8A7DB0] outline-none transition-all focus:border-[#D4AF37] focus:bg-white/[.07]" />
+                          <EyeBtn visible={showOldPwd} onToggle={() => setShowOldPwd((v) => !v)} />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="mb-1.5 block text-xs font-medium text-[#C9B8E8]">New Password</label>
+                        <div className="relative">
+                          <input type={showNewPwd ? "text" : "password"} value={newPassword} onChange={(e) => setNewPassword(e.target.value)}
+                            placeholder="At least 6 characters"
+                            className="w-full rounded-xl border border-[#7B2FBE]/40 bg-white/4 px-4 py-3 pr-11 text-sm text-white placeholder-[#8A7DB0] outline-none transition-all focus:border-[#D4AF37] focus:bg-white/[.07]" />
+                          <EyeBtn visible={showNewPwd} onToggle={() => setShowNewPwd((v) => !v)} />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="mb-1.5 block text-xs font-medium text-[#C9B8E8]">Confirm New Password</label>
+                        <div className="relative">
+                          <input type={showConfirmPwd ? "text" : "password"} value={confirmNewPwd} onChange={(e) => setConfirmNewPwd(e.target.value)}
+                            placeholder="Re-enter new password"
+                            className="w-full rounded-xl border border-[#7B2FBE]/40 bg-white/4 px-4 py-3 pr-11 text-sm text-white placeholder-[#8A7DB0] outline-none transition-all focus:border-[#D4AF37] focus:bg-white/[.07]" />
+                          <EyeBtn visible={showConfirmPwd} onToggle={() => setShowConfirmPwd((v) => !v)} />
+                        </div>
+                      </div>
+
+                      {pwdError && (
+                        <p className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-300">{pwdError}</p>
+                      )}
+                      {pwdSuccess && (
+                        <p className="rounded-lg border border-green-500/30 bg-green-500/10 px-3 py-2 text-xs text-green-300">{pwdSuccess}</p>
+                      )}
+
+                      <button onClick={handleChangePassword} disabled={pwdSubmitting}
+                        className="w-full rounded-full py-3.5 text-sm font-bold text-[#0A0612] transition-all hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-60"
+                        style={{ background:"linear-gradient(to right,#D4AF37,#F5C842)" }}>
+                        {pwdSubmitting ? "Updating..." : "Update Password"}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Share & Earn */}
+                  <div className="rounded-2xl p-6" style={CARD}>
+                    <h3 className="mb-1 text-lg font-extrabold text-white">Share &amp; Earn</h3>
+                    <p className="mb-5 text-sm text-[#9B8EC4]">Invite friends with your referral code and earn rewards when they join.</p>
+
+                    <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#7B5EA7]">Your Referral Code</p>
+                    <div className="mb-4 flex items-center gap-2">
+                      <div className="flex-1 rounded-xl px-4 py-3 font-mono text-lg font-bold tracking-widest text-[#F5C842]" style={INNER}>
+                        {user.referralCode ?? "—"}
+                      </div>
+                      <button onClick={() => user.referralCode && copyText(user.referralCode, setCodeCopied)}
+                        disabled={!user.referralCode}
+                        className="shrink-0 rounded-xl px-4 py-3 text-sm font-bold text-[#0A0612] transition-all hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-40"
+                        style={{ background:"linear-gradient(to right,#D4AF37,#F5C842)" }}>
+                        {codeCopied ? "Copied!" : "Copy"}
+                      </button>
+                    </div>
+
+                    <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#7B5EA7]">Your Referral Link</p>
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 truncate rounded-xl px-4 py-3 text-sm text-[#C9B8E8]" style={INNER}>
+                        {typeof window !== "undefined" ? `${window.location.origin}/?ref=${user.referralCode ?? ""}` : ""}
+                      </div>
+                      <button
+                        onClick={() => user.referralCode && copyText(`${window.location.origin}/?ref=${user.referralCode}`, setLinkCopied)}
+                        disabled={!user.referralCode}
+                        className="shrink-0 rounded-xl border border-[#7B2FBE]/40 bg-white/4 px-4 py-3 text-sm font-semibold text-[#C9B8E8] transition-all hover:bg-white/[.07] disabled:cursor-not-allowed disabled:opacity-40">
+                        {linkCopied ? "Copied!" : "Copy Link"}
+                      </button>
+                    </div>
+                  </div>
+
                 </div>
               )}
 
@@ -392,8 +800,13 @@ export default function ProfilePage() {
               {tab === "kyc" && (
                 <div className="space-y-4">
 
-                  {/* ── Already verified ── */}
-                  {kycVerified && kycStep !== "idle" ? (
+                  {/* ── Loading current status ── */}
+                  {kycStatusLoading ? (
+                    <div className="rounded-2xl p-10 text-center" style={CARD}>
+                      <p className="text-sm text-[#7B5EA7]">Loading verification status…</p>
+                    </div>
+                  ) : kycStatus?.status === "verified" ? (
+                    /* ── Verified ── */
                     <div className="rounded-2xl p-10 text-center" style={CARD}>
                       <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full text-white"
                         style={{ background:"linear-gradient(135deg,#22c55e,#16a34a)", boxShadow:"0 0 40px rgba(34,197,94,.4)" }}>
@@ -413,8 +826,44 @@ export default function ProfilePage() {
                           </div>
                         ))}
                       </div>
-                      <button onClick={resetKyc} className="text-xs text-[#7B5EA7] hover:text-[#9B8EC4] underline transition-colors">
-                        Reset verification (demo)
+                    </div>
+                  ) : kycStatus?.status === "pending" ? (
+                    /* ── Pending review ── */
+                    <div className="rounded-2xl p-10 text-center" style={CARD}>
+                      <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full text-white"
+                        style={{ background:"linear-gradient(135deg,#D4AF37,#F5C842)", boxShadow:"0 0 40px rgba(212,175,55,.35)" }}>
+                        <svg viewBox="0 0 24 24" className="h-10 w-10 fill-none stroke-[#0A0612] stroke-2">
+                          <circle cx="12" cy="12" r="9"/>
+                          <path d="M12 7v5l3 3" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      </div>
+                      <h3 className="mb-2 text-2xl font-extrabold text-white">Verification Under Review</h3>
+                      <p className="mb-1 text-[#9B8EC4]">
+                        We've received your <span className="text-white">{DOC_TYPES.find(d=>d.id===kycStatus.documentType)?.label ?? kycStatus.documentType}</span> and selfie.
+                      </p>
+                      <p className="text-sm text-[#7B5EA7]">Our team typically reviews submissions within 24 hours. You'll see the result here.</p>
+                    </div>
+                  ) : kycStatus?.status === "rejected" && kycStep === "idle" ? (
+                    /* ── Rejected ── */
+                    <div className="rounded-2xl p-10 text-center" style={CARD}>
+                      <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full text-white"
+                        style={{ background:"linear-gradient(135deg,#ef4444,#b91c1c)", boxShadow:"0 0 40px rgba(239,68,68,.35)" }}>
+                        <svg viewBox="0 0 24 24" className="h-10 w-10 fill-none stroke-white stroke-2">
+                          <line x1="18" y1="6" x2="6" y2="18" strokeLinecap="round"/>
+                          <line x1="6" y1="6" x2="18" y2="18" strokeLinecap="round"/>
+                        </svg>
+                      </div>
+                      <h3 className="mb-2 text-2xl font-extrabold text-white">Verification Rejected</h3>
+                      {kycStatus.rejectReason && (
+                        <p className="mx-auto mb-6 max-w-sm rounded-xl p-3 text-sm text-red-300"
+                          style={{ background:"rgba(239,68,68,.1)", border:"1px solid rgba(239,68,68,.2)" }}>
+                          {kycStatus.rejectReason}
+                        </p>
+                      )}
+                      <button onClick={() => { resetKycFlow(); setKycStep("phone"); }}
+                        className="mx-auto block w-full max-w-xs rounded-full py-3.5 text-sm font-bold text-[#0A0612] transition-all hover:scale-[1.02]"
+                        style={{ background:"linear-gradient(to right,#D4AF37,#F5C842)" }}>
+                        Try Again
                       </button>
                     </div>
                   ) : kycStep === "idle" ? (
@@ -541,12 +990,12 @@ export default function ProfilePage() {
                                 style={docType === d.id
                                   ? { background:"rgba(212,175,55,.12)", border:"1px solid rgba(212,175,55,.5)", boxShadow:"0 0 20px rgba(212,175,55,.15)" }
                                   : { background:"rgba(255,255,255,.03)", border:"1px solid rgba(255,255,255,.07)" }}>
-                                <span className="text-3xl">{d.icon}</span>
+                                <DocTypeIcon id={d.id} className={docType===d.id?"text-[#F5C842]":"text-[#9B8EC4]"} />
                                 <span className={`text-xs font-semibold ${docType===d.id?"text-[#F5C842]":"text-[#9B8EC4]"}`}>{d.label}</span>
                               </button>
                             ))}
                           </div>
-                          <button onClick={() => docType && setKycStep("upload")} disabled={!docType}
+                          <button onClick={() => { if (docType) { setDocSide("front"); setKycStep("upload"); } }} disabled={!docType}
                             className="mx-auto block w-full max-w-xs rounded-full py-3.5 text-sm font-bold text-[#0A0612] transition-all hover:scale-[1.02] disabled:opacity-40"
                             style={{ background:"linear-gradient(to right,#D4AF37,#F5C842)" }}>
                             Continue
@@ -554,48 +1003,109 @@ export default function ProfilePage() {
                         </div>
                       )}
 
-                      {/* ── Step 4: Upload front & back ── */}
+                      {/* ── Step 4: Capture front & back ── */}
                       {kycStep === "upload" && (
-                        <div>
-                          <h3 className="mb-1 text-center text-lg font-extrabold text-white">Upload Document</h3>
-                          <p className="mb-6 text-center text-sm text-[#9B8EC4]">Upload clear photos of both sides of your <span className="text-white">{DOC_TYPES.find(d=>d.id===docType)?.label}</span>.</p>
-                          <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                            {(["front","back"] as const).map((side) => {
-                              const img = side === "front" ? frontImg : backImg;
-                              return (
-                                <label key={side} className="group relative flex cursor-pointer flex-col items-center justify-center overflow-hidden rounded-2xl transition-all"
-                                  style={{ minHeight:180, border: img ? "1px solid rgba(34,197,94,.4)" : "2px dashed rgba(123,47,190,.4)", background: img ? "transparent" : "rgba(123,47,190,.04)" }}>
-                                  <input type="file" accept="image/*" className="sr-only" onChange={(e) => handleFile(side, e)} />
-                                  {img ? (
-                                    <>
+                        <div className="text-center">
+                          {frontImg && backImg && docReviewReady ? (
+                            /* ── both sides captured: review screen ── */
+                            <>
+                              <h3 className="mb-1 text-lg font-extrabold text-white">Review Your Document</h3>
+                              <p className="mb-6 text-sm text-[#9B8EC4]">
+                                Both sides of your <span className="text-white">{DOC_TYPES.find(d=>d.id===docType)?.label}</span> look good? Continue, or retake either side.
+                              </p>
+                              <div className="mx-auto mb-6 grid max-w-md grid-cols-2 gap-4">
+                                {(["front","back"] as const).map((side) => (
+                                  <div key={side} className="flex flex-col gap-2">
+                                    <div className="relative overflow-hidden rounded-2xl" style={{ border:"1px solid rgba(34,197,94,.4)" }}>
                                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                                      <img src={img} alt={side} className="h-full w-full object-cover" />
-                                      <div className="absolute inset-0 flex flex-col items-center justify-end bg-gradient-to-t from-black/60 to-transparent pb-3">
-                                        <span className="flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold text-white" style={{ background:"#22c55e" }}>
-                                          <Tick size={9} /> Uploaded
-                                        </span>
-                                        <span className="mt-1 text-[10px] text-white/60">Click to replace</span>
-                                      </div>
-                                    </>
-                                  ) : (
-                                    <div className="flex flex-col items-center gap-2 p-6 text-center">
-                                      <svg viewBox="0 0 24 24" className="h-10 w-10 fill-none stroke-[#7B2FBE] stroke-[1.5]">
-                                        <rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5" className="fill-[#7B2FBE] stroke-none"/>
-                                        <polyline points="21,15 16,10 5,21"/>
-                                      </svg>
-                                      <p className="font-semibold capitalize text-[#C9B8E8]">{side} side</p>
-                                      <p className="text-xs text-[#7B5EA7]">Click to upload · JPG, PNG</p>
+                                      <img src={side === "front" ? frontImg! : backImg!} alt={side} className="aspect-[4/3] w-full object-cover" />
+                                      <span className="absolute left-2 top-2 flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold capitalize text-white" style={{ background:"#22c55e" }}>
+                                        <Tick size={8} /> {side}
+                                      </span>
                                     </div>
-                                  )}
-                                </label>
-                              );
-                            })}
-                          </div>
-                          <button onClick={() => frontImg && backImg && setKycStep("selfie")} disabled={!frontImg || !backImg}
-                            className="w-full rounded-full py-3.5 text-sm font-bold text-[#0A0612] transition-all hover:scale-[1.02] disabled:opacity-40"
-                            style={{ background:"linear-gradient(to right,#D4AF37,#F5C842)" }}>
-                            Continue to Selfie
-                          </button>
+                                    <button onClick={() => retakeDocument(side)} className="text-xs text-[#7B5EA7] hover:text-[#9B8EC4] transition-colors">
+                                      Retake {side}
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                              <button onClick={() => setKycStep("selfie")}
+                                className="w-full max-w-xs rounded-full py-3.5 text-sm font-bold text-[#0A0612] transition-all hover:scale-[1.02]"
+                                style={{ background:"linear-gradient(to right,#D4AF37,#F5C842)" }}>
+                                Continue to Selfie
+                              </button>
+                            </>
+                          ) : (
+                            /* ── active capture: front, then back ── */
+                            <>
+                              <h3 className="mb-1 text-lg font-extrabold text-white">
+                                Capture {docSide === "front" ? "Front" : "Back"} Side
+                              </h3>
+                              <p className="mb-1 text-sm text-[#9B8EC4]">
+                                Position the {docSide} of your <span className="text-white">{DOC_TYPES.find(d=>d.id===docType)?.label}</span> inside the frame.
+                              </p>
+                              <p className="mb-5 text-xs text-[#7B5EA7]">Step {docSide === "front" ? 1 : 2} of 2</p>
+
+                              {camError ? (
+                                <div className="mx-auto mb-5 max-w-sm rounded-xl p-4 text-sm text-red-300"
+                                  style={{ background:"rgba(239,68,68,.1)", border:"1px solid rgba(239,68,68,.2)" }}>
+                                  {camError}
+                                </div>
+                              ) : (docSide === "front" ? frontImg : backImg) ? (
+                                /* captured photo, awaiting confirm/retake */
+                                <div className="relative mx-auto mb-5 w-full max-w-sm overflow-hidden rounded-2xl"
+                                  style={{ border:"1px solid rgba(34,197,94,.4)" }}>
+                                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                                  <img src={(docSide === "front" ? frontImg : backImg)!} alt={docSide} className="aspect-[4/3] w-full object-cover" />
+                                  <div className="absolute bottom-3 left-1/2 -translate-x-1/2">
+                                    <span className="flex items-center gap-1 rounded-full px-3 py-1 text-xs font-bold text-white" style={{ background:"#22c55e" }}>
+                                      <Tick size={9} /> Captured
+                                    </span>
+                                  </div>
+                                </div>
+                              ) : (
+                                /* live camera with document-frame guide */
+                                <div className="relative mx-auto mb-5 w-full max-w-sm overflow-hidden rounded-2xl"
+                                  style={{ background:"#000", border:"1px solid rgba(123,47,190,.4)", aspectRatio:"4/3" }}>
+                                  <video ref={videoRef} autoPlay playsInline muted className="h-full w-full object-cover" />
+                                  <div className="pointer-events-none absolute inset-0 flex items-center justify-center p-6">
+                                    <div className="h-full w-full rounded-2xl" style={{ border:"2px dashed rgba(212,175,55,.6)", aspectRatio:"1.6/1", maxHeight:"100%" }} />
+                                  </div>
+                                  <div className="absolute bottom-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full px-3 py-1 text-[10px] font-semibold text-white/70"
+                                    style={{ background:"rgba(0,0,0,.5)" }}>
+                                    Fit the document inside the frame
+                                  </div>
+                                </div>
+                              )}
+
+                              <canvas ref={canvasRef} className="hidden" />
+
+                              <div className="mx-auto flex max-w-sm flex-col gap-2">
+                                {(docSide === "front" ? frontImg : backImg) ? (
+                                  <>
+                                    <button
+                                      onClick={() => { if (docSide === "front") setDocSide("back"); else setDocReviewReady(true); }}
+                                      className="w-full rounded-full py-3.5 text-sm font-bold text-[#0A0612] transition-all hover:scale-[1.02]"
+                                      style={{ background:"linear-gradient(to right,#D4AF37,#F5C842)" }}>
+                                      {docSide === "front" ? "Use This Photo — Continue to Back" : "Use This Photo"}
+                                    </button>
+                                    <button onClick={() => retakeDocument(docSide)} className="text-xs text-[#7B5EA7] hover:text-[#9B8EC4] transition-colors">
+                                      Retake photo
+                                    </button>
+                                  </>
+                                ) : (
+                                  <button onClick={captureDocument} disabled={!!camError || capturing}
+                                    className="flex w-full items-center justify-center gap-2 rounded-full py-3.5 text-sm font-bold text-[#0A0612] transition-all hover:scale-[1.02] disabled:opacity-40"
+                                    style={{ background:"linear-gradient(to right,#D4AF37,#F5C842)" }}>
+                                    <svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-[#0A0612] stroke-2">
+                                      <circle cx="12" cy="13" r="4"/><path d="M9 3h6l2 2h3a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h3z"/>
+                                    </svg>
+                                    Capture Photo
+                                  </button>
+                                )}
+                              </div>
+                            </>
+                          )}
                         </div>
                       )}
 
@@ -640,16 +1150,23 @@ export default function ProfilePage() {
 
                           <canvas ref={canvasRef} className="hidden" />
 
+                          {kycSubmitError && (
+                            <div className="mx-auto mb-3 max-w-xs rounded-xl p-3 text-xs text-red-300"
+                              style={{ background:"rgba(239,68,68,.1)", border:"1px solid rgba(239,68,68,.2)" }}>
+                              {kycSubmitError}
+                            </div>
+                          )}
+
                           <div className="mx-auto flex max-w-xs flex-col gap-2">
                             {selfieImg ? (
                               <>
-                                <button onClick={completeKyc}
-                                  className="w-full rounded-full py-3.5 text-sm font-bold text-[#0A0612] transition-all hover:scale-[1.02]"
+                                <button onClick={submitVerification} disabled={kycSubmitting}
+                                  className="w-full rounded-full py-3.5 text-sm font-bold text-[#0A0612] transition-all hover:scale-[1.02] disabled:opacity-60"
                                   style={{ background:"linear-gradient(to right,#D4AF37,#F5C842)" }}>
-                                  Submit Verification
+                                  {kycSubmitting ? "Submitting…" : "Submit Verification"}
                                 </button>
-                                <button onClick={() => { setSelfieImg(null); }}
-                                  className="text-xs text-[#7B5EA7] hover:text-[#9B8EC4] transition-colors">
+                                <button onClick={() => { setSelfieImg(null); }} disabled={kycSubmitting}
+                                  className="text-xs text-[#7B5EA7] hover:text-[#9B8EC4] transition-colors disabled:opacity-60">
                                   Retake photo
                                 </button>
                               </>

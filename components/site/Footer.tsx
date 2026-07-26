@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import logo from "@/assets/logo.png";
 import { SOCIAL_LINKS } from "@/lib/data";
 import { useLang } from "@/lib/language";
 
@@ -13,7 +14,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
           {/* brand */}
           <div>
-            <Image src="/logo.png" alt="2XLbet Casino" width={120} height={120} className="h-12 w-auto" />
+            <Image src={logo} alt="2XLbet Casino" width={120} height={120} className="h-12 w-auto" />
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-[#9B8EC4]">{t.footerDesc}</p>
             <div className="mt-5 flex gap-2.5">
               {SOCIAL_LINKS.map((s) => (
