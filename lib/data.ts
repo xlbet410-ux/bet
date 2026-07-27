@@ -3,10 +3,7 @@
 
 import type { IconType } from "react-icons";
 import {
-  FaFire,
   FaFutbol,
-  FaBasketball,
-  FaVolleyball,
   FaGem,
   FaRocket,
   FaXTwitter,
@@ -14,7 +11,7 @@ import {
   FaTelegram,
   FaDiscord,
 } from "react-icons/fa6";
-import { GiCricketBat, GiTennisBall, GiCardJoker } from "react-icons/gi";
+import { GiCardJoker } from "react-icons/gi";
 import { MdCasino } from "react-icons/md";
 
 export const NAV_LINKS = ["Home", "Live Casino", "Slots", "Sports", "Promotions", "Leaderboard"];
@@ -71,108 +68,6 @@ export type GameItem = {
   img: string;
   gameUid?: string; // present only for real, launchable provider games
 };
-
-// the headline pick — shown as the large featured tile
-export const FEATURED_GAME: GameItem = {
-  name: "Book of Dead",
-  provider: "Play'n GO",
-  tag: "HOT",
-  glow: "#f59e0b",
-  img: "/book.png",
-};
-
-export const GRID_GAMES: GameItem[] = [
-  { name: "Dragon's Treasure", provider: "Pragmatic Play", tag: "NEW",     glow: "#ef4444", img: "/dragon.jpg" },
-  { name: "Mega Fortune",      provider: "NetEnt",         tag: "JACKPOT", glow: "#22d3ee", img: "/mega.png"   },
-  { name: "Aviator",           provider: "Spribe",         tag: "HOT",     glow: "#f97316", img: "/drop.png"   },
-  { name: "Sweet Bonanza",     provider: "Pragmatic",      tag: "POPULAR", glow: "#ec4899", img: "/book.png"   },
-  { name: "Lightning Roulette",provider: "Evolution",      tag: "LIVE",    glow: "#F5C842", img: "/dragon.jpg" },
-  { name: "Crazy Time",        provider: "Evolution",      tag: "LIVE",    glow: "#9B30FF", img: "/mega.png"   },
-  { name: "Gates of Olympus",  provider: "Pragmatic",      tag: "NEW",     glow: "#3b82f6", img: "/drop.png"   },
-  { name: "Plinko",            provider: "Spribe",         tag: "TRENDING",glow: "#22c55e", img: "/book.png"   },
-  { name: "Mines",             provider: "Spribe",         tag: "NEW",     glow: "#06b6d4", img: "/dragon.jpg" },
-  { name: "Blackjack VIP",     provider: "Evolution",      tag: "VIP",     glow: "#D4AF37", img: "/mega.png"   },
-];
-
-export type Match = {
-  sport: string;
-  league: string;
-  sportIcon: IconType;
-  home: string;
-  away: string;
-  homeScore: string;
-  awayScore: string;
-  time: string;
-  oddsHome: number;
-  oddsDraw?: number;
-  oddsAway: number;
-  glow: string;
-};
-
-export const SPORTS: { label: string; icon: IconType }[] = [
-  { label: "All Sports", icon: FaFire },
-  { label: "Football", icon: FaFutbol },
-  { label: "Cricket", icon: GiCricketBat },
-  { label: "Tennis", icon: GiTennisBall },
-  { label: "Basketball", icon: FaBasketball },
-  { label: "Volleyball", icon: FaVolleyball },
-];
-
-export const LIVE_MATCHES: Match[] = [
-  {
-    sport: "Football",
-    league: "Premier League",
-    sportIcon: FaFutbol,
-    home: "Arsenal",
-    away: "Chelsea",
-    homeScore: "2",
-    awayScore: "1",
-    time: "67'",
-    oddsHome: 1.85,
-    oddsDraw: 3.4,
-    oddsAway: 4.2,
-    glow: "#22c55e",
-  },
-  {
-    sport: "Cricket",
-    league: "ICC World Cup",
-    sportIcon: GiCricketBat,
-    home: "India",
-    away: "Australia",
-    homeScore: "245/4",
-    awayScore: "—",
-    time: "38.2 ov",
-    oddsHome: 1.55,
-    oddsAway: 2.6,
-    glow: "#3b82f6",
-  },
-  {
-    sport: "Tennis",
-    league: "ATP Masters",
-    sportIcon: GiTennisBall,
-    home: "Alcaraz",
-    away: "Sinner",
-    homeScore: "2",
-    awayScore: "1",
-    time: "Set 4",
-    oddsHome: 1.4,
-    oddsAway: 2.9,
-    glow: "#f59e0b",
-  },
-  {
-    sport: "Basketball",
-    league: "NBA",
-    sportIcon: FaBasketball,
-    home: "Lakers",
-    away: "Celtics",
-    homeScore: "88",
-    awayScore: "92",
-    time: "Q4 4:12",
-    oddsHome: 2.1,
-    oddsAway: 1.7,
-    glow: "#ec4899",
-  },
-];
 
 export const WINS = [
   "Mike won $1,240 — Aviator",

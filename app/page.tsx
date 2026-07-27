@@ -13,9 +13,7 @@ import HeroSlider from "@/components/home/HeroSlider";
 import ProviderStrip from "@/components/home/ProviderStrip";
 import LiveWinsTicker from "@/components/home/LiveWinsTicker";
 import CategoryChips from "@/components/home/CategoryChips";
-import HotGames from "@/components/home/HotGames";
 import LiveGames from "@/components/home/LiveGames";
-import LiveSports from "@/components/home/LiveSports";
 import JackpotBanner from "@/components/home/JackpotBanner";
 import WelcomeBonus from "@/components/home/WelcomeBonus";
 import HowItWorks from "@/components/home/HowItWorks";
@@ -65,11 +63,8 @@ export default function Home() {
         <LiveWinsTicker />
         <CategoryChips />
 
-        <Reveal><HotGames /></Reveal>
-
         <Reveal><LiveGames onOpenAuth={setAuthMode} /></Reveal>
 
-        <Reveal><LiveSports /></Reveal>
         <Reveal><JackpotBanner run={!loading} /></Reveal>
         <Reveal><WelcomeBonus onOpenAuth={setAuthMode} /></Reveal>
         <Reveal><HowItWorks /></Reveal>
