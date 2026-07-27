@@ -31,15 +31,6 @@ export type Translations = {
   // hot games section words
   hotWord: string;
   hotHighlight: string;
-  // slots section
-  slotsWord: string;
-  slotsHighlight: string;
-  // live casino section
-  lcWord: string;
-  lcHighlight: string;
-  // poker section
-  pokerWord: string;
-  pokerHighlight: string;
   // live sports section
   liveNow: string;
   sportsWord: string;
@@ -158,12 +149,6 @@ const T: Record<Lang, Translations> = {
 
     hotWord: "Hot",
     hotHighlight: "Games",
-    slotsWord: "Top",
-    slotsHighlight: "Slots",
-    lcWord: "Live",
-    lcHighlight: "Casino",
-    pokerWord: "Poker",
-    pokerHighlight: "Tables",
 
     liveNow: "Live Now",
     sportsWord: "Live",
@@ -298,12 +283,6 @@ const T: Record<Lang, Translations> = {
 
     hotWord: "হট",
     hotHighlight: "গেমস",
-    slotsWord: "সেরা",
-    slotsHighlight: "স্লট",
-    lcWord: "লাইভ",
-    lcHighlight: "ক্যাসিনো",
-    pokerWord: "পোকার",
-    pokerHighlight: "টেবিল",
 
     liveNow: "এখন লাইভ",
     sportsWord: "লাইভ",

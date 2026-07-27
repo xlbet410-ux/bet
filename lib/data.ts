@@ -69,6 +69,7 @@ export type GameItem = {
   tag?: string;
   glow: string;
   img: string;
+  gameUid?: string; // present only for real, launchable provider games
 };
 
 // the headline pick — shown as the large featured tile
@@ -171,39 +172,6 @@ export const LIVE_MATCHES: Match[] = [
     oddsAway: 1.7,
     glow: "#ec4899",
   },
-];
-
-export const SLOT_GAMES: GameItem[] = [
-  { name: "Gates of Olympus",  provider: "Pragmatic Play", tag: "HOT",      glow: "#9B30FF", img: "/book.png"   },
-  { name: "Sweet Bonanza",     provider: "Pragmatic Play", tag: "POPULAR",  glow: "#ec4899", img: "/dragon.jpg" },
-  { name: "Big Bass Bonanza",  provider: "Pragmatic Play", tag: "NEW",      glow: "#3b82f6", img: "/drop.png"   },
-  { name: "Wolf Gold",         provider: "Pragmatic Play", tag: "JACKPOT",  glow: "#f97316", img: "/mega.png"   },
-  { name: "The Dog House",     provider: "Pragmatic Play", tag: "HOT",      glow: "#F5C842", img: "/book.png"   },
-  { name: "Fire Strike",       provider: "Pragmatic Play", tag: "NEW",      glow: "#ef4444", img: "/dragon.jpg" },
-  { name: "Starlight Princess",provider: "Pragmatic Play", tag: "TRENDING", glow: "#22d3ee", img: "/drop.png"   },
-  { name: "Floating Dragon",   provider: "Pragmatic Play", tag: "NEW",      glow: "#22c55e", img: "/dragon.jpg" },
-];
-
-export const LIVE_CASINO_GAMES: GameItem[] = [
-  { name: "Lightning Roulette",provider: "Evolution", tag: "LIVE",    glow: "#F5C842", img: "/mega.png"   },
-  { name: "Crazy Time",        provider: "Evolution", tag: "LIVE",    glow: "#9B30FF", img: "/book.png"   },
-  { name: "Dream Catcher",     provider: "Evolution", tag: "HOT",     glow: "#ec4899", img: "/dragon.jpg" },
-  { name: "Monopoly Live",     provider: "Evolution", tag: "HOT",     glow: "#3b82f6", img: "/drop.png"   },
-  { name: "Blackjack VIP",     provider: "Evolution", tag: "VIP",     glow: "#D4AF37", img: "/mega.png"   },
-  { name: "Mega Ball",         provider: "Evolution", tag: "NEW",     glow: "#22d3ee", img: "/book.png"   },
-  { name: "Side Bet City",     provider: "Evolution", tag: "HOT",     glow: "#f97316", img: "/dragon.jpg" },
-  { name: "Football Studio",   provider: "Evolution", tag: "LIVE",    glow: "#22c55e", img: "/drop.png"   },
-];
-
-export const POKER_GAMES: GameItem[] = [
-  { name: "Texas Hold'em",         provider: "Evolution", tag: "HOT",     glow: "#D4AF37", img: "/drop.png"   },
-  { name: "Three Card Poker",      provider: "Evolution", tag: "POPULAR", glow: "#ef4444", img: "/book.png"   },
-  { name: "Caribbean Stud",        provider: "Playtech",  tag: "NEW",     glow: "#22d3ee", img: "/mega.png"   },
-  { name: "Casino Hold'em",        provider: "Evolution", tag: "LIVE",    glow: "#3b82f6", img: "/dragon.jpg" },
-  { name: "Pai Gow Poker",         provider: "Evolution", tag: "HOT",     glow: "#9B30FF", img: "/drop.png"   },
-  { name: "Ultimate Texas Hold'em",provider: "Evolution", tag: "VIP",     glow: "#F5C842", img: "/book.png"   },
-  { name: "Let It Ride",           provider: "Playtech",  tag: "NEW",     glow: "#22c55e", img: "/mega.png"   },
-  { name: "Oasis Poker",           provider: "Playtech",  tag: "HOT",     glow: "#ec4899", img: "/dragon.jpg" },
 ];
 
 export const WINS = [

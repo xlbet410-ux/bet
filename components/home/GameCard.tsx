@@ -20,19 +20,24 @@ export default function GameCard({
   featured = false,
   favorited,
   onToggleFavorite,
+  onPlay,
+  loading = false,
 }: {
   game: GameItem;
   featured?: boolean;
   favorited: boolean;
   onToggleFavorite: () => void;
+  onPlay?: () => void;
+  loading?: boolean;
 }) {
   const tag = game.tag ? (TAG_STYLE[game.tag] ?? TAG_STYLE.NEW) : null;
 
   return (
     <div
-      className={`group relative cursor-pointer select-none overflow-hidden transition-all duration-300 hover:-translate-y-2 ${
-        featured ? "rounded-2xl" : "rounded-xl"
-      }`}
+      onClick={onPlay}
+      className={`group relative select-none overflow-hidden transition-all duration-300 hover:-translate-y-2 ${
+        onPlay ? "cursor-pointer" : "cursor-default"
+      } ${featured ? "rounded-2xl" : "rounded-xl"}`}
       style={{
         boxShadow: "0 4px 24px rgba(0,0,0,0.65)",
         background: "#0f0720",
@@ -50,6 +55,7 @@ export default function GameCard({
           src={game.img}
           alt={game.name}
           fill
+          unoptimized={game.img.startsWith('http')}
           sizes={featured ? "300px" : "180px"}
           className="object-cover transition-transform duration-700 will-change-transform group-hover:scale-110"
         />
@@ -100,8 +106,12 @@ export default function GameCard({
           )}
         </button>
 
-        {/* gold play button – center, appears on hover */}
-        <div className="absolute inset-0 z-10 flex items-center justify-center opacity-0 transition-all duration-300 group-hover:opacity-100">
+        {/* gold play button – center, appears on hover (or always, while launching) */}
+        <div
+          className={`absolute inset-0 z-10 flex items-center justify-center transition-all duration-300 ${
+            loading ? "bg-black/60 opacity-100" : "opacity-0 group-hover:opacity-100"
+          }`}
+        >
           <div
             className="flex h-12 w-12 items-center justify-center rounded-full transition-transform duration-300 group-hover:scale-110"
             style={{
@@ -109,7 +119,11 @@ export default function GameCard({
               boxShadow: "0 0 0 5px rgba(212,175,55,0.18), 0 0 32px rgba(212,175,55,0.55)",
             }}
           >
-            <FaPlay className="ml-0.5 h-4 w-4 text-[#0A0612]" />
+            {loading ? (
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-[#0A0612]/30 border-t-[#0A0612]" />
+            ) : (
+              <FaPlay className="ml-0.5 h-4 w-4 text-[#0A0612]" />
+            )}
           </div>
         </div>
 
