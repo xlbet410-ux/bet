@@ -53,6 +53,7 @@ const TOKEN_KEY = "2xlbet:token";
 async function parseApiError(res: Response) {
   try {
     const body = await res.json();
+    
     if (Array.isArray(body.message)) return body.message.join(" ");
     if (typeof body.message === "string") return body.message;
   } catch {}

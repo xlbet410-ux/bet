@@ -21,25 +21,17 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
 const TOKEN_KEY = "2xlbet:token";
 
 export async function getProviders(): Promise<GameProvider[]> {
-  try {
-    const res = await fetch(`${API_URL}/games/providers`, { cache: "no-store" });
-    if (!res.ok) return [];
-    const data = await res.json();
-    return Array.isArray(data) ? data.filter((p: GameProvider) => p.status === 1) : [];
-  } catch {
-    return [];
-  }
+  const res = await fetch(`${API_URL}/games/providers`, { cache: "no-store" });
+  if (!res.ok) throw new Error(`Failed to load providers (${res.status})`);
+  const data = await res.json();
+  return Array.isArray(data) ? data.filter((p: GameProvider) => p.status === 1) : [];
 }
 
 export async function getProviderGames(code: string): Promise<ProviderGame[]> {
-  try {
-    const res = await fetch(`${API_URL}/games/providers/${encodeURIComponent(code)}`, { cache: "no-store" });
-    if (!res.ok) return [];
-    const data = await res.json();
-    return Array.isArray(data?.games) ? data.games.filter((g: ProviderGame) => g.status === 1) : [];
-  } catch {
-    return [];
-  }
+  const res = await fetch(`${API_URL}/games/providers/${encodeURIComponent(code)}`, { cache: "no-store" });
+  if (!res.ok) throw new Error(`Failed to load games (${res.status})`);
+  const data = await res.json();
+  return Array.isArray(data?.games) ? data.games.filter((g: ProviderGame) => g.status === 1) : [];
 }
 
 export type GameCategory = "slots" | "live-casino" | "sports" | "esports" | "other";
