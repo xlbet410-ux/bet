@@ -10,14 +10,45 @@ export default function HeroSlider() {
   const [active, setActive] = useState(0);
   const [slides, setSlides] = useState<SliderImage[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const [retryKey, setRetryKey] = useState(0);
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
   const { t } = useLang();
 
+  // Same class of bug as the games list: the API can be briefly unready
+  // right after a fresh page load, so retry a few times with backoff
+  // instead of treating a failed fetch as "no slides."
   useEffect(() => {
-    getSliderImages()
-      .then(setSlides)
-      .finally(() => setLoading(false));
-  }, []);
+    let cancelled = false;
+
+    async function load() {
+      setLoading(true);
+      setLoadError(false);
+      const maxAttempts = 4;
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        try {
+          const list = await getSliderImages();
+          if (!cancelled) {
+            setSlides(list);
+            setLoading(false);
+          }
+          return;
+        } catch {
+          if (attempt === maxAttempts) break;
+          await new Promise((r) => setTimeout(r, attempt * 700));
+        }
+      }
+      if (!cancelled) {
+        setLoadError(true);
+        setLoading(false);
+      }
+    }
+
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [retryKey]);
 
   const slideCount = slides.length;
 
@@ -63,7 +94,23 @@ export default function HeroSlider() {
           </div>
         ))}
 
-        {!loading && slideCount === 0 && (
+        {loading && (
+          <div className="absolute inset-0 animate-pulse bg-white/5" />
+        )}
+
+        {!loading && loadError && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-sm text-[#7B5EA7]">
+            <p>Couldn&apos;t load the banner right now.</p>
+            <button
+              onClick={() => setRetryKey((k) => k + 1)}
+              className="rounded-full border border-[#D4AF37]/60 px-5 py-2 text-sm font-bold text-[#F5C842] transition-colors hover:bg-[#D4AF37]/10"
+            >
+              Retry
+            </button>
+          </div>
+        )}
+
+        {!loading && !loadError && slideCount === 0 && (
           <div className="absolute inset-0 flex items-center justify-center text-sm text-[#7B5EA7]">
             No slider images yet.
           </div>
