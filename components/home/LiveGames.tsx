@@ -17,6 +17,8 @@ import {
 import { useAuth } from "@/lib/auth";
 import { useLang } from "@/lib/language";
 
+const GAMES_PAGE_SIZE = 18;
+
 export default function LiveGames({ onOpenAuth }: { onOpenAuth: (mode: "login" | "register") => void }) {
   const { user } = useAuth();
   const { t } = useLang();
@@ -31,6 +33,7 @@ export default function LiveGames({ onOpenAuth }: { onOpenAuth: (mode: "login" |
   const [gamesLoading, setGamesLoading] = useState(true);
   const [gamesError, setGamesError] = useState(false);
   const [gamesRetryKey, setGamesRetryKey] = useState(0);
+  const [visibleCount, setVisibleCount] = useState(GAMES_PAGE_SIZE);
   const [launchingUid, setLaunchingUid] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
@@ -98,6 +101,8 @@ export default function LiveGames({ onOpenAuth }: { onOpenAuth: (mode: "login" |
   }, [activeCategory, byCategory]);
 
   useEffect(() => {
+    setVisibleCount(GAMES_PAGE_SIZE);
+
     if (!activeCode) {
       setGames([]);
       setGamesLoading(false);
@@ -267,18 +272,31 @@ export default function LiveGames({ onOpenAuth }: { onOpenAuth: (mode: "login" |
             ) : games.length === 0 ? (
               <p className="py-10 text-center text-sm text-[#7B5EA7]">No games available for this provider right now.</p>
             ) : (
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-                {games.map((g) => (
-                  <GameCard
-                    key={g.gameUid}
-                    game={g}
-                    favorited={favorites.has(g.name)}
-                    onToggleFavorite={() => toggleFavorite(g.name)}
-                    onPlay={() => g.gameUid && handlePlay(g.gameUid)}
-                    loading={launchingUid === g.gameUid}
-                  />
-                ))}
-              </div>
+              <>
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+                  {games.slice(0, visibleCount).map((g) => (
+                    <GameCard
+                      key={g.gameUid}
+                      game={g}
+                      favorited={favorites.has(g.name)}
+                      onToggleFavorite={() => toggleFavorite(g.name)}
+                      onPlay={() => g.gameUid && handlePlay(g.gameUid)}
+                      loading={launchingUid === g.gameUid}
+                    />
+                  ))}
+                </div>
+
+                {visibleCount < games.length && (
+                  <div className="mt-6 flex justify-center">
+                    <button
+                      onClick={() => setVisibleCount((c) => c + GAMES_PAGE_SIZE)}
+                      className="rounded-full border border-[#D4AF37]/60 px-6 py-2.5 text-sm font-bold text-[#F5C842] transition-colors hover:bg-[#D4AF37]/10"
+                    >
+                      Load More ({games.length - visibleCount} more)
+                    </button>
+                  </div>
+                )}
+              </>
             )}
           </>
         )}

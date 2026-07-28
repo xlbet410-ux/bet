@@ -21,6 +21,13 @@ import PaymentMethods from "@/components/home/PaymentMethods";
 import CtaStrip from "@/components/home/CtaStrip";
 import ChatSupport from "@/components/site/ChatSupport";
 
+// This route is entirely client-rendered (all data loads via useEffect), so
+// there's nothing to gain from Next's Full Route Cache — and a stale cached
+// shell here can keep serving an old JS bundle hash after a deploy until a
+// reload forces revalidation. Force dynamic rendering so every request gets
+// the current build's shell.
+export const dynamic = "force-dynamic";
+
 export default function Home() {
   const [loading, setLoading] = useState(true);
   const [authMode, setAuthMode] = useState<"login" | "register" | null>(null);
