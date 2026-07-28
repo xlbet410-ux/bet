@@ -1,112 +1,66 @@
-export type GameProvider = {
-  id: number;
-  code: string;
-  name: string;
-  image: string | null;
-  status: number;
-};
-
-export type ProviderGame = {
-  name: string;
-  game_uid: string;
-  provider: string;
-  category: string;
-  original: string;
-  height: string;
-  thumbnail: string;
-  status: number;
-};
-
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
 const TOKEN_KEY = "2xlbet:token";
 
-export async function getProviders(): Promise<GameProvider[]> {
-  const res = await fetch(`${API_URL}/games/providers`, { cache: "no-store" });
-  if (!res.ok) throw new Error(`Failed to load providers (${res.status})`);
-  const data = await res.json();
-  return Array.isArray(data) ? data.filter((p: GameProvider) => p.status === 1) : [];
-}
+export type GameCategory =
+  | "slots"
+  | "live-games"
+  | "sports"
+  | "esports"
+  | "mini-game"
+  | "fish-catch"
+  | "table-games"
+  | "arcade"
+  | "other";
 
-export async function getProviderGames(code: string): Promise<ProviderGame[]> {
-  const res = await fetch(`${API_URL}/games/providers/${encodeURIComponent(code)}`, { cache: "no-store" });
-  if (!res.ok) throw new Error(`Failed to load games (${res.status})`);
-  const data = await res.json();
-  return Array.isArray(data?.games) ? data.games.filter((g: ProviderGame) => g.status === 1) : [];
-}
-
-export type GameCategory = "slots" | "live-casino" | "sports" | "esports" | "other";
-
-export const CATEGORY_ORDER: GameCategory[] = ["slots", "live-casino", "sports", "esports", "other"];
+export const CATEGORY_ORDER: GameCategory[] = [
+  "slots",
+  "live-games",
+  "sports",
+  "esports",
+  "mini-game",
+  "fish-catch",
+  "table-games",
+  "arcade",
+  "other",
+];
 
 export const CATEGORY_LABELS: Record<GameCategory, string> = {
   slots: "Slots",
-  "live-casino": "Live Casino",
+  "live-games": "Live Games",
   sports: "Sports",
   esports: "Esports",
-  other: "More Providers",
+  "mini-game": "Mini Game",
+  "fish-catch": "Fish Catch",
+  "table-games": "Table Games",
+  arcade: "Arcade",
+  other: "Other",
 };
 
-// Oracle's provider list has no category field, so providers are grouped by
-// well-known brand name first, then by keywords in their own name (e.g.
-// "Sports", "Live", "Slots"). Anything not confidently matched by either
-// falls into "other" rather than being guessed.
-const KNOWN_NAME_CATEGORY: Record<string, GameCategory> = {
-  "pgsoft": "slots",
-  "play'n go": "slots",
-  "playson": "slots",
-  "habanero": "slots",
-  "netent asia": "slots",
-  "red tiger asia": "slots",
-  "btg asia": "slots",
-  "nlc asia": "slots",
-  "spribe": "slots",
-  "evoplay asia": "slots",
-  "evoplay eu": "slots",
-  "fastspin": "slots",
-  "smartsoft": "slots",
-  "epicwin": "slots",
-  "gameart": "slots",
-  "skywind": "slots",
-  "relax": "slots",
-  "bng": "slots",
-  "betsoft": "slots",
-  "endorphina": "slots",
-  "rubyplay": "slots",
-  "jilisweep": "slots",
-  "playtech asia": "slots",
-  "playtech eu": "slots",
-  "turbo asia": "slots",
-  "turbo eu": "slots",
-  "funky games": "slots",
-  "onlyplay": "slots",
-  "aviatrix": "slots",
-  "fachai": "slots",
-  "rich88": "slots",
-  "galaxsys": "slots",
-  "hacksaw asia": "slots",
-  "hacksaw latam": "slots",
-  "hacksaw world": "slots",
-  "mg": "slots",
-  "vivo": "live-casino",
-  "biggaming": "live-casino",
-  "ezugi": "live-casino",
-  "sa": "live-casino",
-  "creedroomz": "live-casino",
-  "betby": "sports",
-  "sbo": "sports",
-  "cmd": "sports",
-  "dpessports": "esports",
+export type CatalogGame = {
+  name: string;
+  gameUid: string;
+  providerCode: string;
+  providerName: string;
+  category: GameCategory;
+  thumbnail: string;
+  original: string;
 };
 
-export function categorizeProvider(name: string): GameCategory {
-  const key = name.trim().toLowerCase();
-  if (KNOWN_NAME_CATEGORY[key]) return KNOWN_NAME_CATEGORY[key];
+export async function getCatalogCounts(): Promise<Record<GameCategory, number>> {
+  const res = await fetch(`${API_URL}/games/catalog/counts`, { cache: "no-store" });
+  if (!res.ok) throw new Error(`Failed to load category counts (${res.status})`);
+  return res.json();
+}
 
-  if (/e-?sport/.test(key)) return "esports";
-  if (/sport/.test(key)) return "sports";
-  if (/(casino|live)/.test(key)) return "live-casino";
-  if (/slot/.test(key)) return "slots";
-  return "other";
+export async function getCatalogPage(
+  category: GameCategory,
+  page: number,
+  pageSize: number
+): Promise<{ games: CatalogGame[]; total: number }> {
+  const params = new URLSearchParams({ category, page: String(page), pageSize: String(pageSize) });
+  const res = await fetch(`${API_URL}/games/catalog?${params}`, { cache: "no-store" });
+  if (!res.ok) throw new Error(`Failed to load games (${res.status})`);
+  return res.json();
 }
 
 export async function launchGame(gameUid: string): Promise<{ gameUrl: string }> {
