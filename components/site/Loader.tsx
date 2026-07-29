@@ -1,5 +1,5 @@
 import Image from "next/image";
-import logo from "@/assets/logo.png";
+import logo from "@/assets/loader_logo.png";
 
 export default function Loader({ done }: { done: boolean }) {
   return (
@@ -31,10 +31,10 @@ export default function Loader({ done }: { done: boolean }) {
         <Image
           src={logo}
           alt="2XLbet Casino"
-          width={320}
-          height={320}
+          width={520}
+          height={520}
           priority
-          className="h-40 w-auto"
+          className="h-60 w-auto"
         />
       </div>
 
