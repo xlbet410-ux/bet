@@ -70,7 +70,7 @@ export default function Home() {
         <LiveWinsTicker />
         <CategoryChips />
 
-        <Reveal><LiveGames onOpenAuth={setAuthMode} /></Reveal>
+        <LiveGames onOpenAuth={setAuthMode} />
 
         <Reveal><JackpotBanner run={!loading} /></Reveal>
         <Reveal><WelcomeBonus onOpenAuth={setAuthMode} /></Reveal>

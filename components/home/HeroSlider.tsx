@@ -87,9 +87,10 @@ export default function HeroSlider() {
               alt={s.originalName}
               fill
               priority={i === 0}
+              loading={i === 0 ? undefined : "lazy"}
               sizes="(max-width: 640px) 100vw, (max-width: 1152px) 100vw, 1152px"
+              quality={80}
               className="object-cover object-center"
-              unoptimized
             />
           </div>
         ))}

@@ -36,6 +36,18 @@ export const CATEGORY_LABELS: Record<GameCategory, string> = {
   other: "Other",
 };
 
+export const CATEGORY_ACCENT: Record<GameCategory, { from: string; to: string }> = {
+  slots: { from: "#D4AF37", to: "#F5C842" },
+  "live-games": { from: "#0F9D58", to: "#34D399" },
+  sports: { from: "#1D4ED8", to: "#60A5FA" },
+  esports: { from: "#7B2FBE", to: "#C084FC" },
+  "mini-game": { from: "#C41D7F", to: "#FF85C2" },
+  "fish-catch": { from: "#0891B2", to: "#22D3EE" },
+  "table-games": { from: "#B91C1C", to: "#F87171" },
+  arcade: { from: "#C2410C", to: "#FB923C" },
+  other: { from: "#6B21A8", to: "#A78BFA" },
+};
+
 export type CatalogGame = {
   name: string;
   gameUid: string;
