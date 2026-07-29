@@ -42,14 +42,6 @@ const MERCHANT_ACCOUNTS: Record<string, { number: string; note: string }> = {
   mastercard: { number: "5412 4455 6677 7734", note: "Casino merchant card" },
 };
 
-const DOC_TYPES = [
-  { id:"nid",      label:"National ID" },
-  { id:"passport", label:"Passport" },
-  { id:"license",  label:"Driver's License" },
-];
-
-const KYC_STEPS_LABELS = ["Phone", "OTP", "Document", "Upload", "Selfie"];
-
 function DocTypeIcon({ id, className = "" }: { id: string; className?: string }) {
   if (id === "passport") {
     return (
@@ -117,10 +109,38 @@ function EyeBtn({ visible, onToggle }: { visible: boolean; onToggle: () => void 
 const CARD  = { background:"linear-gradient(145deg,rgba(27,8,56,.65),rgba(10,6,18,.85))", border:"1px solid rgba(255,255,255,.07)", boxShadow:"0 8px 32px rgba(0,0,0,.4)" };
 const INNER = { background:"rgba(255,255,255,.03)", border:"1px solid rgba(255,255,255,.06)" };
 
+// Fills {placeholder} tokens in a translated string, e.g. fmt(t.profileStepXOf2, { n: "1" }).
+function fmt(template: string, vars: Record<string, string>) {
+  return Object.entries(vars).reduce((s, [k, v]) => s.replaceAll(`{${k}}`, v), template);
+}
+
+// Splits a translated string on a single {token} and renders the replacement
+// (usually a styled <span>) in place, e.g. a sentence with the document name
+// highlighted in white in the middle of it.
+function TemplatedText({ template, token, replacement }: { template: string; token: string; replacement: React.ReactNode }) {
+  const marker = `{${token}}`;
+  const idx = template.indexOf(marker);
+  if (idx === -1) return <>{template}</>;
+  return (
+    <>
+      {template.slice(0, idx)}
+      {replacement}
+      {template.slice(idx + marker.length)}
+    </>
+  );
+}
+
 export default function ProfilePage() {
   const { user, loading: authLoading, changePassword } = useAuth();
   const { t } = useLang();
   const router = useRouter();
+
+  const docTypes = [
+    { id: "nid", label: t.profileDocTypeLabels[0] },
+    { id: "passport", label: t.profileDocTypeLabels[1] },
+    { id: "license", label: t.profileDocTypeLabels[2] },
+  ];
+  const kycStepsLabels = t.profileKycStepLabels;
 
   const [authMode, setAuthMode]       = useState<"login"|"register"|null>(null);
   const [tab, setTab]                 = useState<Tab>("profile");
@@ -213,7 +233,7 @@ export default function ProfilePage() {
             videoRef.current.play().catch(() => {});
           }
         })
-        .catch(() => setCamError("Camera permission denied. Please allow camera access in your browser."));
+        .catch(() => setCamError("denied"));
     }
     return () => {
       streamRef.current?.getTracks().forEach((t) => t.stop());
@@ -291,17 +311,17 @@ export default function ProfilePage() {
 
   async function handleChangePassword() {
     setPwdError(""); setPwdSuccess("");
-    if (oldPassword.length === 0) { setPwdError("Enter your current password."); return; }
-    if (newPassword.length < 6) { setPwdError("New password must be at least 6 characters."); return; }
-    if (newPassword !== confirmNewPwd) { setPwdError("New passwords do not match."); return; }
+    if (oldPassword.length === 0) { setPwdError(t.profileErrEnterCurrentPwd); return; }
+    if (newPassword.length < 6) { setPwdError(t.profileErrNewPwdLength); return; }
+    if (newPassword !== confirmNewPwd) { setPwdError(t.profileErrPwdMismatch); return; }
 
     setPwdSubmitting(true);
     try {
       await changePassword({ oldPassword, newPassword });
-      setPwdSuccess("Password updated successfully.");
+      setPwdSuccess(t.profilePwdUpdateSuccess);
       setOldPassword(""); setNewPassword(""); setConfirmNewPwd("");
     } catch (err) {
-      setPwdError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+      setPwdError(err instanceof Error ? err.message : t.profileErrGeneric);
     } finally {
       setPwdSubmitting(false);
     }
@@ -335,12 +355,12 @@ export default function ProfilePage() {
 
   // ── tabs ─────────────────────────────────────────────────
   const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
-    { id:"profile", label:"Profile", icon:<svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" strokeLinecap="round"/></svg> },
-    { id:"wallet",  label:"Wallet",  icon:<svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 3H8a2 2 0 0 0-2 4h12a2 2 0 0 0-2-4z"/><circle cx="16" cy="14" r="1.5" className="fill-current stroke-none"/></svg> },
-    { id:"deposit", label:"Deposit", icon:<svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-2"><path d="M12 3v12m0 0-4-4m4 4 4-4" strokeLinecap="round" strokeLinejoin="round"/><path d="M20 21H4" strokeLinecap="round"/></svg> },
-    { id:"withdraw",label:"Withdraw",icon:<svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-2"><path d="M12 21V9m0 0 4 4m-4-4-4 4" strokeLinecap="round" strokeLinejoin="round"/><path d="M20 3H4" strokeLinecap="round"/></svg> },
-    { id:"settings",label:"Settings",icon:<svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> },
-    { id:"kyc",     label:"KYC",     icon:<svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9,12 11,14 15,10" strokeLinecap="round" strokeLinejoin="round"/></svg> },
+    { id:"profile", label:t.profileTabProfile, icon:<svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" strokeLinecap="round"/></svg> },
+    { id:"wallet",  label:t.profileTabWallet,  icon:<svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 3H8a2 2 0 0 0-2 4h12a2 2 0 0 0-2-4z"/><circle cx="16" cy="14" r="1.5" className="fill-current stroke-none"/></svg> },
+    { id:"deposit", label:t.deposit, icon:<svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-2"><path d="M12 3v12m0 0-4-4m4 4 4-4" strokeLinecap="round" strokeLinejoin="round"/><path d="M20 21H4" strokeLinecap="round"/></svg> },
+    { id:"withdraw",label:t.profileTabWithdraw,icon:<svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-2"><path d="M12 21V9m0 0 4 4m-4-4-4 4" strokeLinecap="round" strokeLinejoin="round"/><path d="M20 3H4" strokeLinecap="round"/></svg> },
+    { id:"settings",label:t.profileTabSettings,icon:<svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> },
+    { id:"kyc",     label:t.profileTabKyc,     icon:<svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9,12 11,14 15,10" strokeLinecap="round" strokeLinejoin="round"/></svg> },
   ];
 
   return (
@@ -365,7 +385,7 @@ export default function ProfilePage() {
                   {PAYMENT_METHODS.find((m) => m.id === selMethod)?.name[0]}
                 </span>
                 <div className="min-w-0">
-                  <h3 className="truncate text-base font-extrabold text-white">Complete Your Deposit</h3>
+                  <h3 className="truncate text-base font-extrabold text-white">{t.profileDepositModalTitle}</h3>
                   <p className="text-xs text-[#9B8EC4]">{PAYMENT_METHODS.find((m) => m.id === selMethod)?.name} · ৳{Number(depositAmt || 0).toLocaleString()}</p>
                 </div>
               </div>
@@ -383,7 +403,7 @@ export default function ProfilePage() {
 
             {!depositRequestSubmitted ? (
               <>
-                <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#7B5EA7]">Send Money To</p>
+                <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#7B5EA7]">{t.profileSendMoneyTo}</p>
                 <div className="mb-4 flex items-center gap-2 rounded-xl px-4 py-3" style={INNER}>
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-mono text-lg font-bold text-[#F5C842]">{MERCHANT_ACCOUNTS[selMethod]?.number}</p>
@@ -392,22 +412,25 @@ export default function ProfilePage() {
                   <button onClick={() => copyText(MERCHANT_ACCOUNTS[selMethod]?.number ?? "", setNumberCopied)}
                     className="shrink-0 rounded-lg px-3 py-2 text-xs font-bold text-[#0A0612] transition-all hover:scale-105"
                     style={{ background:"linear-gradient(to right,#D4AF37,#F5C842)" }}>
-                    {numberCopied ? "Copied!" : "Copy"}
+                    {numberCopied ? t.profileCopied : t.profileCopy}
                   </button>
                 </div>
                 <p className="mb-5 text-xs leading-relaxed text-[#9B8EC4]">
-                  Send ৳{Number(depositAmt || 0).toLocaleString()} to the {PAYMENT_METHODS.find((m) => m.id === selMethod)?.name} number above, then enter the Transaction ID (TrxID) you received below to confirm your deposit.
+                  {fmt(t.profileSendInstructions, {
+                    amount: Number(depositAmt || 0).toLocaleString(),
+                    method: PAYMENT_METHODS.find((m) => m.id === selMethod)?.name ?? "",
+                  })}
                 </p>
 
-                <label className="mb-1.5 block text-xs font-medium text-[#C9B8E8]">Transaction ID</label>
+                <label className="mb-1.5 block text-xs font-medium text-[#C9B8E8]">{t.profileTrxIdLabel}</label>
                 <input value={depositTrxId} onChange={(e) => setDepositTrxId(e.target.value)}
-                  placeholder="e.g. 8N7QK3PLXD"
+                  placeholder={t.profileTrxIdPlaceholder}
                   className="mb-5 w-full rounded-xl border border-[#7B2FBE]/40 bg-white/4 px-4 py-3 text-sm text-white placeholder-[#8A7DB0] outline-none transition-all focus:border-[#D4AF37] focus:bg-white/[.07]" />
 
                 <button onClick={submitDepositRequest} disabled={!depositTrxId.trim()}
                   className="w-full rounded-full py-3.5 text-sm font-bold text-[#0A0612] transition-all hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-40"
                   style={{ background:"linear-gradient(to right,#D4AF37,#F5C842)" }}>
-                  Confirm Deposit
+                  {t.profileConfirmDeposit}
                 </button>
               </>
             ) : (
@@ -416,14 +439,14 @@ export default function ProfilePage() {
                   style={{ background:"linear-gradient(135deg,#22c55e,#16a34a)", boxShadow:"0 0 30px rgba(34,197,94,.35)" }}>
                   <Tick size={20} />
                 </div>
-                <h4 className="mb-1 text-lg font-extrabold text-white">Request Submitted</h4>
+                <h4 className="mb-1 text-lg font-extrabold text-white">{t.profileRequestSubmittedTitle}</h4>
                 <p className="mb-6 text-sm text-[#9B8EC4]">
-                  Your deposit of ৳{Number(depositAmt || 0).toLocaleString()} is pending verification. This usually takes a few minutes.
+                  {fmt(t.profileRequestSubmittedDesc, { amount: Number(depositAmt || 0).toLocaleString() })}
                 </p>
                 <button onClick={closeDepositRequest}
                   className="w-full rounded-full py-3.5 text-sm font-bold text-[#0A0612] transition-all hover:scale-[1.02]"
                   style={{ background:"linear-gradient(to right,#D4AF37,#F5C842)" }}>
-                  Done
+                  {t.profileDone}
                 </button>
               </div>
             )}
@@ -440,7 +463,7 @@ export default function ProfilePage() {
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#0A0612]/40" />
             <span className="relative h-2.5 w-2.5 rounded-full bg-[#0A0612]/70" />
           </span>
-          {depositRequestSubmitted ? "Deposit submitted" : `Deposit ৳${Number(depositAmt || 0).toLocaleString()}`}
+          {depositRequestSubmitted ? t.profileDepositSubmittedShort : fmt(t.profileDepositBubble, { amount: Number(depositAmt || 0).toLocaleString() })}
         </button>
       )}
 
@@ -449,9 +472,9 @@ export default function ProfilePage() {
 
           {/* breadcrumb */}
           <div className="mb-5 flex items-center gap-2 text-xs text-[#9B8EC4]">
-            <a href="/" className="transition-colors hover:text-[#F5C842]">Home</a>
+            <a href="/" className="transition-colors hover:text-[#F5C842]">{t.profileHome}</a>
             <span className="text-[#4A3870]">›</span>
-            <span className="text-[#C9B8E8]">My Profile</span>
+            <span className="text-[#C9B8E8]">{t.myProfile}</span>
           </div>
 
           {/* ══ MOBILE: compact profile header ══ */}
@@ -471,7 +494,7 @@ export default function ProfilePage() {
                 <h2 className="font-extrabold text-white">{user.name}</h2>
                 <span className="flex items-center gap-0.5 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase text-white"
                   style={{ background:"#22c55e" }}>
-                  <Tick size={8} /> Verified
+                  <Tick size={8} /> {t.profileVerified}
                 </span>
               </div>
               <p className="text-xs text-[#9B8EC4]">+{user.phone}</p>
@@ -514,7 +537,7 @@ export default function ProfilePage() {
                   <h2 className="text-base font-extrabold text-white">{user.name}</h2>
                   <span className="mt-1.5 flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white"
                     style={{ background:"#22c55e" }}>
-                    <Tick size={8} /> Verified
+                    <Tick size={8} /> {t.profileVerified}
                   </span>
                   <p className="mt-2 font-mono text-[11px] text-[#7B5EA7]">{accountId}</p>
                 </div>
@@ -539,15 +562,15 @@ export default function ProfilePage() {
               {/* ════ PROFILE ════ */}
               {tab === "profile" && (
                 <div className="rounded-2xl p-6" style={CARD}>
-                  <h3 className="mb-5 text-lg font-extrabold text-white">Account Details</h3>
+                  <h3 className="mb-5 text-lg font-extrabold text-white">{t.profileAccountDetails}</h3>
                   <div className="grid gap-3 sm:grid-cols-2">
                     {[
-                      { label:"Full Name",     value:user.name,         extra:null       },
-                      { label:"Phone Number",  value:`+${user.phone}`,  extra:"verified" },
-                      { label:"Account ID",    value:accountId,         extra:null       },
-                      { label:"Member Since",  value:"July 2026",       extra:null       },
-                      { label:"Account Level", value:"Standard Player", extra:null       },
-                      { label:"Status",        value:"Active",          extra:"active"   },
+                      { label:t.profileLabelFullName,    value:user.name,                    extra:null       },
+                      { label:t.profileLabelPhone,        value:`+${user.phone}`,             extra:"verified" },
+                      { label:t.profileLabelAccountId,    value:accountId,                    extra:null       },
+                      { label:t.profileLabelMemberSince,  value:"July 2026",                  extra:null       },
+                      { label:t.profileLabelAccountLevel, value:t.profileValueStandardPlayer, extra:null       },
+                      { label:t.profileLabelStatus,       value:t.profileActive,              extra:"active"   },
                     ].map(({ label, value, extra }) => (
                       <div key={label} className="rounded-xl p-4" style={INNER}>
                         <p className="mb-1 text-[10px] font-semibold uppercase tracking-widest text-[#7B5EA7]">{label}</p>
@@ -561,7 +584,7 @@ export default function ProfilePage() {
                           {extra === "active" && (
                             <span className="rounded-full px-2 py-0.5 text-[10px] font-bold"
                               style={{ background:"rgba(34,197,94,.15)", color:"#4ade80", border:"1px solid rgba(34,197,94,.25)" }}>
-                              Active
+                              {t.profileActive}
                             </span>
                           )}
                         </div>
@@ -578,10 +601,10 @@ export default function ProfilePage() {
                     style={{ background:"linear-gradient(135deg,#7B2FBE,#4A0E8F)", boxShadow:"0 16px 48px rgba(123,47,190,.35)", border:"1px solid rgba(212,175,55,.2)" }}>
                     <p className="mb-1 text-[11px] font-semibold uppercase tracking-widest text-purple-200/60">{t.balance}</p>
                     <p className="text-4xl font-black text-white">{user.balance}</p>
-                    <p className="mt-1 text-sm text-purple-200/50">Available to play</p>
+                    <p className="mt-1 text-sm text-purple-200/50">{t.profileAvailableToPlay}</p>
                   </div>
                   <div className="rounded-2xl p-5" style={CARD}>
-                    <h3 className="mb-4 font-extrabold text-white">Recent Transactions</h3>
+                    <h3 className="mb-4 font-extrabold text-white">{t.profileRecentTransactions}</h3>
                     <div className="space-y-2">
                       {TRANSACTIONS.map((tx) => {
                         const isOut = tx.type === "withdraw";
@@ -606,7 +629,7 @@ export default function ProfilePage() {
                                 style={tx.status === "completed"
                                   ? { background:"rgba(34,197,94,.1)", color:"#4ade80" }
                                   : { background:"rgba(234,179,8,.1)", color:"#facc15" }}>
-                                {tx.status}
+                                {tx.status === "completed" ? t.profileStatusCompleted : t.profileStatusPending}
                               </span>
                             </div>
                           </div>
@@ -620,8 +643,8 @@ export default function ProfilePage() {
               {/* ════ DEPOSIT ════ */}
               {tab === "deposit" && (
                 <div className="rounded-2xl p-6" style={CARD}>
-                  <h3 className="mb-5 text-lg font-extrabold text-white">Make a Deposit</h3>
-                  <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#7B5EA7]">Payment Method</p>
+                  <h3 className="mb-5 text-lg font-extrabold text-white">{t.profileMakeDeposit}</h3>
+                  <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#7B5EA7]">{t.profilePaymentMethod}</p>
                   <div className="mb-6 grid grid-cols-3 gap-2 sm:grid-cols-6">
                     {PAYMENT_METHODS.map((m) => (
                       <button key={m.id} onClick={() => setSelMethod(m.id)}
@@ -633,7 +656,7 @@ export default function ProfilePage() {
                       </button>
                     ))}
                   </div>
-                  <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#7B5EA7]">Quick Amount</p>
+                  <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#7B5EA7]">{t.profileQuickAmount}</p>
                   <div className="mb-4 grid grid-cols-3 gap-2 sm:grid-cols-6">
                     {QUICK_AMOUNTS.map((amt) => (
                       <button key={amt} onClick={() => setDepositAmt(String(amt))}
@@ -645,30 +668,30 @@ export default function ProfilePage() {
                       </button>
                     ))}
                   </div>
-                  <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#7B5EA7]">Custom Amount</p>
+                  <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#7B5EA7]">{t.profileCustomAmount}</p>
                   <div className="relative mb-6">
                     <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-[#9B8EC4]">৳</span>
                     <input type="number" min="100" value={depositAmt} onChange={(e) => setDepositAmt(e.target.value)}
-                      placeholder="Enter amount"
+                      placeholder={t.profileEnterAmountPlaceholder}
                       className="w-full rounded-xl border border-[#7B2FBE]/40 bg-white/4 py-3 pl-8 pr-4 text-sm text-white placeholder-[#8A7DB0] outline-none transition-all focus:border-[#D4AF37] focus:bg-white/[.07]" />
                   </div>
                   <button onClick={openDepositRequest} disabled={depositAmt !== "" && Number(depositAmt) < 100}
                     className="w-full rounded-full py-4 text-base font-bold text-[#0A0612] transition-all hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:scale-100"
                     style={{ background:"linear-gradient(to right,#D4AF37,#F5C842)", boxShadow:"0 0 32px rgba(212,175,55,.35)" }}>
-                    Deposit{depositAmt ? ` ৳${Number(depositAmt).toLocaleString()}` : " Now"}
+                    {t.deposit}{depositAmt ? ` ৳${Number(depositAmt).toLocaleString()}` : ` ${t.profileNow}`}
                   </button>
                   {depositError && (
                     <p className="mt-3 text-center text-[11px] text-red-400">{depositError}</p>
                   )}
-                  <p className="mt-3 text-center text-[11px] text-[#7B5EA7]">Minimum ৳100 · SSL encrypted · Instant processing</p>
+                  <p className="mt-3 text-center text-[11px] text-[#7B5EA7]">{t.profileDepositFootnote}</p>
                 </div>
               )}
 
               {/* ════ WITHDRAW ════ */}
               {tab === "withdraw" && (
                 <div className="rounded-2xl p-6" style={CARD}>
-                  <h3 className="mb-5 text-lg font-extrabold text-white">Withdraw Funds</h3>
-                  <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#7B5EA7]">Withdraw Method</p>
+                  <h3 className="mb-5 text-lg font-extrabold text-white">{t.profileWithdrawFunds}</h3>
+                  <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#7B5EA7]">{t.profileWithdrawMethod}</p>
                   <div className="mb-6 grid grid-cols-3 gap-2 sm:grid-cols-6">
                     {PAYMENT_METHODS.map((m) => (
                       <button key={m.id} onClick={() => setSelWMethod(m.id)}
@@ -680,7 +703,7 @@ export default function ProfilePage() {
                       </button>
                     ))}
                   </div>
-                  <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#7B5EA7]">Quick Amount</p>
+                  <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#7B5EA7]">{t.profileQuickAmount}</p>
                   <div className="mb-4 grid grid-cols-3 gap-2 sm:grid-cols-6">
                     {QUICK_AMOUNTS.map((amt) => (
                       <button key={amt} onClick={() => setWithdrawAmt(String(amt))}
@@ -692,19 +715,19 @@ export default function ProfilePage() {
                       </button>
                     ))}
                   </div>
-                  <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#7B5EA7]">Custom Amount</p>
+                  <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#7B5EA7]">{t.profileCustomAmount}</p>
                   <div className="relative mb-6">
                     <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-[#9B8EC4]">৳</span>
                     <input type="number" min="100" value={withdrawAmt} onChange={(e) => setWithdrawAmt(e.target.value)}
-                      placeholder="Enter amount"
+                      placeholder={t.profileEnterAmountPlaceholder}
                       className="w-full rounded-xl border border-[#7B2FBE]/40 bg-white/4 py-3 pl-8 pr-4 text-sm text-white placeholder-[#8A7DB0] outline-none transition-all focus:border-[#D4AF37] focus:bg-white/[.07]" />
                   </div>
                   <button disabled={withdrawAmt !== "" && Number(withdrawAmt) < 100}
                     className="w-full rounded-full py-4 text-base font-bold text-[#0A0612] transition-all hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:scale-100"
                     style={{ background:"linear-gradient(to right,#D4AF37,#F5C842)", boxShadow:"0 0 32px rgba(212,175,55,.35)" }}>
-                    Withdraw{withdrawAmt ? ` ৳${Number(withdrawAmt).toLocaleString()}` : " Now"}
+                    {t.profileTabWithdraw}{withdrawAmt ? ` ৳${Number(withdrawAmt).toLocaleString()}` : ` ${t.profileNow}`}
                   </button>
-                  <p className="mt-3 text-center text-[11px] text-[#7B5EA7]">Minimum ৳100 · KYC required · Processed within 24 hours</p>
+                  <p className="mt-3 text-center text-[11px] text-[#7B5EA7]">{t.profileWithdrawFootnote}</p>
                 </div>
               )}
 
@@ -714,33 +737,33 @@ export default function ProfilePage() {
 
                   {/* Update Password */}
                   <div className="rounded-2xl p-6" style={CARD}>
-                    <h3 className="mb-1 text-lg font-extrabold text-white">Update Password</h3>
-                    <p className="mb-5 text-sm text-[#9B8EC4]">Change the password you use to log in to your account.</p>
+                    <h3 className="mb-1 text-lg font-extrabold text-white">{t.profileUpdatePasswordTitle}</h3>
+                    <p className="mb-5 text-sm text-[#9B8EC4]">{t.profileUpdatePasswordDesc}</p>
 
                     <div className="mx-auto max-w-sm space-y-4">
                       <div>
-                        <label className="mb-1.5 block text-xs font-medium text-[#C9B8E8]">Current Password</label>
+                        <label className="mb-1.5 block text-xs font-medium text-[#C9B8E8]">{t.profileCurrentPasswordLabel}</label>
                         <div className="relative">
                           <input type={showOldPwd ? "text" : "password"} value={oldPassword} onChange={(e) => setOldPassword(e.target.value)}
-                            placeholder="Enter current password"
+                            placeholder={t.profileCurrentPasswordPlaceholder}
                             className="w-full rounded-xl border border-[#7B2FBE]/40 bg-white/4 px-4 py-3 pr-11 text-sm text-white placeholder-[#8A7DB0] outline-none transition-all focus:border-[#D4AF37] focus:bg-white/[.07]" />
                           <EyeBtn visible={showOldPwd} onToggle={() => setShowOldPwd((v) => !v)} />
                         </div>
                       </div>
                       <div>
-                        <label className="mb-1.5 block text-xs font-medium text-[#C9B8E8]">New Password</label>
+                        <label className="mb-1.5 block text-xs font-medium text-[#C9B8E8]">{t.profileNewPasswordLabel}</label>
                         <div className="relative">
                           <input type={showNewPwd ? "text" : "password"} value={newPassword} onChange={(e) => setNewPassword(e.target.value)}
-                            placeholder="At least 6 characters"
+                            placeholder={t.profileNewPasswordPlaceholder}
                             className="w-full rounded-xl border border-[#7B2FBE]/40 bg-white/4 px-4 py-3 pr-11 text-sm text-white placeholder-[#8A7DB0] outline-none transition-all focus:border-[#D4AF37] focus:bg-white/[.07]" />
                           <EyeBtn visible={showNewPwd} onToggle={() => setShowNewPwd((v) => !v)} />
                         </div>
                       </div>
                       <div>
-                        <label className="mb-1.5 block text-xs font-medium text-[#C9B8E8]">Confirm New Password</label>
+                        <label className="mb-1.5 block text-xs font-medium text-[#C9B8E8]">{t.profileConfirmPasswordLabel}</label>
                         <div className="relative">
                           <input type={showConfirmPwd ? "text" : "password"} value={confirmNewPwd} onChange={(e) => setConfirmNewPwd(e.target.value)}
-                            placeholder="Re-enter new password"
+                            placeholder={t.profileConfirmPasswordPlaceholder}
                             className="w-full rounded-xl border border-[#7B2FBE]/40 bg-white/4 px-4 py-3 pr-11 text-sm text-white placeholder-[#8A7DB0] outline-none transition-all focus:border-[#D4AF37] focus:bg-white/[.07]" />
                           <EyeBtn visible={showConfirmPwd} onToggle={() => setShowConfirmPwd((v) => !v)} />
                         </div>
@@ -756,17 +779,17 @@ export default function ProfilePage() {
                       <button onClick={handleChangePassword} disabled={pwdSubmitting}
                         className="w-full rounded-full py-3.5 text-sm font-bold text-[#0A0612] transition-all hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-60"
                         style={{ background:"linear-gradient(to right,#D4AF37,#F5C842)" }}>
-                        {pwdSubmitting ? "Updating..." : "Update Password"}
+                        {pwdSubmitting ? t.profileUpdatingBtn : t.profileUpdatePasswordBtn}
                       </button>
                     </div>
                   </div>
 
                   {/* Share & Earn */}
                   <div className="rounded-2xl p-6" style={CARD}>
-                    <h3 className="mb-1 text-lg font-extrabold text-white">Share &amp; Earn</h3>
-                    <p className="mb-5 text-sm text-[#9B8EC4]">Invite friends with your referral code and earn rewards when they join.</p>
+                    <h3 className="mb-1 text-lg font-extrabold text-white">{t.profileShareEarnTitle}</h3>
+                    <p className="mb-5 text-sm text-[#9B8EC4]">{t.profileShareEarnDesc}</p>
 
-                    <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#7B5EA7]">Your Referral Code</p>
+                    <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#7B5EA7]">{t.profileReferralCodeLabel}</p>
                     <div className="mb-4 flex items-center gap-2">
                       <div className="flex-1 rounded-xl px-4 py-3 font-mono text-lg font-bold tracking-widest text-[#F5C842]" style={INNER}>
                         {user.referralCode ?? "—"}
@@ -775,11 +798,11 @@ export default function ProfilePage() {
                         disabled={!user.referralCode}
                         className="shrink-0 rounded-xl px-4 py-3 text-sm font-bold text-[#0A0612] transition-all hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-40"
                         style={{ background:"linear-gradient(to right,#D4AF37,#F5C842)" }}>
-                        {codeCopied ? "Copied!" : "Copy"}
+                        {codeCopied ? t.profileCopied : t.profileCopy}
                       </button>
                     </div>
 
-                    <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#7B5EA7]">Your Referral Link</p>
+                    <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#7B5EA7]">{t.profileReferralLinkLabel}</p>
                     <div className="flex items-center gap-2">
                       <div className="flex-1 truncate rounded-xl px-4 py-3 text-sm text-[#C9B8E8]" style={INNER}>
                         {typeof window !== "undefined" ? `${window.location.origin}/?ref=${user.referralCode ?? ""}` : ""}
@@ -788,7 +811,7 @@ export default function ProfilePage() {
                         onClick={() => user.referralCode && copyText(`${window.location.origin}/?ref=${user.referralCode}`, setLinkCopied)}
                         disabled={!user.referralCode}
                         className="shrink-0 rounded-xl border border-[#7B2FBE]/40 bg-white/4 px-4 py-3 text-sm font-semibold text-[#C9B8E8] transition-all hover:bg-white/[.07] disabled:cursor-not-allowed disabled:opacity-40">
-                        {linkCopied ? "Copied!" : "Copy Link"}
+                        {linkCopied ? t.profileCopied : t.profileCopyLink}
                       </button>
                     </div>
                   </div>
@@ -803,7 +826,7 @@ export default function ProfilePage() {
                   {/* ── Loading current status ── */}
                   {kycStatusLoading ? (
                     <div className="rounded-2xl p-10 text-center" style={CARD}>
-                      <p className="text-sm text-[#7B5EA7]">Loading verification status…</p>
+                      <p className="text-sm text-[#7B5EA7]">{t.profileKycLoading}</p>
                     </div>
                   ) : kycStatus?.status === "verified" ? (
                     /* ── Verified ── */
@@ -814,10 +837,10 @@ export default function ProfilePage() {
                           <polyline points="20,6 9,17 4,12" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                       </div>
-                      <h3 className="mb-2 text-2xl font-extrabold text-white">You Are Verified!</h3>
-                      <p className="mb-6 text-[#9B8EC4]">Your identity has been successfully verified. You have full access to all features.</p>
+                      <h3 className="mb-2 text-2xl font-extrabold text-white">{t.profileKycVerifiedTitle}</h3>
+                      <p className="mb-6 text-[#9B8EC4]">{t.profileKycVerifiedDesc}</p>
                       <div className="mx-auto mb-6 grid max-w-sm grid-cols-2 gap-3">
-                        {["Phone Verified","ID Verified","Address Verified","Selfie Verified"].map((s) => (
+                        {t.profileKycChecklist.map((s) => (
                           <div key={s} className="flex items-center gap-2 rounded-xl p-3" style={INNER}>
                             <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-white" style={{ background:"#22c55e" }}>
                               <Tick size={9} />
@@ -837,11 +860,15 @@ export default function ProfilePage() {
                           <path d="M12 7v5l3 3" strokeLinecap="round" strokeLinejoin="round"/>
                         </svg>
                       </div>
-                      <h3 className="mb-2 text-2xl font-extrabold text-white">Verification Under Review</h3>
+                      <h3 className="mb-2 text-2xl font-extrabold text-white">{t.profileKycPendingTitle}</h3>
                       <p className="mb-1 text-[#9B8EC4]">
-                        We've received your <span className="text-white">{DOC_TYPES.find(d=>d.id===kycStatus.documentType)?.label ?? kycStatus.documentType}</span> and selfie.
+                        <TemplatedText
+                          template={t.profileKycPendingDesc1}
+                          token="doc"
+                          replacement={<span className="text-white">{docTypes.find(d=>d.id===kycStatus.documentType)?.label ?? kycStatus.documentType}</span>}
+                        />
                       </p>
-                      <p className="text-sm text-[#7B5EA7]">Our team typically reviews submissions within 24 hours. You'll see the result here.</p>
+                      <p className="text-sm text-[#7B5EA7]">{t.profileKycPendingDesc2}</p>
                     </div>
                   ) : kycStatus?.status === "rejected" && kycStep === "idle" ? (
                     /* ── Rejected ── */
@@ -853,7 +880,7 @@ export default function ProfilePage() {
                           <line x1="6" y1="6" x2="18" y2="18" strokeLinecap="round"/>
                         </svg>
                       </div>
-                      <h3 className="mb-2 text-2xl font-extrabold text-white">Verification Rejected</h3>
+                      <h3 className="mb-2 text-2xl font-extrabold text-white">{t.profileKycRejectedTitle}</h3>
                       {kycStatus.rejectReason && (
                         <p className="mx-auto mb-6 max-w-sm rounded-xl p-3 text-sm text-red-300"
                           style={{ background:"rgba(239,68,68,.1)", border:"1px solid rgba(239,68,68,.2)" }}>
@@ -863,7 +890,7 @@ export default function ProfilePage() {
                       <button onClick={() => { resetKycFlow(); setKycStep("phone"); }}
                         className="mx-auto block w-full max-w-xs rounded-full py-3.5 text-sm font-bold text-[#0A0612] transition-all hover:scale-[1.02]"
                         style={{ background:"linear-gradient(to right,#D4AF37,#F5C842)" }}>
-                        Try Again
+                        {t.profileTryAgain}
                       </button>
                     </div>
                   ) : kycStep === "idle" ? (
@@ -875,11 +902,11 @@ export default function ProfilePage() {
                           <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
                         </svg>
                       </div>
-                      <h3 className="mb-2 text-xl font-extrabold text-white">Identity Verification</h3>
-                      <p className="mb-2 text-sm text-[#9B8EC4]">Verify your identity to unlock withdrawals and higher betting limits.</p>
-                      <p className="mb-8 text-xs text-[#7B5EA7]">Takes about 3 minutes · Your data is encrypted and secure</p>
+                      <h3 className="mb-2 text-xl font-extrabold text-white">{t.profileKycStartTitle}</h3>
+                      <p className="mb-2 text-sm text-[#9B8EC4]">{t.profileKycStartDesc}</p>
+                      <p className="mb-8 text-xs text-[#7B5EA7]">{t.profileKycStartNote}</p>
                       <div className="mx-auto mb-8 grid max-w-xs grid-cols-1 gap-2 text-left">
-                        {["Phone number verification","Government-issued ID upload","Address proof upload","Face selfie with ID"].map((s,i) => (
+                        {t.profileKycStartSteps.map((s,i) => (
                           <div key={s} className="flex items-center gap-3 rounded-xl px-4 py-2.5" style={INNER}>
                             <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-black text-[#0A0612]"
                               style={{ background:"linear-gradient(135deg,#D4AF37,#F5C842)" }}>{i+1}</span>
@@ -890,7 +917,7 @@ export default function ProfilePage() {
                       <button onClick={() => setKycStep("phone")}
                         className="w-full max-w-xs rounded-full py-4 text-base font-bold text-[#0A0612] transition-all hover:scale-[1.02]"
                         style={{ background:"linear-gradient(to right,#D4AF37,#F5C842)", boxShadow:"0 0 32px rgba(212,175,55,.35)" }}>
-                        Start Verification
+                        {t.profileKycStartBtn}
                       </button>
                     </div>
                   ) : (
@@ -900,7 +927,7 @@ export default function ProfilePage() {
                       {/* progress bar */}
                       <div className="mb-6">
                         <div className="mb-3 flex items-center justify-between">
-                          {KYC_STEPS_LABELS.map((s, i) => {
+                          {kycStepsLabels.map((s, i) => {
                             const active  = kycStepIdx === i;
                             const done    = kycStepIdx >  i;
                             return (
@@ -927,20 +954,20 @@ export default function ProfilePage() {
                       {/* ── Step 1: Phone ── */}
                       {kycStep === "phone" && (
                         <div className="text-center">
-                          <h3 className="mb-1 text-lg font-extrabold text-white">Verify Phone Number</h3>
-                          <p className="mb-6 text-sm text-[#9B8EC4]">Enter the phone number linked to your account.</p>
+                          <h3 className="mb-1 text-lg font-extrabold text-white">{t.profileKycPhoneTitle}</h3>
+                          <p className="mb-6 text-sm text-[#9B8EC4]">{t.profileKycPhoneDesc}</p>
                           <div className="mx-auto max-w-xs">
                             <div className="relative mb-4">
                               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-[#9B8EC4]">+</span>
                               <input type="tel" value={kycPhone} onChange={(e) => setKycPhone(e.target.value.replace(/\D/g,""))}
-                                placeholder="Enter phone number"
+                                placeholder={t.profileKycPhonePlaceholder}
                                 className="w-full rounded-xl border border-[#7B2FBE]/40 bg-white/4 py-3 pl-8 pr-4 text-sm text-white placeholder-[#8A7DB0] outline-none transition-all focus:border-[#D4AF37]" />
                             </div>
                             <button onClick={() => kycPhone.length >= 7 && setKycStep("otp")}
                               disabled={kycPhone.length < 7}
                               className="w-full rounded-full py-3.5 text-sm font-bold text-[#0A0612] transition-all hover:scale-[1.02] disabled:opacity-40"
                               style={{ background:"linear-gradient(to right,#D4AF37,#F5C842)" }}>
-                              Send OTP
+                              {t.profileSendOtp}
                             </button>
                           </div>
                         </div>
@@ -949,9 +976,9 @@ export default function ProfilePage() {
                       {/* ── Step 2: OTP ── */}
                       {kycStep === "otp" && (
                         <div className="text-center">
-                          <h3 className="mb-1 text-lg font-extrabold text-white">Enter OTP</h3>
-                          <p className="mb-1 text-sm text-[#9B8EC4]">A 6-digit code was sent to <span className="text-white">+{kycPhone}</span></p>
-                          <p className="mb-6 text-xs text-[#7B5EA7]">(Demo: any 6 digits accepted)</p>
+                          <h3 className="mb-1 text-lg font-extrabold text-white">{t.profileKycOtpTitle}</h3>
+                          <p className="mb-1 text-sm text-[#9B8EC4]">{t.profileKycOtpSentTo} <span className="text-white">+{kycPhone}</span></p>
+                          <p className="mb-6 text-xs text-[#7B5EA7]">{t.profileKycOtpDemo}</p>
                           <div className="mx-auto mb-6 flex max-w-xs justify-center gap-2">
                             {otpDigits.map((d, i) => (
                               <input key={i} id={`otp-${i}`} type="text" inputMode="numeric"
@@ -969,10 +996,10 @@ export default function ProfilePage() {
                               disabled={!otpDigits.every(Boolean)}
                               className="w-full rounded-full py-3.5 text-sm font-bold text-[#0A0612] transition-all hover:scale-[1.02] disabled:opacity-40"
                               style={{ background:"linear-gradient(to right,#D4AF37,#F5C842)" }}>
-                              Verify OTP
+                              {t.profileVerifyOtp}
                             </button>
                             <button onClick={() => setKycStep("phone")} className="w-full text-xs text-[#7B5EA7] hover:text-[#9B8EC4] transition-colors">
-                              ← Change phone number
+                              {t.profileChangePhone}
                             </button>
                           </div>
                         </div>
@@ -981,10 +1008,10 @@ export default function ProfilePage() {
                       {/* ── Step 3: Document type ── */}
                       {kycStep === "docType" && (
                         <div className="text-center">
-                          <h3 className="mb-1 text-lg font-extrabold text-white">Choose Document Type</h3>
-                          <p className="mb-6 text-sm text-[#9B8EC4]">Select the document you will upload for identity verification.</p>
+                          <h3 className="mb-1 text-lg font-extrabold text-white">{t.profileKycDocTypeTitle}</h3>
+                          <p className="mb-6 text-sm text-[#9B8EC4]">{t.profileKycDocTypeDesc}</p>
                           <div className="mx-auto mb-6 grid max-w-sm grid-cols-3 gap-3">
-                            {DOC_TYPES.map((d) => (
+                            {docTypes.map((d) => (
                               <button key={d.id} onClick={() => setDocType(d.id)}
                                 className="flex flex-col items-center gap-2 rounded-2xl p-4 transition-all"
                                 style={docType === d.id
@@ -998,7 +1025,7 @@ export default function ProfilePage() {
                           <button onClick={() => { if (docType) { setDocSide("front"); setKycStep("upload"); } }} disabled={!docType}
                             className="mx-auto block w-full max-w-xs rounded-full py-3.5 text-sm font-bold text-[#0A0612] transition-all hover:scale-[1.02] disabled:opacity-40"
                             style={{ background:"linear-gradient(to right,#D4AF37,#F5C842)" }}>
-                            Continue
+                            {t.profileContinue}
                           </button>
                         </div>
                       )}
@@ -1009,9 +1036,13 @@ export default function ProfilePage() {
                           {frontImg && backImg && docReviewReady ? (
                             /* ── both sides captured: review screen ── */
                             <>
-                              <h3 className="mb-1 text-lg font-extrabold text-white">Review Your Document</h3>
+                              <h3 className="mb-1 text-lg font-extrabold text-white">{t.profileKycReviewTitle}</h3>
                               <p className="mb-6 text-sm text-[#9B8EC4]">
-                                Both sides of your <span className="text-white">{DOC_TYPES.find(d=>d.id===docType)?.label}</span> look good? Continue, or retake either side.
+                                <TemplatedText
+                                  template={t.profileKycReviewDesc}
+                                  token="doc"
+                                  replacement={<span className="text-white">{docTypes.find(d=>d.id===docType)?.label}</span>}
+                                />
                               </p>
                               <div className="mx-auto mb-6 grid max-w-md grid-cols-2 gap-4">
                                 {(["front","back"] as const).map((side) => (
@@ -1024,7 +1055,7 @@ export default function ProfilePage() {
                                       </span>
                                     </div>
                                     <button onClick={() => retakeDocument(side)} className="text-xs text-[#7B5EA7] hover:text-[#9B8EC4] transition-colors">
-                                      Retake {side}
+                                      {side === "front" ? t.profileRetakeFront : t.profileRetakeBack}
                                     </button>
                                   </div>
                                 ))}
@@ -1032,24 +1063,28 @@ export default function ProfilePage() {
                               <button onClick={() => setKycStep("selfie")}
                                 className="w-full max-w-xs rounded-full py-3.5 text-sm font-bold text-[#0A0612] transition-all hover:scale-[1.02]"
                                 style={{ background:"linear-gradient(to right,#D4AF37,#F5C842)" }}>
-                                Continue to Selfie
+                                {t.profileContinueToSelfie}
                               </button>
                             </>
                           ) : (
                             /* ── active capture: front, then back ── */
                             <>
                               <h3 className="mb-1 text-lg font-extrabold text-white">
-                                Capture {docSide === "front" ? "Front" : "Back"} Side
+                                {docSide === "front" ? t.profileCaptureFrontTitle : t.profileCaptureBackTitle}
                               </h3>
                               <p className="mb-1 text-sm text-[#9B8EC4]">
-                                Position the {docSide} of your <span className="text-white">{DOC_TYPES.find(d=>d.id===docType)?.label}</span> inside the frame.
+                                <TemplatedText
+                                  template={docSide === "front" ? t.profilePositionFrontDesc : t.profilePositionBackDesc}
+                                  token="doc"
+                                  replacement={<span className="text-white">{docTypes.find(d=>d.id===docType)?.label}</span>}
+                                />
                               </p>
-                              <p className="mb-5 text-xs text-[#7B5EA7]">Step {docSide === "front" ? 1 : 2} of 2</p>
+                              <p className="mb-5 text-xs text-[#7B5EA7]">{fmt(t.profileStepXOf2, { n: docSide === "front" ? "1" : "2" })}</p>
 
                               {camError ? (
                                 <div className="mx-auto mb-5 max-w-sm rounded-xl p-4 text-sm text-red-300"
                                   style={{ background:"rgba(239,68,68,.1)", border:"1px solid rgba(239,68,68,.2)" }}>
-                                  {camError}
+                                  {t.profileCamError}
                                 </div>
                               ) : (docSide === "front" ? frontImg : backImg) ? (
                                 /* captured photo, awaiting confirm/retake */
@@ -1059,7 +1094,7 @@ export default function ProfilePage() {
                                   <img src={(docSide === "front" ? frontImg : backImg)!} alt={docSide} className="aspect-[4/3] w-full object-cover" />
                                   <div className="absolute bottom-3 left-1/2 -translate-x-1/2">
                                     <span className="flex items-center gap-1 rounded-full px-3 py-1 text-xs font-bold text-white" style={{ background:"#22c55e" }}>
-                                      <Tick size={9} /> Captured
+                                      <Tick size={9} /> {t.profileCaptured}
                                     </span>
                                   </div>
                                 </div>
@@ -1073,7 +1108,7 @@ export default function ProfilePage() {
                                   </div>
                                   <div className="absolute bottom-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full px-3 py-1 text-[10px] font-semibold text-white/70"
                                     style={{ background:"rgba(0,0,0,.5)" }}>
-                                    Fit the document inside the frame
+                                    {t.profileFitDocument}
                                   </div>
                                 </div>
                               )}
@@ -1087,10 +1122,10 @@ export default function ProfilePage() {
                                       onClick={() => { if (docSide === "front") setDocSide("back"); else setDocReviewReady(true); }}
                                       className="w-full rounded-full py-3.5 text-sm font-bold text-[#0A0612] transition-all hover:scale-[1.02]"
                                       style={{ background:"linear-gradient(to right,#D4AF37,#F5C842)" }}>
-                                      {docSide === "front" ? "Use This Photo — Continue to Back" : "Use This Photo"}
+                                      {docSide === "front" ? t.profileUseThisPhotoContinue : t.profileUseThisPhoto}
                                     </button>
                                     <button onClick={() => retakeDocument(docSide)} className="text-xs text-[#7B5EA7] hover:text-[#9B8EC4] transition-colors">
-                                      Retake photo
+                                      {t.profileRetakePhoto}
                                     </button>
                                   </>
                                 ) : (
@@ -1100,7 +1135,7 @@ export default function ProfilePage() {
                                     <svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-[#0A0612] stroke-2">
                                       <circle cx="12" cy="13" r="4"/><path d="M9 3h6l2 2h3a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h3z"/>
                                     </svg>
-                                    Capture Photo
+                                    {t.profileCapturePhoto}
                                   </button>
                                 )}
                               </div>
@@ -1112,13 +1147,19 @@ export default function ProfilePage() {
                       {/* ── Step 5: Selfie ── */}
                       {kycStep === "selfie" && (
                         <div className="text-center">
-                          <h3 className="mb-1 text-lg font-extrabold text-white">Take a Selfie</h3>
-                          <p className="mb-5 text-sm text-[#9B8EC4]">Hold your <span className="text-white">{DOC_TYPES.find(d=>d.id===docType)?.label}</span> next to your face and look at the camera.</p>
+                          <h3 className="mb-1 text-lg font-extrabold text-white">{t.profileKycSelfieTitle}</h3>
+                          <p className="mb-5 text-sm text-[#9B8EC4]">
+                            <TemplatedText
+                              template={t.profileKycSelfieDesc}
+                              token="doc"
+                              replacement={<span className="text-white">{docTypes.find(d=>d.id===docType)?.label}</span>}
+                            />
+                          </p>
 
                           {camError ? (
                             <div className="mx-auto mb-5 max-w-sm rounded-xl p-4 text-sm text-red-300"
                               style={{ background:"rgba(239,68,68,.1)", border:"1px solid rgba(239,68,68,.2)" }}>
-                              {camError}
+                              {t.profileCamError}
                             </div>
                           ) : selfieImg ? (
                             /* captured photo */
@@ -1128,7 +1169,7 @@ export default function ProfilePage() {
                               <img src={selfieImg} alt="selfie" className="w-full rounded-2xl" />
                               <div className="absolute bottom-3 left-1/2 -translate-x-1/2">
                                 <span className="flex items-center gap-1 rounded-full px-3 py-1 text-xs font-bold text-white" style={{ background:"#22c55e" }}>
-                                  <Tick size={9} /> Captured
+                                  <Tick size={9} /> {t.profileCaptured}
                                 </span>
                               </div>
                             </div>
@@ -1143,7 +1184,7 @@ export default function ProfilePage() {
                               </div>
                               <div className="absolute bottom-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full px-3 py-1 text-[10px] font-semibold text-white/70"
                                 style={{ background:"rgba(0,0,0,.5)" }}>
-                                Position your face inside the oval
+                                {t.profilePositionFace}
                               </div>
                             </div>
                           )}
@@ -1163,11 +1204,11 @@ export default function ProfilePage() {
                                 <button onClick={submitVerification} disabled={kycSubmitting}
                                   className="w-full rounded-full py-3.5 text-sm font-bold text-[#0A0612] transition-all hover:scale-[1.02] disabled:opacity-60"
                                   style={{ background:"linear-gradient(to right,#D4AF37,#F5C842)" }}>
-                                  {kycSubmitting ? "Submitting…" : "Submit Verification"}
+                                  {kycSubmitting ? t.profileSubmitting : t.profileSubmitVerification}
                                 </button>
                                 <button onClick={() => { setSelfieImg(null); }} disabled={kycSubmitting}
                                   className="text-xs text-[#7B5EA7] hover:text-[#9B8EC4] transition-colors disabled:opacity-60">
-                                  Retake photo
+                                  {t.profileRetakePhoto}
                                 </button>
                               </>
                             ) : (
@@ -1177,7 +1218,7 @@ export default function ProfilePage() {
                                 <svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-[#0A0612] stroke-2">
                                   <circle cx="12" cy="13" r="4"/><path d="M9 3h6l2 2h3a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h3z"/>
                                 </svg>
-                                Capture Photo
+                                {t.profileCapturePhoto}
                               </button>
                             )}
                           </div>

@@ -38,13 +38,15 @@ export default function Loader({ done }: { done: boolean }) {
         />
       </div>
 
-      {/* tagline */}
-      <p
-        className="z-10 mt-6 text-[11px] font-bold tracking-[0.45em] uppercase text-[#7B5EA7]"
-        style={{ animation: "fadeIn 0.6s ease 0.9s both" }}
-      >
-        Premium Casino Experience
-      </p>
+      {/* tagline — shown in both languages regardless of the site's language toggle */}
+      <div className="z-10 mt-6 text-center" style={{ animation: "fadeIn 0.6s ease 0.9s both" }}>
+        <p className="text-[11px] font-bold tracking-[0.45em] uppercase text-[#7B5EA7]">
+          Premium Casino Experience
+        </p>
+        <p className="mt-1.5 text-xs font-semibold tracking-wide text-[#9B8EC4]">
+          আপনার বিশ্বস্ত বেটিং পার্টনার
+        </p>
+      </div>
 
       {/* progress bar */}
       <div

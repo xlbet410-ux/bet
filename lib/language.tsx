@@ -116,6 +116,122 @@ export type Translations = {
   balance: string;
   myProfile: string;
   deposit: string;
+
+  // profile page
+  profileHome: string;
+  profileVerified: string;
+  profileTabProfile: string;
+  profileTabWallet: string;
+  profileTabWithdraw: string;
+  profileTabSettings: string;
+  profileTabKyc: string;
+  profileDepositModalTitle: string;
+  profileSendMoneyTo: string;
+  profileCopy: string;
+  profileCopied: string;
+  profileSendInstructions: string;
+  profileTrxIdLabel: string;
+  profileTrxIdPlaceholder: string;
+  profileConfirmDeposit: string;
+  profileRequestSubmittedTitle: string;
+  profileRequestSubmittedDesc: string;
+  profileDone: string;
+  profileDepositBubble: string;
+  profileDepositSubmittedShort: string;
+  profileAccountDetails: string;
+  profileLabelFullName: string;
+  profileLabelPhone: string;
+  profileLabelAccountId: string;
+  profileLabelMemberSince: string;
+  profileLabelAccountLevel: string;
+  profileLabelStatus: string;
+  profileValueStandardPlayer: string;
+  profileActive: string;
+  profileAvailableToPlay: string;
+  profileRecentTransactions: string;
+  profileStatusCompleted: string;
+  profileStatusPending: string;
+  profileMakeDeposit: string;
+  profilePaymentMethod: string;
+  profileQuickAmount: string;
+  profileCustomAmount: string;
+  profileEnterAmountPlaceholder: string;
+  profileNow: string;
+  profileErrSelectAmount: string;
+  profileDepositFootnote: string;
+  profileWithdrawFunds: string;
+  profileWithdrawMethod: string;
+  profileWithdrawFootnote: string;
+  profileUpdatePasswordTitle: string;
+  profileUpdatePasswordDesc: string;
+  profileCurrentPasswordLabel: string;
+  profileCurrentPasswordPlaceholder: string;
+  profileNewPasswordLabel: string;
+  profileNewPasswordPlaceholder: string;
+  profileConfirmPasswordLabel: string;
+  profileConfirmPasswordPlaceholder: string;
+  profileErrEnterCurrentPwd: string;
+  profileErrNewPwdLength: string;
+  profileErrPwdMismatch: string;
+  profilePwdUpdateSuccess: string;
+  profileErrGeneric: string;
+  profileUpdatePasswordBtn: string;
+  profileUpdatingBtn: string;
+  profileShareEarnTitle: string;
+  profileShareEarnDesc: string;
+  profileReferralCodeLabel: string;
+  profileReferralLinkLabel: string;
+  profileCopyLink: string;
+  profileKycLoading: string;
+  profileKycVerifiedTitle: string;
+  profileKycVerifiedDesc: string;
+  profileKycChecklist: string[];
+  profileKycPendingTitle: string;
+  profileKycPendingDesc1: string;
+  profileKycPendingDesc2: string;
+  profileKycRejectedTitle: string;
+  profileTryAgain: string;
+  profileKycStartTitle: string;
+  profileKycStartDesc: string;
+  profileKycStartNote: string;
+  profileKycStartSteps: string[];
+  profileKycStartBtn: string;
+  profileKycStepLabels: string[];
+  profileKycPhoneTitle: string;
+  profileKycPhoneDesc: string;
+  profileKycPhonePlaceholder: string;
+  profileSendOtp: string;
+  profileKycOtpTitle: string;
+  profileKycOtpSentTo: string;
+  profileKycOtpDemo: string;
+  profileVerifyOtp: string;
+  profileChangePhone: string;
+  profileKycDocTypeTitle: string;
+  profileKycDocTypeDesc: string;
+  profileDocTypeLabels: string[];
+  profileContinue: string;
+  profileKycReviewTitle: string;
+  profileKycReviewDesc: string;
+  profileRetakeFront: string;
+  profileRetakeBack: string;
+  profileContinueToSelfie: string;
+  profileCaptureFrontTitle: string;
+  profileCaptureBackTitle: string;
+  profilePositionFrontDesc: string;
+  profilePositionBackDesc: string;
+  profileStepXOf2: string;
+  profileCamError: string;
+  profileCaptured: string;
+  profileFitDocument: string;
+  profileUseThisPhotoContinue: string;
+  profileUseThisPhoto: string;
+  profileRetakePhoto: string;
+  profileCapturePhoto: string;
+  profileKycSelfieTitle: string;
+  profileKycSelfieDesc: string;
+  profilePositionFace: string;
+  profileSubmitting: string;
+  profileSubmitVerification: string;
 };
 
 const T: Record<Lang, Translations> = {
@@ -251,6 +367,121 @@ const T: Record<Lang, Translations> = {
     balance: "Balance",
     myProfile: "My Profile",
     deposit: "Deposit",
+
+    profileHome: "Home",
+    profileVerified: "Verified",
+    profileTabProfile: "Profile",
+    profileTabWallet: "Wallet",
+    profileTabWithdraw: "Withdraw",
+    profileTabSettings: "Settings",
+    profileTabKyc: "KYC",
+    profileDepositModalTitle: "Complete Your Deposit",
+    profileSendMoneyTo: "Send Money To",
+    profileCopy: "Copy",
+    profileCopied: "Copied!",
+    profileSendInstructions: "Send ৳{amount} to the {method} number above, then enter the Transaction ID (TrxID) you received below to confirm your deposit.",
+    profileTrxIdLabel: "Transaction ID",
+    profileTrxIdPlaceholder: "e.g. 8N7QK3PLXD",
+    profileConfirmDeposit: "Confirm Deposit",
+    profileRequestSubmittedTitle: "Request Submitted",
+    profileRequestSubmittedDesc: "Your deposit of ৳{amount} is pending verification. This usually takes a few minutes.",
+    profileDone: "Done",
+    profileDepositBubble: "Deposit ৳{amount}",
+    profileDepositSubmittedShort: "Deposit submitted",
+    profileAccountDetails: "Account Details",
+    profileLabelFullName: "Full Name",
+    profileLabelPhone: "Phone Number",
+    profileLabelAccountId: "Account ID",
+    profileLabelMemberSince: "Member Since",
+    profileLabelAccountLevel: "Account Level",
+    profileLabelStatus: "Status",
+    profileValueStandardPlayer: "Standard Player",
+    profileActive: "Active",
+    profileAvailableToPlay: "Available to play",
+    profileRecentTransactions: "Recent Transactions",
+    profileStatusCompleted: "completed",
+    profileStatusPending: "pending",
+    profileMakeDeposit: "Make a Deposit",
+    profilePaymentMethod: "Payment Method",
+    profileQuickAmount: "Quick Amount",
+    profileCustomAmount: "Custom Amount",
+    profileEnterAmountPlaceholder: "Enter amount",
+    profileNow: "Now",
+    profileErrSelectAmount: "Please select or enter an amount first.",
+    profileDepositFootnote: "Minimum ৳100 · SSL encrypted · Instant processing",
+    profileWithdrawFunds: "Withdraw Funds",
+    profileWithdrawMethod: "Withdraw Method",
+    profileWithdrawFootnote: "Minimum ৳100 · KYC required · Processed within 24 hours",
+    profileUpdatePasswordTitle: "Update Password",
+    profileUpdatePasswordDesc: "Change the password you use to log in to your account.",
+    profileCurrentPasswordLabel: "Current Password",
+    profileCurrentPasswordPlaceholder: "Enter current password",
+    profileNewPasswordLabel: "New Password",
+    profileNewPasswordPlaceholder: "At least 6 characters",
+    profileConfirmPasswordLabel: "Confirm New Password",
+    profileConfirmPasswordPlaceholder: "Re-enter new password",
+    profileErrEnterCurrentPwd: "Enter your current password.",
+    profileErrNewPwdLength: "New password must be at least 6 characters.",
+    profileErrPwdMismatch: "New passwords do not match.",
+    profilePwdUpdateSuccess: "Password updated successfully.",
+    profileErrGeneric: "Something went wrong. Please try again.",
+    profileUpdatePasswordBtn: "Update Password",
+    profileUpdatingBtn: "Updating...",
+    profileShareEarnTitle: "Share & Earn",
+    profileShareEarnDesc: "Invite friends with your referral code and earn rewards when they join.",
+    profileReferralCodeLabel: "Your Referral Code",
+    profileReferralLinkLabel: "Your Referral Link",
+    profileCopyLink: "Copy Link",
+    profileKycLoading: "Loading verification status…",
+    profileKycVerifiedTitle: "You Are Verified!",
+    profileKycVerifiedDesc: "Your identity has been successfully verified. You have full access to all features.",
+    profileKycChecklist: ["Phone Verified", "ID Verified", "Address Verified", "Selfie Verified"],
+    profileKycPendingTitle: "Verification Under Review",
+    profileKycPendingDesc1: "We've received your {doc} and selfie.",
+    profileKycPendingDesc2: "Our team typically reviews submissions within 24 hours. You'll see the result here.",
+    profileKycRejectedTitle: "Verification Rejected",
+    profileTryAgain: "Try Again",
+    profileKycStartTitle: "Identity Verification",
+    profileKycStartDesc: "Verify your identity to unlock withdrawals and higher betting limits.",
+    profileKycStartNote: "Takes about 3 minutes · Your data is encrypted and secure",
+    profileKycStartSteps: ["Phone number verification", "Government-issued ID upload", "Address proof upload", "Face selfie with ID"],
+    profileKycStartBtn: "Start Verification",
+    profileKycStepLabels: ["Phone", "OTP", "Document", "Upload", "Selfie"],
+    profileKycPhoneTitle: "Verify Phone Number",
+    profileKycPhoneDesc: "Enter the phone number linked to your account.",
+    profileKycPhonePlaceholder: "Enter phone number",
+    profileSendOtp: "Send OTP",
+    profileKycOtpTitle: "Enter OTP",
+    profileKycOtpSentTo: "A 6-digit code was sent to",
+    profileKycOtpDemo: "(Demo: any 6 digits accepted)",
+    profileVerifyOtp: "Verify OTP",
+    profileChangePhone: "← Change phone number",
+    profileKycDocTypeTitle: "Choose Document Type",
+    profileKycDocTypeDesc: "Select the document you will upload for identity verification.",
+    profileDocTypeLabels: ["National ID", "Passport", "Driver's License"],
+    profileContinue: "Continue",
+    profileKycReviewTitle: "Review Your Document",
+    profileKycReviewDesc: "Both sides of your {doc} look good? Continue, or retake either side.",
+    profileRetakeFront: "Retake front",
+    profileRetakeBack: "Retake back",
+    profileContinueToSelfie: "Continue to Selfie",
+    profileCaptureFrontTitle: "Capture Front Side",
+    profileCaptureBackTitle: "Capture Back Side",
+    profilePositionFrontDesc: "Position the front of your {doc} inside the frame.",
+    profilePositionBackDesc: "Position the back of your {doc} inside the frame.",
+    profileStepXOf2: "Step {n} of 2",
+    profileCamError: "Camera permission denied. Please allow camera access in your browser.",
+    profileCaptured: "Captured",
+    profileFitDocument: "Fit the document inside the frame",
+    profileUseThisPhotoContinue: "Use This Photo — Continue to Back",
+    profileUseThisPhoto: "Use This Photo",
+    profileRetakePhoto: "Retake photo",
+    profileCapturePhoto: "Capture Photo",
+    profileKycSelfieTitle: "Take a Selfie",
+    profileKycSelfieDesc: "Hold your {doc} next to your face and look at the camera.",
+    profilePositionFace: "Position your face inside the oval",
+    profileSubmitting: "Submitting…",
+    profileSubmitVerification: "Submit Verification",
   },
 
   bn: {
@@ -384,6 +615,121 @@ const T: Record<Lang, Translations> = {
     balance: "ব্যালেন্স",
     myProfile: "আমার প্রোফাইল",
     deposit: "ডিপোজিট",
+
+    profileHome: "হোম",
+    profileVerified: "ভেরিফাইড",
+    profileTabProfile: "প্রোফাইল",
+    profileTabWallet: "ওয়ালেট",
+    profileTabWithdraw: "উইথড্র",
+    profileTabSettings: "সেটিংস",
+    profileTabKyc: "কেওয়াইসি",
+    profileDepositModalTitle: "আপনার ডিপোজিট সম্পন্ন করুন",
+    profileSendMoneyTo: "টাকা পাঠান এখানে",
+    profileCopy: "কপি",
+    profileCopied: "কপি হয়েছে!",
+    profileSendInstructions: "উপরের {method} নম্বরে ৳{amount} পাঠান, তারপর আপনার ডিপোজিট নিশ্চিত করতে নিচে ট্রানজেকশন আইডি (TrxID) লিখুন।",
+    profileTrxIdLabel: "ট্রানজেকশন আইডি",
+    profileTrxIdPlaceholder: "যেমন: 8N7QK3PLXD",
+    profileConfirmDeposit: "ডিপোজিট নিশ্চিত করুন",
+    profileRequestSubmittedTitle: "অনুরোধ জমা হয়েছে",
+    profileRequestSubmittedDesc: "আপনার ৳{amount} ডিপোজিট যাচাইয়ের অপেক্ষায় আছে। সাধারণত এতে কয়েক মিনিট সময় লাগে।",
+    profileDone: "সম্পন্ন",
+    profileDepositBubble: "ডিপোজিট ৳{amount}",
+    profileDepositSubmittedShort: "ডিপোজিট জমা হয়েছে",
+    profileAccountDetails: "অ্যাকাউন্ট বিবরণ",
+    profileLabelFullName: "পুরো নাম",
+    profileLabelPhone: "ফোন নম্বর",
+    profileLabelAccountId: "অ্যাকাউন্ট আইডি",
+    profileLabelMemberSince: "সদস্য হয়েছেন",
+    profileLabelAccountLevel: "অ্যাকাউন্ট লেভেল",
+    profileLabelStatus: "স্ট্যাটাস",
+    profileValueStandardPlayer: "স্ট্যান্ডার্ড প্লেয়ার",
+    profileActive: "সক্রিয়",
+    profileAvailableToPlay: "খেলার জন্য উপলব্ধ",
+    profileRecentTransactions: "সাম্প্রতিক লেনদেন",
+    profileStatusCompleted: "সম্পন্ন",
+    profileStatusPending: "অপেক্ষমান",
+    profileMakeDeposit: "ডিপোজিট করুন",
+    profilePaymentMethod: "পেমেন্ট পদ্ধতি",
+    profileQuickAmount: "দ্রুত পরিমাণ",
+    profileCustomAmount: "নিজের পরিমাণ",
+    profileEnterAmountPlaceholder: "পরিমাণ লিখুন",
+    profileNow: "এখন",
+    profileErrSelectAmount: "প্রথমে একটি পরিমাণ নির্বাচন করুন বা লিখুন।",
+    profileDepositFootnote: "সর্বনিম্ন ৳১০০ · SSL এনক্রিপ্টেড · তাৎক্ষণিক প্রসেসিং",
+    profileWithdrawFunds: "টাকা উইথড্র করুন",
+    profileWithdrawMethod: "উইথড্র পদ্ধতি",
+    profileWithdrawFootnote: "সর্বনিম্ন ৳১০০ · কেওয়াইসি প্রয়োজন · ২৪ ঘণ্টার মধ্যে প্রসেস হবে",
+    profileUpdatePasswordTitle: "পাসওয়ার্ড আপডেট করুন",
+    profileUpdatePasswordDesc: "আপনার অ্যাকাউন্টে লগইন করার পাসওয়ার্ড পরিবর্তন করুন।",
+    profileCurrentPasswordLabel: "বর্তমান পাসওয়ার্ড",
+    profileCurrentPasswordPlaceholder: "বর্তমান পাসওয়ার্ড লিখুন",
+    profileNewPasswordLabel: "নতুন পাসওয়ার্ড",
+    profileNewPasswordPlaceholder: "কমপক্ষে ৬ অক্ষর",
+    profileConfirmPasswordLabel: "নতুন পাসওয়ার্ড নিশ্চিত করুন",
+    profileConfirmPasswordPlaceholder: "নতুন পাসওয়ার্ড আবার লিখুন",
+    profileErrEnterCurrentPwd: "আপনার বর্তমান পাসওয়ার্ড লিখুন।",
+    profileErrNewPwdLength: "নতুন পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে।",
+    profileErrPwdMismatch: "নতুন পাসওয়ার্ড দুটি মিলছে না।",
+    profilePwdUpdateSuccess: "পাসওয়ার্ড সফলভাবে আপডেট হয়েছে।",
+    profileErrGeneric: "কিছু ভুল হয়েছে। আবার চেষ্টা করুন।",
+    profileUpdatePasswordBtn: "পাসওয়ার্ড আপডেট করুন",
+    profileUpdatingBtn: "আপডেট হচ্ছে...",
+    profileShareEarnTitle: "শেয়ার করুন ও আয় করুন",
+    profileShareEarnDesc: "আপনার রেফারেল কোড দিয়ে বন্ধুদের আমন্ত্রণ জানান এবং তারা যোগ দিলে পুরস্কার পান।",
+    profileReferralCodeLabel: "আপনার রেফারেল কোড",
+    profileReferralLinkLabel: "আপনার রেফারেল লিংক",
+    profileCopyLink: "লিংক কপি করুন",
+    profileKycLoading: "ভেরিফিকেশন স্ট্যাটাস লোড হচ্ছে…",
+    profileKycVerifiedTitle: "আপনি ভেরিফাইড!",
+    profileKycVerifiedDesc: "আপনার পরিচয় সফলভাবে যাচাই করা হয়েছে। আপনি সব ফিচারে সম্পূর্ণ প্রবেশাধিকার পেয়েছেন।",
+    profileKycChecklist: ["ফোন ভেরিফাইড", "আইডি ভেরিফাইড", "ঠিকানা ভেরিফাইড", "সেলফি ভেরিফাইড"],
+    profileKycPendingTitle: "ভেরিফিকেশন পর্যালোচনাধীন",
+    profileKycPendingDesc1: "আমরা আপনার {doc} এবং সেলফি পেয়েছি।",
+    profileKycPendingDesc2: "আমাদের টিম সাধারণত ২৪ ঘণ্টার মধ্যে জমা পর্যালোচনা করে। ফলাফল এখানে দেখতে পাবেন।",
+    profileKycRejectedTitle: "ভেরিফিকেশন প্রত্যাখ্যাত",
+    profileTryAgain: "আবার চেষ্টা করুন",
+    profileKycStartTitle: "পরিচয় যাচাই",
+    profileKycStartDesc: "উইথড্র এবং উচ্চতর বেটিং লিমিট আনলক করতে আপনার পরিচয় যাচাই করুন।",
+    profileKycStartNote: "প্রায় ৩ মিনিট সময় লাগে · আপনার তথ্য এনক্রিপ্টেড ও নিরাপদ",
+    profileKycStartSteps: ["ফোন নম্বর যাচাই", "সরকার অনুমোদিত আইডি আপলোড", "ঠিকানার প্রমাণ আপলোড", "আইডিসহ সেলফি"],
+    profileKycStartBtn: "ভেরিফিকেশন শুরু করুন",
+    profileKycStepLabels: ["ফোন", "ওটিপি", "ডকুমেন্ট", "আপলোড", "সেলফি"],
+    profileKycPhoneTitle: "ফোন নম্বর যাচাই করুন",
+    profileKycPhoneDesc: "আপনার অ্যাকাউন্টের সাথে যুক্ত ফোন নম্বর লিখুন।",
+    profileKycPhonePlaceholder: "ফোন নম্বর লিখুন",
+    profileSendOtp: "ওটিপি পাঠান",
+    profileKycOtpTitle: "ওটিপি লিখুন",
+    profileKycOtpSentTo: "৬ সংখ্যার কোড পাঠানো হয়েছে",
+    profileKycOtpDemo: "(ডেমো: যেকোনো ৬ সংখ্যা গ্রহণযোগ্য)",
+    profileVerifyOtp: "ওটিপি যাচাই করুন",
+    profileChangePhone: "← ফোন নম্বর পরিবর্তন করুন",
+    profileKycDocTypeTitle: "ডকুমেন্টের ধরন নির্বাচন করুন",
+    profileKycDocTypeDesc: "পরিচয় যাচাইয়ের জন্য আপনি যে ডকুমেন্ট আপলোড করবেন তা নির্বাচন করুন।",
+    profileDocTypeLabels: ["জাতীয় পরিচয়পত্র", "পাসপোর্ট", "ড্রাইভিং লাইসেন্স"],
+    profileContinue: "চালিয়ে যান",
+    profileKycReviewTitle: "আপনার ডকুমেন্ট পর্যালোচনা করুন",
+    profileKycReviewDesc: "আপনার {doc}-এর দুই পাশই ঠিক আছে? চালিয়ে যান, অথবা যেকোনো পাশ আবার তুলুন।",
+    profileRetakeFront: "সামনের পাশ আবার তুলুন",
+    profileRetakeBack: "পেছনের পাশ আবার তুলুন",
+    profileContinueToSelfie: "সেলফিতে চালিয়ে যান",
+    profileCaptureFrontTitle: "সামনের পাশ ক্যাপচার করুন",
+    profileCaptureBackTitle: "পেছনের পাশ ক্যাপচার করুন",
+    profilePositionFrontDesc: "আপনার {doc}-এর সামনের পাশ ফ্রেমের ভেতরে রাখুন।",
+    profilePositionBackDesc: "আপনার {doc}-এর পেছনের পাশ ফ্রেমের ভেতরে রাখুন।",
+    profileStepXOf2: "ধাপ {n} / ২",
+    profileCamError: "ক্যামেরা অনুমতি প্রত্যাখ্যাত হয়েছে। আপনার ব্রাউজারে ক্যামেরা অ্যাক্সেসের অনুমতি দিন।",
+    profileCaptured: "ক্যাপচার হয়েছে",
+    profileFitDocument: "ডকুমেন্টটি ফ্রেমের ভেতরে রাখুন",
+    profileUseThisPhotoContinue: "এই ছবি ব্যবহার করুন — পেছনের পাশে যান",
+    profileUseThisPhoto: "এই ছবি ব্যবহার করুন",
+    profileRetakePhoto: "ছবি আবার তুলুন",
+    profileCapturePhoto: "ছবি ক্যাপচার করুন",
+    profileKycSelfieTitle: "একটি সেলফি তুলুন",
+    profileKycSelfieDesc: "আপনার {doc} মুখের পাশে ধরুন এবং ক্যামেরার দিকে তাকান।",
+    profilePositionFace: "আপনার মুখ ডিম্বাকৃতির ভেতরে রাখুন",
+    profileSubmitting: "জমা হচ্ছে…",
+    profileSubmitVerification: "ভেরিফিকেশন জমা দিন",
   },
 };
 
