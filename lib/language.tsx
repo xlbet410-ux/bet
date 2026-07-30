@@ -232,6 +232,17 @@ export type Translations = {
   profilePositionFace: string;
   profileSubmitting: string;
   profileSubmitVerification: string;
+
+  // game category labels (keyed by GameCategory from lib/games.ts)
+  categoryLabels: {
+    featured: string;
+    slots: string;
+    live_casino: string;
+    cards: string;
+    fishing: string;
+    mini_games: string;
+    sports: string;
+  };
 };
 
 const T: Record<Lang, Translations> = {
@@ -482,6 +493,16 @@ const T: Record<Lang, Translations> = {
     profilePositionFace: "Position your face inside the oval",
     profileSubmitting: "Submitting…",
     profileSubmitVerification: "Submit Verification",
+
+    categoryLabels: {
+      featured: "Featured",
+      slots: "Slots",
+      live_casino: "Live Casino",
+      cards: "Cards",
+      fishing: "Fishing",
+      mini_games: "Mini Games",
+      sports: "Sports",
+    },
   },
 
   bn: {
@@ -730,6 +751,16 @@ const T: Record<Lang, Translations> = {
     profilePositionFace: "আপনার মুখ ডিম্বাকৃতির ভেতরে রাখুন",
     profileSubmitting: "জমা হচ্ছে…",
     profileSubmitVerification: "ভেরিফিকেশন জমা দিন",
+
+    categoryLabels: {
+      featured: "সেরা",
+      slots: "স্লট",
+      live_casino: "লাইভ",
+      cards: "তাস",
+      fishing: "মাছ ধরা",
+      mini_games: "মিনি গেমস",
+      sports: "খেলাধুলা",
+    },
   },
 };
 

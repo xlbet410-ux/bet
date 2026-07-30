@@ -36,6 +36,7 @@ function renderTitle(label: string, color: string) {
 export default function GameCategorySection({
   category,
   label,
+  icon,
   eyebrow,
   favorites,
   onToggleFavorite,
@@ -44,6 +45,7 @@ export default function GameCategorySection({
 }: {
   category: GameCategory;
   label: string;
+  icon: string;
   eyebrow: string;
   favorites: Set<string>;
   onToggleFavorite: (name: string) => void;
@@ -120,7 +122,7 @@ export default function GameCategorySection({
         <div className="mx-auto max-w-6xl">
           <SectionHeading
             eyebrow={eyebrow}
-            title={renderTitle(label, accent.to)}
+            title={<>{icon} {renderTitle(label, accent.to)}</>}
             barFrom={accent.from}
             barTo={accent.to}
           />

@@ -6,7 +6,7 @@ import {
   getCatalogCounts,
   launchGame,
   CATEGORY_ORDER,
-  CATEGORY_LABELS,
+  CATEGORY_ICONS,
   type GameCategory,
 } from "@/lib/games";
 import { useAuth } from "@/lib/auth";
@@ -127,7 +127,8 @@ export default function LiveGames({ onOpenAuth }: { onOpenAuth: (mode: "login" |
         <GameCategorySection
           key={c}
           category={c}
-          label={CATEGORY_LABELS[c]}
+          label={t.categoryLabels[c]}
+          icon={CATEGORY_ICONS[c]}
           eyebrow={t.recommend}
           favorites={favorites}
           onToggleFavorite={toggleFavorite}

@@ -2,50 +2,44 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
 const TOKEN_KEY = "2xlbet:token";
 
 export type GameCategory =
+  | "featured"
   | "slots"
-  | "live-games"
-  | "sports"
-  | "esports"
-  | "mini-game"
-  | "fish-catch"
-  | "table-games"
-  | "arcade"
-  | "other";
+  | "live_casino"
+  | "cards"
+  | "fishing"
+  | "mini_games"
+  | "sports";
 
 export const CATEGORY_ORDER: GameCategory[] = [
+  "featured",
   "slots",
-  "live-games",
+  "live_casino",
+  "cards",
+  "fishing",
+  "mini_games",
   "sports",
-  "esports",
-  "mini-game",
-  "fish-catch",
-  "table-games",
-  "arcade",
-  "other",
 ];
 
-export const CATEGORY_LABELS: Record<GameCategory, string> = {
-  slots: "Slots",
-  "live-games": "Live Games",
-  sports: "Sports",
-  esports: "Esports",
-  "mini-game": "Mini Game",
-  "fish-catch": "Fish Catch",
-  "table-games": "Table Games",
-  arcade: "Arcade",
-  other: "Other",
+// Labels are localized (see lib/language.tsx `categoryLabels`) since the
+// site has a real EN/BN toggle — these icons are language-agnostic.
+export const CATEGORY_ICONS: Record<GameCategory, string> = {
+  featured: "🔥",
+  slots: "🎰",
+  live_casino: "💃",
+  cards: "🃏",
+  fishing: "🐟",
+  mini_games: "🚀",
+  sports: "🏏",
 };
 
 export const CATEGORY_ACCENT: Record<GameCategory, { from: string; to: string }> = {
+  featured: { from: "#DC2626", to: "#F97316" },
   slots: { from: "#D4AF37", to: "#F5C842" },
-  "live-games": { from: "#0F9D58", to: "#34D399" },
+  live_casino: { from: "#0F9D58", to: "#34D399" },
+  cards: { from: "#B91C1C", to: "#F87171" },
+  fishing: { from: "#0891B2", to: "#22D3EE" },
+  mini_games: { from: "#C41D7F", to: "#FF85C2" },
   sports: { from: "#1D4ED8", to: "#60A5FA" },
-  esports: { from: "#7B2FBE", to: "#C084FC" },
-  "mini-game": { from: "#C41D7F", to: "#FF85C2" },
-  "fish-catch": { from: "#0891B2", to: "#22D3EE" },
-  "table-games": { from: "#B91C1C", to: "#F87171" },
-  arcade: { from: "#C2410C", to: "#FB923C" },
-  other: { from: "#6B21A8", to: "#A78BFA" },
 };
 
 export type CatalogGame = {
@@ -54,6 +48,7 @@ export type CatalogGame = {
   providerCode: string;
   providerName: string;
   category: GameCategory;
+  featured: boolean;
   thumbnail: string;
   original: string;
 };
