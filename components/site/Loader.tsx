@@ -20,11 +20,13 @@ export default function Loader({ done }: { done: boolean }) {
       <div className="absolute h-64 w-64 animate-[pulseGlow_2s_ease-in-out_infinite] rounded-full blur-3xl"
         style={{ background: "radial-gradient(circle, #9B30FF55 0%, transparent 70%)" }} />
 
-      {/* logo — entrance via logoReveal keyframe */}
+      {/* logo — entrance via logoReveal, then a continuous zoom in/out pulse via breathe */}
       <div
         className="relative z-10"
         style={{
-          animation: "logoReveal 1s cubic-bezier(0.34, 1.36, 0.64, 1) 0.15s both",
+          animation:
+            "logoReveal 1s cubic-bezier(0.34, 1.36, 0.64, 1) 0.15s both, " +
+            "breathe 2.4s ease-in-out 1.15s infinite",
           filter: "drop-shadow(0 0 48px #9B30FFaa) drop-shadow(0 0 20px #D4AF3755)",
         }}
       >
