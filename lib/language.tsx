@@ -243,6 +243,11 @@ export type Translations = {
     mini_games: string;
     sports: string;
   };
+
+  // sub-tag filter chips (only within Slots today — see lib/games.ts SUB_TAGS)
+  subTagAll: string;
+  subTagMegaways: string;
+  subTagJackpot: string;
 };
 
 const T: Record<Lang, Translations> = {
@@ -503,6 +508,10 @@ const T: Record<Lang, Translations> = {
       mini_games: "Mini Games",
       sports: "Sports",
     },
+
+    subTagAll: "All",
+    subTagMegaways: "Megaways",
+    subTagJackpot: "Jackpot",
   },
 
   bn: {
@@ -761,6 +770,10 @@ const T: Record<Lang, Translations> = {
       mini_games: "মিনি গেমস",
       sports: "খেলাধুলা",
     },
+
+    subTagAll: "সব",
+    subTagMegaways: "মেগাওয়েজ",
+    subTagJackpot: "জ্যাকপট",
   },
 };
 

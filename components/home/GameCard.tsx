@@ -35,11 +35,11 @@ export default function GameCard({
   return (
     <div
       onClick={onPlay}
-      className={`group relative select-none overflow-hidden transition-all duration-300 hover:-translate-y-2 ${
+      className={`group relative select-none overflow-hidden rounded-lg transition-all duration-300 hover:-translate-y-1 ${
         onPlay ? "cursor-pointer" : "cursor-default"
-      } ${featured ? "rounded-2xl" : "rounded-xl"}`}
+      }`}
       style={{
-        boxShadow: "0 4px 24px rgba(0,0,0,0.65)",
+        boxShadow: "0 4px 16px rgba(0,0,0,0.5)",
         background: "#0f0720",
       }}
     >
@@ -50,36 +50,25 @@ export default function GameCard({
       />
 
       {/* portrait image container */}
-      <div className={`relative w-full overflow-hidden ${featured ? "aspect-[2/3]" : "aspect-[3/4]"}`}>
+      <div className={`relative w-full overflow-hidden ${featured ? "aspect-[2/3]" : "aspect-square"}`}>
         <Image
           src={game.img}
           alt={game.name}
           fill
           unoptimized={game.img.startsWith('http')}
-          sizes={featured ? "300px" : "180px"}
+          sizes={featured ? "300px" : "160px"}
           className="object-cover transition-transform duration-700 will-change-transform group-hover:scale-110"
         />
 
-        {/* gradient: dark at top + strong dark at bottom for text legibility */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/25 to-black/15" />
+        {/* provider badge – top left */}
+        <span className="absolute left-1.5 top-1.5 z-10 max-w-[70%] truncate rounded bg-black/60 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wide text-white backdrop-blur-sm">
+          {game.provider}
+        </span>
 
-        {/* shine sweep on hover */}
-        <div
-          className="pointer-events-none absolute inset-0 z-10 opacity-0 transition-all duration-700 group-hover:opacity-100"
-          style={{
-            background:
-              "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.09) 50%, transparent 60%)",
-            animation: "none",
-          }}
-          onMouseEnter={(e) => {
-            (e.currentTarget as HTMLElement).style.animation = "shimmer 0.7s ease forwards";
-          }}
-        />
-
-        {/* tag badge – top left */}
+        {/* optional promo tag – stacks under the provider badge when present */}
         {tag && (
           <span
-            className={`absolute left-2 top-2 z-10 inline-flex items-center gap-1 rounded-full bg-gradient-to-r ${tag.from} ${tag.to} px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-white`}
+            className={`absolute left-1.5 top-7 z-10 inline-flex items-center gap-1 rounded-full bg-gradient-to-r ${tag.from} ${tag.to} px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-white`}
             style={{ boxShadow: `0 0 10px ${tag.glow}70` }}
           >
             {tag.pulse && (
@@ -94,7 +83,7 @@ export default function GameCard({
           onClick={(e) => { e.stopPropagation(); onToggleFavorite(); }}
           aria-label={favorited ? "Remove from favorites" : "Add to favorites"}
           aria-pressed={favorited}
-          className="absolute right-2 top-2 z-10 flex h-7 w-7 items-center justify-center rounded-full border border-white/20 bg-black/55 text-xs backdrop-blur-sm transition-all hover:scale-110 hover:border-[#F5C842]/60"
+          className="absolute right-1.5 top-1.5 z-10 flex h-7 w-7 items-center justify-center rounded-full border border-white/20 bg-black/55 text-xs backdrop-blur-sm transition-all hover:scale-110 hover:border-[#F5C842]/60"
         >
           {favorited ? (
             <FaHeart
@@ -106,6 +95,19 @@ export default function GameCard({
           )}
         </button>
 
+        {/* shine sweep on hover */}
+        <div
+          className="pointer-events-none absolute inset-0 z-10 opacity-0 transition-all duration-700 group-hover:opacity-100"
+          style={{
+            background:
+              "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.09) 50%, transparent 60%)",
+            animation: "none",
+          }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLElement).style.animation = "shimmer 0.7s ease forwards";
+          }}
+        />
+
         {/* gold play button – center, appears on hover (or always, while launching) */}
         <div
           className={`absolute inset-0 z-10 flex items-center justify-center transition-all duration-300 ${
@@ -113,7 +115,7 @@ export default function GameCard({
           }`}
         >
           <div
-            className="flex h-12 w-12 items-center justify-center rounded-full transition-transform duration-300 group-hover:scale-110"
+            className="flex h-11 w-11 items-center justify-center rounded-full transition-transform duration-300 group-hover:scale-110"
             style={{
               background: "radial-gradient(circle at 40% 35%, #fde68a, #D4AF37)",
               boxShadow: "0 0 0 5px rgba(212,175,55,0.18), 0 0 32px rgba(212,175,55,0.55)",
@@ -126,21 +128,16 @@ export default function GameCard({
             )}
           </div>
         </div>
-
-        {/* bottom info overlay */}
-        <div className="absolute inset-x-0 bottom-0 z-10 p-2.5">
-          <span className="mb-1 inline-block rounded-md bg-black/55 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wide text-[#F5C842] backdrop-blur-sm">
-            {game.provider}
-          </span>
-          <p
-            className={`truncate font-bold leading-tight text-white ${
-              featured ? "text-base" : "text-xs"
-            }`}
-          >
-            {game.name}
-          </p>
-        </div>
       </div>
+
+      {/* game name – plain row below the image, not overlaid */}
+      <p
+        className={`truncate px-2 py-2 text-center font-bold leading-tight text-white ${
+          featured ? "text-sm" : "text-xs"
+        }`}
+      >
+        {game.name}
+      </p>
     </div>
   );
 }

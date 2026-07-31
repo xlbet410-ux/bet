@@ -42,6 +42,12 @@ export const CATEGORY_ACCENT: Record<GameCategory, { from: string; to: string }>
   sports: { from: "#1D4ED8", to: "#60A5FA" },
 };
 
+// Real, verifiable sub-tags only — a game only gets one when its own name
+// contains the word. There's no Oracle data for reel count, Megaways/Bonus
+// Buy mechanics, or feature flags, so this list stays intentionally small.
+export type SubTag = "megaways" | "jackpot";
+export const SUB_TAGS: SubTag[] = ["megaways", "jackpot"];
+
 export type CatalogGame = {
   name: string;
   gameUid: string;
@@ -49,6 +55,7 @@ export type CatalogGame = {
   providerName: string;
   category: GameCategory;
   featured: boolean;
+  subTags: SubTag[];
   thumbnail: string;
   original: string;
 };
@@ -59,14 +66,30 @@ export async function getCatalogCounts(): Promise<Record<GameCategory, number>> 
   return res.json();
 }
 
+export async function getSubTagCounts(category: GameCategory): Promise<Record<SubTag, number>> {
+  const params = new URLSearchParams({ category });
+  const res = await fetch(`${API_URL}/games/catalog/subtags?${params}`, { cache: "no-store" });
+  if (!res.ok) throw new Error(`Failed to load sub-tag counts (${res.status})`);
+  return res.json();
+}
+
 export async function getCatalogPage(
   category: GameCategory,
   page: number,
-  pageSize: number
+  pageSize: number,
+  tag?: SubTag
 ): Promise<{ games: CatalogGame[]; total: number }> {
   const params = new URLSearchParams({ category, page: String(page), pageSize: String(pageSize) });
+  if (tag) params.set("tag", tag);
   const res = await fetch(`${API_URL}/games/catalog?${params}`, { cache: "no-store" });
   if (!res.ok) throw new Error(`Failed to load games (${res.status})`);
+  return res.json();
+}
+
+export async function searchCatalog(q: string): Promise<{ games: CatalogGame[]; total: number }> {
+  const params = new URLSearchParams({ q });
+  const res = await fetch(`${API_URL}/games/catalog/search?${params}`, { cache: "no-store" });
+  if (!res.ok) throw new Error(`Search failed (${res.status})`);
   return res.json();
 }
 

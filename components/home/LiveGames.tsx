@@ -1,7 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import GameCategorySection from "./GameCategorySection";
+import GameCard from "./GameCard";
+import GamesToolbar from "./GamesToolbar";
+import type { GameItem } from "@/lib/data";
 import {
   getCatalogCounts,
   launchGame,
@@ -23,7 +26,11 @@ export default function LiveGames({ onOpenAuth }: { onOpenAuth: (mode: "login" |
 
   const [launchingUid, setLaunchingUid] = useState<string | null>(null);
   const [error, setError] = useState("");
-  const [favorites, setFavorites] = useState<Set<string>>(new Set());
+  const [favorites, setFavorites] = useState<Map<string, GameItem>>(new Map());
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+
+  const topRef = useRef<HTMLDivElement>(null);
+  const featuredRef = useRef<HTMLDivElement>(null);
 
   // The catalog API can be briefly unready right after a fresh page load
   // (cold backend, slow first connection). Retry a few times with backoff
@@ -60,10 +67,10 @@ export default function LiveGames({ onOpenAuth }: { onOpenAuth: (mode: "login" |
     };
   }, [countsRetryKey]);
 
-  const toggleFavorite = (name: string) =>
+  const toggleFavorite = (game: GameItem) =>
     setFavorites((prev) => {
-      const next = new Set(prev);
-      if (next.has(name)) next.delete(name); else next.add(name);
+      const next = new Map(prev);
+      if (next.has(game.name)) next.delete(game.name); else next.set(game.name, game);
       return next;
     });
 
@@ -115,27 +122,74 @@ export default function LiveGames({ onOpenAuth }: { onOpenAuth: (mode: "login" |
   // Genuinely no games in the whole catalog (successful fetch, every category empty).
   if (!counts || Object.values(counts).every((n) => n === 0)) return null;
 
+  const favoritesList = [...favorites.values()];
+
   return (
-    <>
+    <div ref={topRef}>
+      <GamesToolbar
+        hasFeatured={counts.featured > 0}
+        favoritesCount={favorites.size}
+        showingFavorites={showFavoritesOnly}
+        onToggleFavoritesView={() => setShowFavoritesOnly((v) => !v)}
+        onJumpToAll={() => {
+          setShowFavoritesOnly(false);
+          topRef.current?.scrollIntoView({ behavior: "smooth" });
+        }}
+        onJumpToFeatured={() => {
+          setShowFavoritesOnly(false);
+          featuredRef.current?.scrollIntoView({ behavior: "smooth" });
+        }}
+        onPlay={handlePlay}
+      />
+
       {error && (
-        <p className="mx-auto mb-4 max-w-6xl rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-2.5 text-center text-sm text-red-300">
+        <p className="mx-auto mb-4 mt-4 max-w-6xl rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-2.5 text-center text-sm text-red-300">
           {error}
         </p>
       )}
 
-      {CATEGORY_ORDER.filter((c) => counts[c] > 0).map((c) => (
-        <GameCategorySection
-          key={c}
-          category={c}
-          label={t.categoryLabels[c]}
-          icon={CATEGORY_ICONS[c]}
-          eyebrow={t.recommend}
-          favorites={favorites}
-          onToggleFavorite={toggleFavorite}
-          launchingUid={launchingUid}
-          onPlay={handlePlay}
-        />
-      ))}
-    </>
+      {showFavoritesOnly ? (
+        <section className="relative z-10 px-5 py-10">
+          <div className="mx-auto max-w-6xl">
+            <h2 className="mb-6 text-2xl font-extrabold tracking-tight md:text-3xl">
+              {t.subTagAll === "সব" ? "প্রিয় গেমস" : "Favorites"}
+            </h2>
+            {favoritesList.length === 0 ? (
+              <p className="py-10 text-center text-sm text-[#7B5EA7]">
+                {t.subTagAll === "সব" ? "আপনার এখনো কোনো প্রিয় গেম নেই।" : "You haven't favorited any games yet."}
+              </p>
+            ) : (
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+                {favoritesList.map((g) => (
+                  <GameCard
+                    key={g.gameUid}
+                    game={g}
+                    favorited
+                    onToggleFavorite={() => toggleFavorite(g)}
+                    onPlay={() => g.gameUid && handlePlay(g.gameUid)}
+                    loading={launchingUid === g.gameUid}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+      ) : (
+        CATEGORY_ORDER.filter((c) => counts[c] > 0).map((c) => (
+          <div key={c} ref={c === "featured" ? featuredRef : undefined}>
+            <GameCategorySection
+              category={c}
+              label={t.categoryLabels[c]}
+              icon={CATEGORY_ICONS[c]}
+              eyebrow={t.recommend}
+              favorites={favorites}
+              onToggleFavorite={toggleFavorite}
+              launchingUid={launchingUid}
+              onPlay={handlePlay}
+            />
+          </div>
+        ))
+      )}
+    </div>
   );
 }

@@ -5,7 +5,15 @@ import SectionHeading from "@/components/ui/SectionHeading";
 import Reveal from "@/components/ui/Reveal";
 import GameCard from "./GameCard";
 import type { GameItem } from "@/lib/data";
-import { getCatalogPage, CATEGORY_ACCENT, type GameCategory } from "@/lib/games";
+import { useLang } from "@/lib/language";
+import {
+  getCatalogPage,
+  getSubTagCounts,
+  CATEGORY_ACCENT,
+  SUB_TAGS,
+  type GameCategory,
+  type SubTag,
+} from "@/lib/games";
 
 const GAMES_PAGE_SIZE = 18;
 
@@ -47,11 +55,13 @@ export default function GameCategorySection({
   label: string;
   icon: string;
   eyebrow: string;
-  favorites: Set<string>;
-  onToggleFavorite: (name: string) => void;
+  favorites: Map<string, GameItem>;
+  onToggleFavorite: (game: GameItem) => void;
   launchingUid: string | null;
   onPlay: (gameUid: string) => void;
 }) {
+  const { t } = useLang();
+
   const [games, setGames] = useState<GameItem[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -59,6 +69,27 @@ export default function GameCategorySection({
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState(false);
   const [retryKey, setRetryKey] = useState(0);
+
+  // Sub-tag filter chips only exist for Slots today — Megaways/Jackpot are
+  // the only tags with any real signal (see lib/games.ts SUB_TAGS). Other
+  // categories simply never fetch or show this row.
+  const [subTagCounts, setSubTagCounts] = useState<Record<SubTag, number> | null>(null);
+  const [activeTag, setActiveTag] = useState<SubTag | undefined>(undefined);
+
+  useEffect(() => {
+    if (category !== "slots") return;
+    let cancelled = false;
+    getSubTagCounts(category)
+      .then((counts) => {
+        if (!cancelled) setSubTagCounts(counts);
+      })
+      .catch(() => {
+        // Non-critical — the chip row just doesn't render if this fails.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [category]);
 
   useEffect(() => {
     let cancelled = false;
@@ -70,7 +101,7 @@ export default function GameCategorySection({
       const maxAttempts = 3;
       for (let attempt = 1; attempt <= maxAttempts; attempt++) {
         try {
-          const { games: list, total: t } = await getCatalogPage(category, 1, GAMES_PAGE_SIZE);
+          const { games: list, total: t } = await getCatalogPage(category, 1, GAMES_PAGE_SIZE, activeTag);
           if (!cancelled) {
             setGames(list.map(toGameItem));
             setTotal(t);
@@ -94,14 +125,14 @@ export default function GameCategorySection({
     return () => {
       cancelled = true;
     };
-  }, [category, retryKey]);
+  }, [category, activeTag, retryKey]);
 
   async function loadMore() {
     if (loadingMore) return;
     setLoadingMore(true);
     const nextPage = page + 1;
     try {
-      const { games: list } = await getCatalogPage(category, nextPage, GAMES_PAGE_SIZE);
+      const { games: list } = await getCatalogPage(category, nextPage, GAMES_PAGE_SIZE, activeTag);
       setGames((prev) => [...prev, ...list.map(toGameItem)]);
       setPage(nextPage);
     } catch {
@@ -112,9 +143,11 @@ export default function GameCategorySection({
   }
 
   // Nothing in this category and nothing to recover from — don't show an empty section.
-  if (!loading && !error && games.length === 0) return null;
+  if (!loading && !error && games.length === 0 && !activeTag) return null;
 
   const accent = CATEGORY_ACCENT[category];
+  const subTagLabels: Record<SubTag, string> = { megaways: t.subTagMegaways, jackpot: t.subTagJackpot };
+  const showSubTags = category === "slots" && subTagCounts && SUB_TAGS.some((tag) => subTagCounts[tag] > 0);
 
   return (
     <Reveal>
@@ -126,6 +159,34 @@ export default function GameCategorySection({
             barFrom={accent.from}
             barTo={accent.to}
           />
+
+          {showSubTags && (
+            <div className="mb-4 flex flex-wrap gap-2">
+              <button
+                onClick={() => setActiveTag(undefined)}
+                className={`rounded-full px-4 py-1.5 text-xs font-bold transition-all ${
+                  !activeTag
+                    ? "bg-gradient-to-r from-[#D4AF37] to-[#F5C842] text-[#0A0612]"
+                    : "border border-white/10 text-[#9B8EC4] hover:border-[#7B2FBE]/60 hover:text-white"
+                }`}
+              >
+                {t.subTagAll}
+              </button>
+              {SUB_TAGS.filter((tag) => subTagCounts![tag] > 0).map((tag) => (
+                <button
+                  key={tag}
+                  onClick={() => setActiveTag(tag)}
+                  className={`rounded-full px-4 py-1.5 text-xs font-bold transition-all ${
+                    activeTag === tag
+                      ? "bg-gradient-to-r from-[#D4AF37] to-[#F5C842] text-[#0A0612]"
+                      : "border border-white/10 text-[#9B8EC4] hover:border-[#7B2FBE]/60 hover:text-white"
+                  }`}
+                >
+                  {subTagLabels[tag]} <span className="opacity-70">({subTagCounts![tag]})</span>
+                </button>
+              ))}
+            </div>
+          )}
 
           {loading ? (
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
@@ -143,6 +204,8 @@ export default function GameCategorySection({
                 Retry
               </button>
             </div>
+          ) : games.length === 0 ? (
+            <p className="py-10 text-center text-sm text-[#7B5EA7]">No games match this filter right now.</p>
           ) : (
             <>
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
@@ -151,24 +214,30 @@ export default function GameCategorySection({
                     key={g.gameUid}
                     game={g}
                     favorited={favorites.has(g.name)}
-                    onToggleFavorite={() => onToggleFavorite(g.name)}
+                    onToggleFavorite={() => onToggleFavorite(g)}
                     onPlay={() => g.gameUid && onPlay(g.gameUid)}
                     loading={launchingUid === g.gameUid}
                   />
                 ))}
-              </div>
 
-              {games.length < total && (
-                <div className="mt-6 flex justify-center">
+                {games.length < total && (
                   <button
                     onClick={loadMore}
                     disabled={loadingMore}
-                    className="rounded-full border border-[#D4AF37]/60 px-6 py-2.5 text-sm font-bold text-[#F5C842] transition-colors hover:bg-[#D4AF37]/10 disabled:opacity-50"
+                    aria-label="Load more games"
+                    className="flex aspect-square flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[#D4AF37]/40 text-[#F5C842] transition-colors hover:border-[#D4AF37] hover:bg-[#D4AF37]/5 disabled:opacity-50"
                   >
-                    {loadingMore ? "Loading…" : `Load More (${total - games.length} more)`}
+                    {loadingMore ? (
+                      <span className="h-5 w-5 animate-spin rounded-full border-2 border-[#D4AF37]/30 border-t-[#F5C842]" />
+                    ) : (
+                      <>
+                        <span className="text-lg tracking-widest">•••</span>
+                        <span className="text-xs font-bold uppercase tracking-wide">More</span>
+                      </>
+                    )}
                   </button>
-                </div>
-              )}
+                )}
+              </div>
             </>
           )}
         </div>
