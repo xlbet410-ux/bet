@@ -173,7 +173,6 @@ export default function LiveGames({ onOpenAuth }: { onOpenAuth: (mode: "login" |
       ) : (
         CATEGORY_ORDER.filter((c) => counts[c] > 0).map((c) => (
           <div key={c} ref={c === "featured" ? featuredRef : undefined}>
-            <GamesToolbar {...toolbarProps} />
             <GameCategorySection
               category={c}
               label={t.categoryLabels[c]}
@@ -183,6 +182,7 @@ export default function LiveGames({ onOpenAuth }: { onOpenAuth: (mode: "login" |
               onToggleFavorite={toggleFavorite}
               launchingUid={launchingUid}
               onPlay={handlePlay}
+              toolbar={toolbarProps}
             />
           </div>
         ))

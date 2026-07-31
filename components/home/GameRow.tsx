@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef } from "react";
+import type { ReactNode } from "react";
 import GameCard from "./GameCard";
 import type { GameItem } from "@/lib/data";
 
@@ -14,12 +15,14 @@ export default function GameRow({
   onToggleFavorite,
   onPlay,
   launchingUid,
+  trailingTile,
 }: {
   games: GameItem[];
   favorites: Map<string, GameItem>;
   onToggleFavorite: (game: GameItem) => void;
   onPlay: (gameUid: string) => void;
   launchingUid: string | null;
+  trailingTile?: ReactNode;
 }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const drag = useRef({ active: false, startX: 0, startScrollLeft: 0, moved: false });
@@ -56,7 +59,7 @@ export default function GameRow({
       className="flex select-none gap-4 overflow-x-auto pb-2 cursor-grab active:cursor-grabbing"
     >
       {games.map((g) => (
-        <div key={g.gameUid} className="w-36 shrink-0 sm:w-40">
+        <div key={g.gameUid} className="w-24 shrink-0 sm:w-36 md:w-40">
           <GameCard
             game={g}
             favorited={favorites.has(g.name)}
@@ -69,6 +72,7 @@ export default function GameRow({
           />
         </div>
       ))}
+      {trailingTile && <div className="w-24 shrink-0 sm:w-36 md:w-40">{trailingTile}</div>}
     </div>
   );
 }

@@ -5,6 +5,7 @@ import SectionHeading from "@/components/ui/SectionHeading";
 import Reveal from "@/components/ui/Reveal";
 import GameGrid from "./GameGrid";
 import GameRow from "./GameRow";
+import GamesToolbar from "./GamesToolbar";
 import type { GameItem } from "@/lib/data";
 import { useLang } from "@/lib/language";
 import {
@@ -54,6 +55,7 @@ export default function GameCategorySection({
   onToggleFavorite,
   launchingUid,
   onPlay,
+  toolbar,
 }: {
   category: GameCategory;
   label: string;
@@ -63,6 +65,15 @@ export default function GameCategorySection({
   onToggleFavorite: (game: GameItem) => void;
   launchingUid: string | null;
   onPlay: (gameUid: string) => void;
+  toolbar: {
+    hasFeatured: boolean;
+    favoritesCount: number;
+    showingFavorites: boolean;
+    onToggleFavoritesView: () => void;
+    onJumpToAll: () => void;
+    onJumpToFeatured: () => void;
+    onPlay: (gameUid: string) => void;
+  };
 }) {
   const { t } = useLang();
 
@@ -166,16 +177,42 @@ export default function GameCategorySection({
   };
   const showSubTags = subTagCounts && SUB_TAGS.some((tag) => subTagCounts[tag] > 0);
 
+  const moreTile = (
+    <button
+      onClick={loadMore}
+      disabled={loadingMore}
+      aria-label="Load more games"
+      className="flex aspect-square flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[#D4AF37]/40 text-[#F5C842] transition-colors hover:border-[#D4AF37] hover:bg-[#D4AF37]/5 disabled:opacity-50"
+    >
+      {loadingMore ? (
+        <span className="h-5 w-5 animate-spin rounded-full border-2 border-[#D4AF37]/30 border-t-[#F5C842]" />
+      ) : (
+        <>
+          <span className="text-lg tracking-widest">•••</span>
+          <span className="text-xs font-bold uppercase tracking-wide">More</span>
+        </>
+      )}
+    </button>
+  );
+
   return (
     <Reveal>
       <section className="relative z-10 px-5 py-10">
         <div className="mx-auto max-w-6xl">
+          <div className="hidden sm:block sm:pb-4">
+            <GamesToolbar {...toolbar} />
+          </div>
+
           <SectionHeading
             eyebrow={eyebrow}
             title={<>{icon} {renderTitle(label, accent.to)}</>}
             barFrom={accent.from}
             barTo={accent.to}
           />
+
+          <div className="mb-4 sm:hidden">
+            <GamesToolbar {...toolbar} stacked />
+          </div>
 
           {showSubTags && (
             <div className="mb-4 flex flex-wrap gap-2">
@@ -225,7 +262,7 @@ export default function GameCategorySection({
             <p className="py-10 text-center text-sm text-[#7B5EA7]">No games match this filter right now.</p>
           ) : (
             <>
-              {/* upper strip — fixed first 15, horizontally scrollable/draggable */}
+              {/* upper strip — fixed first 15, horizontally scrollable/draggable on every breakpoint */}
               <GameRow
                 games={games.slice(0, TOP_ROW_SIZE)}
                 favorites={favorites}
@@ -234,36 +271,32 @@ export default function GameCategorySection({
                 launchingUid={launchingUid}
               />
 
-              {/* below — everything past the first 15, a normal wrapping grid (not scrollable), grows via Load More */}
               {(games.length > TOP_ROW_SIZE || games.length < total) && (
-                <div className="mt-4">
-                  <GameGrid
-                    games={games.slice(TOP_ROW_SIZE)}
-                    favorites={favorites}
-                    onToggleFavorite={onToggleFavorite}
-                    onPlay={onPlay}
-                    launchingUid={launchingUid}
-                    trailingTile={
-                      games.length < total ? (
-                        <button
-                          onClick={loadMore}
-                          disabled={loadingMore}
-                          aria-label="Load more games"
-                          className="flex aspect-square flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[#D4AF37]/40 text-[#F5C842] transition-colors hover:border-[#D4AF37] hover:bg-[#D4AF37]/5 disabled:opacity-50"
-                        >
-                          {loadingMore ? (
-                            <span className="h-5 w-5 animate-spin rounded-full border-2 border-[#D4AF37]/30 border-t-[#F5C842]" />
-                          ) : (
-                            <>
-                              <span className="text-lg tracking-widest">•••</span>
-                              <span className="text-xs font-bold uppercase tracking-wide">More</span>
-                            </>
-                          )}
-                        </button>
-                      ) : undefined
-                    }
-                  />
-                </div>
+                <>
+                  {/* mobile: second row, also horizontally scrollable — keeps the section to exactly two rows */}
+                  <div className="mt-3 sm:hidden">
+                    <GameRow
+                      games={games.slice(TOP_ROW_SIZE)}
+                      favorites={favorites}
+                      onToggleFavorite={onToggleFavorite}
+                      onPlay={onPlay}
+                      launchingUid={launchingUid}
+                      trailingTile={games.length < total ? moreTile : undefined}
+                    />
+                  </div>
+
+                  {/* tablet/desktop: normal wrapping grid (not scrollable), grows via Load More */}
+                  <div className="mt-4 hidden sm:block">
+                    <GameGrid
+                      games={games.slice(TOP_ROW_SIZE)}
+                      favorites={favorites}
+                      onToggleFavorite={onToggleFavorite}
+                      onPlay={onPlay}
+                      launchingUid={launchingUid}
+                      trailingTile={games.length < total ? moreTile : undefined}
+                    />
+                  </div>
+                </>
               )}
             </>
           )}

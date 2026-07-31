@@ -14,6 +14,7 @@ export default function GamesToolbar({
   onJumpToAll,
   onJumpToFeatured,
   onPlay,
+  stacked = false,
 }: {
   hasFeatured: boolean;
   favoritesCount: number;
@@ -22,6 +23,8 @@ export default function GamesToolbar({
   onJumpToAll: () => void;
   onJumpToFeatured: () => void;
   onPlay: (gameUid: string) => void;
+  // Compact mobile treatment: icons centered on their own row, search full-width below.
+  stacked?: boolean;
 }) {
   const { t } = useLang();
   const [query, setQuery] = useState("");
@@ -76,47 +79,59 @@ export default function GamesToolbar({
   }
 
   return (
-    <div className="relative z-10 mx-auto flex max-w-6xl flex-wrap items-center justify-end gap-2 px-5 pt-6">
-      <button
-        onClick={onJumpToAll}
-        aria-label="All games"
-        title="All games"
-        className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.03] text-[#9B8EC4] transition-colors hover:border-[#D4AF37]/50 hover:text-[#F5C842]"
-      >
-        <FaTableCells />
-      </button>
-
-      {hasFeatured && (
+    <div
+      className={`relative z-10 flex gap-2 ${
+        stacked ? "flex-col items-stretch" : "flex-wrap items-center justify-end"
+      }`}
+    >
+      <div className={`flex items-center gap-2 ${stacked ? "justify-center" : ""}`}>
         <button
-          onClick={onJumpToFeatured}
-          aria-label="Featured games"
-          title="Featured games"
-          className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.03] text-[#9B8EC4] transition-colors hover:border-[#D4AF37]/50 hover:text-[#F5C842]"
+          onClick={onJumpToAll}
+          aria-label="All games"
+          title="All games"
+          className={`flex items-center justify-center rounded-xl border border-white/10 bg-white/[0.03] text-[#9B8EC4] transition-colors hover:border-[#D4AF37]/50 hover:text-[#F5C842] ${
+            stacked ? "h-9 w-9" : "h-10 w-10"
+          }`}
         >
-          <FaFire />
+          <FaTableCells />
         </button>
-      )}
 
-      <button
-        onClick={onToggleFavoritesView}
-        aria-label="Favorites"
-        title="Favorites"
-        aria-pressed={showingFavorites}
-        className={`relative flex h-10 w-10 items-center justify-center rounded-xl border transition-colors ${
-          showingFavorites
-            ? "border-[#D4AF37]/60 bg-[#D4AF37]/15 text-[#F5C842]"
-            : "border-white/10 bg-white/[0.03] text-[#9B8EC4] hover:border-[#D4AF37]/50 hover:text-[#F5C842]"
-        }`}
-      >
-        <FaHeart />
-        {favoritesCount > 0 && (
-          <span className="absolute -right-1.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#D4AF37] px-1 text-[9px] font-black text-[#0A0612]">
-            {favoritesCount}
-          </span>
+        {hasFeatured && (
+          <button
+            onClick={onJumpToFeatured}
+            aria-label="Featured games"
+            title="Featured games"
+            className={`flex items-center justify-center rounded-xl border border-white/10 bg-white/[0.03] text-[#9B8EC4] transition-colors hover:border-[#D4AF37]/50 hover:text-[#F5C842] ${
+              stacked ? "h-9 w-9" : "h-10 w-10"
+            }`}
+          >
+            <FaFire />
+          </button>
         )}
-      </button>
 
-      <div ref={wrapperRef} className="relative w-full sm:w-64">
+        <button
+          onClick={onToggleFavoritesView}
+          aria-label="Favorites"
+          title="Favorites"
+          aria-pressed={showingFavorites}
+          className={`relative flex items-center justify-center rounded-xl border transition-colors ${
+            stacked ? "h-9 w-9" : "h-10 w-10"
+          } ${
+            showingFavorites
+              ? "border-[#D4AF37]/60 bg-[#D4AF37]/15 text-[#F5C842]"
+              : "border-white/10 bg-white/[0.03] text-[#9B8EC4] hover:border-[#D4AF37]/50 hover:text-[#F5C842]"
+          }`}
+        >
+          <FaHeart />
+          {favoritesCount > 0 && (
+            <span className="absolute -right-1.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#D4AF37] px-1 text-[9px] font-black text-[#0A0612]">
+              {favoritesCount}
+            </span>
+          )}
+        </button>
+      </div>
+
+      <div ref={wrapperRef} className={`relative ${stacked ? "w-full" : "w-full sm:w-64"}`}>
         <input
           type="text"
           value={query}
