@@ -65,6 +65,17 @@ export default function GameCard({
           {game.provider}
         </span>
 
+        {/* provider ribbon – bottom-right corner accent */}
+        <span
+          className="absolute bottom-0 right-0 z-10 max-w-[65%] truncate rounded-tl-lg px-2 py-1 text-[9px] font-black uppercase tracking-wide text-white"
+          style={{
+            background: "linear-gradient(135deg, #D4AF37, #7B2FBE)",
+            boxShadow: "0 -2px 10px rgba(0,0,0,0.4)",
+          }}
+        >
+          {game.provider}
+        </span>
+
         {/* optional promo tag – stacks under the provider badge when present */}
         {tag && (
           <span

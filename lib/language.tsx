@@ -248,6 +248,12 @@ export type Translations = {
   subTagAll: string;
   subTagMegaways: string;
   subTagJackpot: string;
+  subTagTableGames: string;
+  subTagVideoPoker: string;
+  subTagCrashGames: string;
+  subTagArcade: string;
+  subTagBingo: string;
+  subTagScratches: string;
 };
 
 const T: Record<Lang, Translations> = {
@@ -512,6 +518,12 @@ const T: Record<Lang, Translations> = {
     subTagAll: "All",
     subTagMegaways: "Megaways",
     subTagJackpot: "Jackpot",
+    subTagTableGames: "Table Games",
+    subTagVideoPoker: "Video Poker",
+    subTagCrashGames: "Crash Games",
+    subTagArcade: "Arcade",
+    subTagBingo: "Bingo",
+    subTagScratches: "Scratches",
   },
 
   bn: {
@@ -774,6 +786,12 @@ const T: Record<Lang, Translations> = {
     subTagAll: "সব",
     subTagMegaways: "মেগাওয়েজ",
     subTagJackpot: "জ্যাকপট",
+    subTagTableGames: "টেবিল গেমস",
+    subTagVideoPoker: "ভিডিও পোকার",
+    subTagCrashGames: "ক্র্যাশ গেমস",
+    subTagArcade: "আর্কেড",
+    subTagBingo: "বিঙ্গো",
+    subTagScratches: "স্ক্র্যাচ",
   },
 };
 

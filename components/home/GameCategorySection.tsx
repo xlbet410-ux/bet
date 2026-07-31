@@ -70,14 +70,18 @@ export default function GameCategorySection({
   const [error, setError] = useState(false);
   const [retryKey, setRetryKey] = useState(0);
 
-  // Sub-tag filter chips only exist for Slots today — Megaways/Jackpot are
-  // the only tags with any real signal (see lib/games.ts SUB_TAGS). Other
-  // categories simply never fetch or show this row.
+  // Each sub-tag only ever has real matches within one category (e.g.
+  // table_games/video_poker only within Cards, crash_games/arcade/bingo/
+  // scratches only within Mini Games, megaways/jackpot mostly within Slots —
+  // see lib/games.ts SUB_TAGS) since that's where Oracle's own raw category
+  // for those games already places them. Fetching per-category counts here
+  // and only rendering tags with count > 0 means the chip row naturally
+  // shows the right tags for whichever section this is, with no per-category
+  // special-casing needed.
   const [subTagCounts, setSubTagCounts] = useState<Record<SubTag, number> | null>(null);
   const [activeTag, setActiveTag] = useState<SubTag | undefined>(undefined);
 
   useEffect(() => {
-    if (category !== "slots") return;
     let cancelled = false;
     getSubTagCounts(category)
       .then((counts) => {
@@ -146,8 +150,17 @@ export default function GameCategorySection({
   if (!loading && !error && games.length === 0 && !activeTag) return null;
 
   const accent = CATEGORY_ACCENT[category];
-  const subTagLabels: Record<SubTag, string> = { megaways: t.subTagMegaways, jackpot: t.subTagJackpot };
-  const showSubTags = category === "slots" && subTagCounts && SUB_TAGS.some((tag) => subTagCounts[tag] > 0);
+  const subTagLabels: Record<SubTag, string> = {
+    megaways: t.subTagMegaways,
+    jackpot: t.subTagJackpot,
+    table_games: t.subTagTableGames,
+    video_poker: t.subTagVideoPoker,
+    crash_games: t.subTagCrashGames,
+    arcade: t.subTagArcade,
+    bingo: t.subTagBingo,
+    scratches: t.subTagScratches,
+  };
+  const showSubTags = subTagCounts && SUB_TAGS.some((tag) => subTagCounts[tag] > 0);
 
   return (
     <Reveal>
