@@ -79,6 +79,14 @@ export default function ChatSupport({ onOpenAuth }: { onOpenAuth: (mode: "login"
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [msgs]);
 
+  // lets other UI (e.g. the mobile bottom nav's "Services" button) open this panel
+  // without needing to lift its open state up into a shared parent.
+  useEffect(() => {
+    const openPanel = () => setOpen(true);
+    window.addEventListener("open-chat-support", openPanel);
+    return () => window.removeEventListener("open-chat-support", openPanel);
+  }, []);
+
   const send = async () => {
     const text = input.trim();
     const conversationId = conversationIdRef.current;
