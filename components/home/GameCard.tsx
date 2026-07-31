@@ -61,13 +61,13 @@ export default function GameCard({
         />
 
         {/* provider badge – top left */}
-        <span className="absolute left-1.5 top-1.5 z-10 max-w-[70%] truncate rounded bg-black/60 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wide text-white backdrop-blur-sm">
+        <span className="absolute left-1.5 top-1.5 z-10 max-w-[75%] truncate rounded-md bg-black/60 px-2 py-1 text-xs font-black uppercase tracking-wide text-white backdrop-blur-sm">
           {game.provider}
         </span>
 
         {/* provider ribbon – bottom-right corner accent */}
         <span
-          className="absolute bottom-0 right-0 z-10 max-w-[65%] truncate rounded-tl-lg px-2 py-1 text-[9px] font-black uppercase tracking-wide text-white"
+          className="absolute bottom-0 right-0 z-10 max-w-[75%] truncate rounded-tl-lg px-3 py-1.5 text-xs font-black uppercase tracking-wide text-white"
           style={{
             background: "linear-gradient(135deg, #D4AF37, #7B2FBE)",
             boxShadow: "0 -2px 10px rgba(0,0,0,0.4)",
@@ -79,7 +79,7 @@ export default function GameCard({
         {/* optional promo tag – stacks under the provider badge when present */}
         {tag && (
           <span
-            className={`absolute left-1.5 top-7 z-10 inline-flex items-center gap-1 rounded-full bg-gradient-to-r ${tag.from} ${tag.to} px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-white`}
+            className={`absolute left-1.5 top-9 z-10 inline-flex items-center gap-1 rounded-full bg-gradient-to-r ${tag.from} ${tag.to} px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-white`}
             style={{ boxShadow: `0 0 10px ${tag.glow}70` }}
           >
             {tag.pulse && (
