@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import SectionHeading from "@/components/ui/SectionHeading";
 import Reveal from "@/components/ui/Reveal";
 import GameGrid from "./GameGrid";
+import GameRow from "./GameRow";
 import type { GameItem } from "@/lib/data";
 import { useLang } from "@/lib/language";
 import {
@@ -15,7 +16,10 @@ import {
   type SubTag,
 } from "@/lib/games";
 
-const GAMES_PAGE_SIZE = 18;
+// Top strip is a fixed-size horizontal scroller; everything beyond it lives
+// in the wrapping grid below, which grows as more pages load.
+const TOP_ROW_SIZE = 15;
+const GAMES_PAGE_SIZE = 20;
 
 function toGameItem(g: { name: string; providerName: string; thumbnail: string; original: string; gameUid: string }): GameItem {
   return {
@@ -220,32 +224,48 @@ export default function GameCategorySection({
           ) : games.length === 0 ? (
             <p className="py-10 text-center text-sm text-[#7B5EA7]">No games match this filter right now.</p>
           ) : (
-            <GameGrid
-              games={games}
-              favorites={favorites}
-              onToggleFavorite={onToggleFavorite}
-              onPlay={onPlay}
-              launchingUid={launchingUid}
-              trailingTile={
-                games.length < total ? (
-                  <button
-                    onClick={loadMore}
-                    disabled={loadingMore}
-                    aria-label="Load more games"
-                    className="flex aspect-square flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[#D4AF37]/40 text-[#F5C842] transition-colors hover:border-[#D4AF37] hover:bg-[#D4AF37]/5 disabled:opacity-50"
-                  >
-                    {loadingMore ? (
-                      <span className="h-5 w-5 animate-spin rounded-full border-2 border-[#D4AF37]/30 border-t-[#F5C842]" />
-                    ) : (
-                      <>
-                        <span className="text-lg tracking-widest">•••</span>
-                        <span className="text-xs font-bold uppercase tracking-wide">More</span>
-                      </>
-                    )}
-                  </button>
-                ) : undefined
-              }
-            />
+            <>
+              {/* upper strip — fixed first 15, horizontally scrollable/draggable */}
+              <GameRow
+                games={games.slice(0, TOP_ROW_SIZE)}
+                favorites={favorites}
+                onToggleFavorite={onToggleFavorite}
+                onPlay={onPlay}
+                launchingUid={launchingUid}
+              />
+
+              {/* below — everything past the first 15, a normal wrapping grid (not scrollable), grows via Load More */}
+              {(games.length > TOP_ROW_SIZE || games.length < total) && (
+                <div className="mt-4">
+                  <GameGrid
+                    games={games.slice(TOP_ROW_SIZE)}
+                    favorites={favorites}
+                    onToggleFavorite={onToggleFavorite}
+                    onPlay={onPlay}
+                    launchingUid={launchingUid}
+                    trailingTile={
+                      games.length < total ? (
+                        <button
+                          onClick={loadMore}
+                          disabled={loadingMore}
+                          aria-label="Load more games"
+                          className="flex aspect-square flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[#D4AF37]/40 text-[#F5C842] transition-colors hover:border-[#D4AF37] hover:bg-[#D4AF37]/5 disabled:opacity-50"
+                        >
+                          {loadingMore ? (
+                            <span className="h-5 w-5 animate-spin rounded-full border-2 border-[#D4AF37]/30 border-t-[#F5C842]" />
+                          ) : (
+                            <>
+                              <span className="text-lg tracking-widest">•••</span>
+                              <span className="text-xs font-bold uppercase tracking-wide">More</span>
+                            </>
+                          )}
+                        </button>
+                      ) : undefined
+                    }
+                  />
+                </div>
+              )}
+            </>
           )}
         </div>
       </section>
