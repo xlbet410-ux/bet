@@ -17,11 +17,11 @@ export default function SectionHeading({
   action?: { label: string; href?: string };
 }) {
   return (
-    <div className="mb-8 flex items-center justify-between gap-4">
+    <div className="mb-4 flex items-center justify-between gap-4 sm:mb-8">
       <div className="flex items-center gap-4">
         {/* accent bar with glow */}
         <div
-          className="h-12 w-1.5 shrink-0 rounded-full"
+          className="h-9 w-1.5 shrink-0 rounded-full sm:h-12"
           style={{
             background: `linear-gradient(to bottom, ${barFrom}, ${barTo})`,
             boxShadow: `0 0 14px ${barFrom}70`,
