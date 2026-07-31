@@ -60,14 +60,14 @@ export default function GameCard({
           className="object-cover transition-transform duration-700 will-change-transform group-hover:scale-110"
         />
 
-        {/* provider badge – top left */}
-        <span className="absolute left-1.5 top-1.5 z-10 max-w-[75%] truncate rounded-md bg-black/60 px-2 py-1 text-xs font-black uppercase tracking-wide text-white backdrop-blur-sm">
+        {/* provider badge – top left, small on mobile so it doesn't cover the art */}
+        <span className="absolute left-1 top-1 z-10 max-w-[60%] truncate rounded sm:rounded-md bg-black/60 px-1.5 py-0.5 text-[8px] sm:left-1.5 sm:top-1.5 sm:max-w-[75%] sm:px-2 sm:py-1 sm:text-xs font-black uppercase tracking-wide text-white backdrop-blur-sm">
           {game.provider}
         </span>
 
         {/* provider ribbon – bottom-right corner accent */}
         <span
-          className="absolute bottom-0 right-0 z-10 max-w-[75%] truncate rounded-tl-lg px-3 py-1.5 text-xs font-black uppercase tracking-wide text-white"
+          className="absolute bottom-0 right-0 z-10 max-w-[45%] truncate rounded-tl-md sm:rounded-tl-lg px-1.5 py-1 text-[8px] sm:max-w-[75%] sm:px-3 sm:py-1.5 sm:text-xs font-black uppercase tracking-wide text-white"
           style={{
             background: "linear-gradient(135deg, #D4AF37, #7B2FBE)",
             boxShadow: "0 -2px 10px rgba(0,0,0,0.4)",
@@ -79,7 +79,7 @@ export default function GameCard({
         {/* optional promo tag – stacks under the provider badge when present */}
         {tag && (
           <span
-            className={`absolute left-1.5 top-9 z-10 inline-flex items-center gap-1 rounded-full bg-gradient-to-r ${tag.from} ${tag.to} px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-white`}
+            className={`absolute left-1 top-6 z-10 inline-flex items-center gap-1 rounded-full bg-gradient-to-r ${tag.from} ${tag.to} px-1.5 py-0.5 text-[7px] sm:left-1.5 sm:top-9 sm:px-2 sm:text-[9px] font-black uppercase tracking-widest text-white`}
             style={{ boxShadow: `0 0 10px ${tag.glow}70` }}
           >
             {tag.pulse && (
@@ -89,12 +89,12 @@ export default function GameCard({
           </span>
         )}
 
-        {/* heart – top right */}
+        {/* heart – top right, small on mobile so it doesn't cover the art */}
         <button
           onClick={(e) => { e.stopPropagation(); onToggleFavorite(); }}
           aria-label={favorited ? "Remove from favorites" : "Add to favorites"}
           aria-pressed={favorited}
-          className="absolute right-1.5 top-1.5 z-10 flex h-7 w-7 items-center justify-center rounded-full border border-white/20 bg-black/55 text-xs backdrop-blur-sm transition-all hover:scale-110 hover:border-[#F5C842]/60"
+          className="absolute right-1 top-1 z-10 flex h-5 w-5 items-center justify-center rounded-full border border-white/20 bg-black/55 text-[9px] backdrop-blur-sm transition-all hover:scale-110 hover:border-[#F5C842]/60 sm:right-1.5 sm:top-1.5 sm:h-7 sm:w-7 sm:text-xs"
         >
           {favorited ? (
             <FaHeart
