@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import GameCategorySection from "./GameCategorySection";
-import GameCard from "./GameCard";
+import GameRow from "./GameRow";
 import GamesToolbar from "./GamesToolbar";
 import type { GameItem } from "@/lib/data";
 import {
@@ -124,24 +124,24 @@ export default function LiveGames({ onOpenAuth }: { onOpenAuth: (mode: "login" |
 
   const favoritesList = [...favorites.values()];
 
+  const toolbarProps = {
+    hasFeatured: counts.featured > 0,
+    favoritesCount: favorites.size,
+    showingFavorites: showFavoritesOnly,
+    onToggleFavoritesView: () => setShowFavoritesOnly((v) => !v),
+    onJumpToAll: () => {
+      setShowFavoritesOnly(false);
+      topRef.current?.scrollIntoView({ behavior: "smooth" });
+    },
+    onJumpToFeatured: () => {
+      setShowFavoritesOnly(false);
+      featuredRef.current?.scrollIntoView({ behavior: "smooth" });
+    },
+    onPlay: handlePlay,
+  };
+
   return (
     <div ref={topRef}>
-      <GamesToolbar
-        hasFeatured={counts.featured > 0}
-        favoritesCount={favorites.size}
-        showingFavorites={showFavoritesOnly}
-        onToggleFavoritesView={() => setShowFavoritesOnly((v) => !v)}
-        onJumpToAll={() => {
-          setShowFavoritesOnly(false);
-          topRef.current?.scrollIntoView({ behavior: "smooth" });
-        }}
-        onJumpToFeatured={() => {
-          setShowFavoritesOnly(false);
-          featuredRef.current?.scrollIntoView({ behavior: "smooth" });
-        }}
-        onPlay={handlePlay}
-      />
-
       {error && (
         <p className="mx-auto mb-4 mt-4 max-w-6xl rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-2.5 text-center text-sm text-red-300">
           {error}
@@ -150,8 +150,9 @@ export default function LiveGames({ onOpenAuth }: { onOpenAuth: (mode: "login" |
 
       {showFavoritesOnly ? (
         <section className="relative z-10 px-5 py-10">
+          <GamesToolbar {...toolbarProps} />
           <div className="mx-auto max-w-6xl">
-            <h2 className="mb-6 text-2xl font-extrabold tracking-tight md:text-3xl">
+            <h2 className="mb-6 mt-6 text-2xl font-extrabold tracking-tight md:text-3xl">
               {t.subTagAll === "সব" ? "প্রিয় গেমস" : "Favorites"}
             </h2>
             {favoritesList.length === 0 ? (
@@ -159,24 +160,20 @@ export default function LiveGames({ onOpenAuth }: { onOpenAuth: (mode: "login" |
                 {t.subTagAll === "সব" ? "আপনার এখনো কোনো প্রিয় গেম নেই।" : "You haven't favorited any games yet."}
               </p>
             ) : (
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-                {favoritesList.map((g) => (
-                  <GameCard
-                    key={g.gameUid}
-                    game={g}
-                    favorited
-                    onToggleFavorite={() => toggleFavorite(g)}
-                    onPlay={() => g.gameUid && handlePlay(g.gameUid)}
-                    loading={launchingUid === g.gameUid}
-                  />
-                ))}
-              </div>
+              <GameRow
+                games={favoritesList}
+                favorites={favorites}
+                onToggleFavorite={toggleFavorite}
+                onPlay={handlePlay}
+                launchingUid={launchingUid}
+              />
             )}
           </div>
         </section>
       ) : (
         CATEGORY_ORDER.filter((c) => counts[c] > 0).map((c) => (
           <div key={c} ref={c === "featured" ? featuredRef : undefined}>
+            <GamesToolbar {...toolbarProps} />
             <GameCategorySection
               category={c}
               label={t.categoryLabels[c]}

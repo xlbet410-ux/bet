@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import SectionHeading from "@/components/ui/SectionHeading";
 import Reveal from "@/components/ui/Reveal";
-import GameCard from "./GameCard";
+import GameRow from "./GameRow";
 import type { GameItem } from "@/lib/data";
 import { useLang } from "@/lib/language";
 import {
@@ -202,9 +202,9 @@ export default function GameCategorySection({
           )}
 
           {loading ? (
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="aspect-[3/4] animate-pulse rounded-xl bg-white/5" />
+            <div className="flex gap-4 overflow-hidden pb-2">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="aspect-square w-36 shrink-0 animate-pulse rounded-lg bg-white/5 sm:w-40" />
               ))}
             </div>
           ) : error ? (
@@ -220,25 +220,19 @@ export default function GameCategorySection({
           ) : games.length === 0 ? (
             <p className="py-10 text-center text-sm text-[#7B5EA7]">No games match this filter right now.</p>
           ) : (
-            <>
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-                {games.map((g) => (
-                  <GameCard
-                    key={g.gameUid}
-                    game={g}
-                    favorited={favorites.has(g.name)}
-                    onToggleFavorite={() => onToggleFavorite(g)}
-                    onPlay={() => g.gameUid && onPlay(g.gameUid)}
-                    loading={launchingUid === g.gameUid}
-                  />
-                ))}
-
-                {games.length < total && (
+            <GameRow
+              games={games}
+              favorites={favorites}
+              onToggleFavorite={onToggleFavorite}
+              onPlay={onPlay}
+              launchingUid={launchingUid}
+              trailingTile={
+                games.length < total ? (
                   <button
                     onClick={loadMore}
                     disabled={loadingMore}
                     aria-label="Load more games"
-                    className="flex aspect-square flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[#D4AF37]/40 text-[#F5C842] transition-colors hover:border-[#D4AF37] hover:bg-[#D4AF37]/5 disabled:opacity-50"
+                    className="flex aspect-square w-36 shrink-0 flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[#D4AF37]/40 text-[#F5C842] transition-colors hover:border-[#D4AF37] hover:bg-[#D4AF37]/5 disabled:opacity-50 sm:w-40"
                   >
                     {loadingMore ? (
                       <span className="h-5 w-5 animate-spin rounded-full border-2 border-[#D4AF37]/30 border-t-[#F5C842]" />
@@ -249,9 +243,9 @@ export default function GameCategorySection({
                       </>
                     )}
                   </button>
-                )}
-              </div>
-            </>
+                ) : undefined
+              }
+            />
           )}
         </div>
       </section>
