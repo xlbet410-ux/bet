@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Header from "@/components/site/Header";
 import Footer from "@/components/site/Footer";
+import MobileBottomNav from "@/components/site/MobileBottomNav";
 import AuthModal from "@/components/site/AuthModal";
 import AmbientBackground from "@/components/site/AmbientBackground";
 import { useAuth } from "@/lib/auth";
@@ -12,6 +13,13 @@ import { getMyKyc, submitKyc, type KycStatus } from "@/lib/kyc";
 
 type Tab     = "profile" | "wallet" | "deposit" | "withdraw" | "settings" | "kyc";
 type KycStep = "idle" | "phone" | "otp" | "docType" | "upload" | "selfie" | "done";
+
+const TABS: Tab[] = ["profile", "wallet", "deposit", "withdraw", "settings", "kyc"];
+
+// Client-only page (auth/profile data), never statically prerendered — safe
+// to read useSearchParams() directly without a Suspense boundary, matching
+// the same force-dynamic rationale already used on the home page.
+export const dynamic = "force-dynamic";
 
 const TRANSACTIONS = [
   { id:"TXN8821", type:"deposit",  label:"VISA Deposit",       amount:"+৳500",   date:"Jul 6, 2026",  status:"completed" },
@@ -134,6 +142,7 @@ export default function ProfilePage() {
   const { user, loading: authLoading, changePassword } = useAuth();
   const { t } = useLang();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const docTypes = [
     { id: "nid", label: t.profileDocTypeLabels[0] },
@@ -143,7 +152,10 @@ export default function ProfilePage() {
   const kycStepsLabels = t.profileKycStepLabels;
 
   const [authMode, setAuthMode]       = useState<"login"|"register"|null>(null);
-  const [tab, setTab]                 = useState<Tab>("profile");
+  const [tab, setTab]                 = useState<Tab>(() => {
+    const fromUrl = searchParams.get("tab");
+    return TABS.includes(fromUrl as Tab) ? (fromUrl as Tab) : "profile";
+  });
 
   // deposit
   const [selMethod, setSelMethod]     = useState("bkash");
@@ -1236,6 +1248,7 @@ export default function ProfilePage() {
       </main>
 
       <Footer />
+      <MobileBottomNav onOpenAuth={setAuthMode} />
     </>
   );
 }

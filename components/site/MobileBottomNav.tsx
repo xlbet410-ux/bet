@@ -37,10 +37,28 @@ export default function MobileBottomNav({
           boxShadow: "0 -4px 20px rgba(0,0,0,0.4)",
         }}
       >
+        {/* curved notch cut into the top edge, centered behind the deposit circle */}
+        <svg
+          viewBox="0 0 120 40"
+          preserveAspectRatio="none"
+          className="pointer-events-none absolute left-1/2 top-0 h-10 w-33 -translate-x-1/2 -translate-y-full"
+        >
+          <path
+            d="M0,40 V4 H34 C46,4 40,38 60,38 C80,38 74,4 86,4 H120 V40 Z"
+            fill="#0D0620"
+          />
+          <path
+            d="M0,4 H34 C46,4 40,38 60,38 C80,38 74,4 86,4 H120"
+            fill="none"
+            stroke="rgba(212,175,55,0.15)"
+            strokeWidth="1"
+          />
+        </svg>
+
         <Link
           href="/"
           className={`flex flex-1 flex-col items-center gap-1 rounded-lg py-1.5 text-[10px] font-semibold transition-colors ${
-            pathname === "/" ? "text-[#F5C842]" : "text-[#9B8EC4] hover:text-white"
+            pathname === "/" ? "text-[#F5C842]" : "text-white hover:text-[#F5C842]"
           }`}
         >
           <FaHouse className="text-lg" />
@@ -49,20 +67,22 @@ export default function MobileBottomNav({
 
         <Link
           href={NAV_HREFS[4] ?? "#"}
-          className="flex flex-1 flex-col items-center gap-1 rounded-lg py-1.5 text-[10px] font-semibold text-[#9B8EC4] transition-colors hover:text-white"
+          className="flex flex-1 flex-col items-center gap-1 rounded-lg py-1.5 text-[10px] font-semibold text-white transition-colors hover:text-[#F5C842]"
         >
           <FaGift className="text-lg" />
           {t.bottomNavPromotion}
         </Link>
 
-        {/* deposit — raised center circle */}
+        {/* deposit — raised center circle, sitting inside the notch */}
         <Link
-          href="/profile"
+          href="/profile?tab=deposit"
           onClick={requireAuth}
-          className="flex flex-1 flex-col items-center gap-1 text-[10px] font-semibold text-[#F5C842]"
+          className={`flex flex-1 flex-col items-center gap-1 text-[10px] font-semibold transition-colors ${
+            pathname === "/profile" ? "text-[#F5C842]" : "text-white"
+          }`}
         >
           <span
-            className="-mt-7 flex h-12 w-12 items-center justify-center rounded-full text-xl text-[#0A0612] ring-4 ring-[#0D0620]"
+            className="-mt-7 flex h-12 w-12 items-center justify-center rounded-full text-xl text-[#0A0612]"
             style={{
               background: "linear-gradient(135deg, #F5C842, #D4AF37)",
               boxShadow: "0 4px 18px rgba(212,175,55,0.55)",
@@ -75,7 +95,7 @@ export default function MobileBottomNav({
 
         <button
           onClick={() => window.dispatchEvent(new CustomEvent("open-chat-support"))}
-          className="flex flex-1 flex-col items-center gap-1 rounded-lg py-1.5 text-[10px] font-semibold text-[#9B8EC4] transition-colors hover:text-white"
+          className="flex flex-1 flex-col items-center gap-1 rounded-lg py-1.5 text-[10px] font-semibold text-white transition-colors hover:text-[#F5C842]"
         >
           <FaHeadset className="text-lg" />
           {t.bottomNavServices}
@@ -85,7 +105,7 @@ export default function MobileBottomNav({
           href="/profile"
           onClick={requireAuth}
           className={`flex flex-1 flex-col items-center gap-1 rounded-lg py-1.5 text-[10px] font-semibold transition-colors ${
-            pathname === "/profile" ? "text-[#F5C842]" : "text-[#9B8EC4] hover:text-white"
+            pathname === "/profile" ? "text-[#F5C842]" : "text-white hover:text-[#F5C842]"
           }`}
         >
           <FaCrown className="text-lg" />
