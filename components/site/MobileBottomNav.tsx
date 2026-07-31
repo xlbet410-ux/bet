@@ -35,26 +35,16 @@ export default function MobileBottomNav({
           background: "#0D0620",
           borderTop: "1px solid rgba(212,175,55,0.15)",
           boxShadow: "0 -4px 20px rgba(0,0,0,0.4)",
+          // punches a real circular notch out of the bar's top edge, centered
+          // behind the deposit circle — a mask cutout, not a hand-drawn path,
+          // so it stays a clean circle at every screen width instead of
+          // stretching/distorting.
+          WebkitMaskImage:
+            "radial-gradient(circle 34px at 50% 0%, transparent 32px, black 35px)",
+          maskImage:
+            "radial-gradient(circle 34px at 50% 0%, transparent 32px, black 35px)",
         }}
       >
-        {/* curved notch cut into the top edge, centered behind the deposit circle */}
-        <svg
-          viewBox="0 0 120 40"
-          preserveAspectRatio="none"
-          className="pointer-events-none absolute left-1/2 top-0 h-10 w-33 -translate-x-1/2 -translate-y-full"
-        >
-          <path
-            d="M0,40 V4 H34 C46,4 40,38 60,38 C80,38 74,4 86,4 H120 V40 Z"
-            fill="#0D0620"
-          />
-          <path
-            d="M0,4 H34 C46,4 40,38 60,38 C80,38 74,4 86,4 H120"
-            fill="none"
-            stroke="rgba(212,175,55,0.15)"
-            strokeWidth="1"
-          />
-        </svg>
-
         <Link
           href="/"
           className={`flex flex-1 flex-col items-center gap-1 rounded-lg py-1.5 text-[10px] font-semibold transition-colors ${
