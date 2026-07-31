@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import GameCategorySection from "./GameCategorySection";
-import GameRow from "./GameRow";
+import GameGrid from "./GameGrid";
 import GamesToolbar from "./GamesToolbar";
 import type { GameItem } from "@/lib/data";
 import {
@@ -160,7 +160,7 @@ export default function LiveGames({ onOpenAuth }: { onOpenAuth: (mode: "login" |
                 {t.subTagAll === "সব" ? "আপনার এখনো কোনো প্রিয় গেম নেই।" : "You haven't favorited any games yet."}
               </p>
             ) : (
-              <GameRow
+              <GameGrid
                 games={favoritesList}
                 favorites={favorites}
                 onToggleFavorite={toggleFavorite}
