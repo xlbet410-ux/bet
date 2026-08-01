@@ -117,12 +117,6 @@ export type Translations = {
   myProfile: string;
   deposit: string;
 
-  // mobile bottom nav bar
-  bottomNavHome: string;
-  bottomNavPromotion: string;
-  bottomNavServices: string;
-  bottomNavMember: string;
-
   // profile page
   profileHome: string;
   profileVerified: string;
@@ -396,11 +390,6 @@ const T: Record<Lang, Translations> = {
     myProfile: "My Profile",
     deposit: "Deposit",
 
-    bottomNavHome: "Home",
-    bottomNavPromotion: "Promotion",
-    bottomNavServices: "Services",
-    bottomNavMember: "Member",
-
     profileHome: "Home",
     profileVerified: "Verified",
     profileTabProfile: "Profile",
@@ -668,11 +657,6 @@ const T: Record<Lang, Translations> = {
     balance: "ব্যালেন্স",
     myProfile: "আমার প্রোফাইল",
     deposit: "ডিপোজিট",
-
-    bottomNavHome: "হোম",
-    bottomNavPromotion: "প্রমোশন",
-    bottomNavServices: "সার্ভিস",
-    bottomNavMember: "মেম্বার",
 
     profileHome: "হোম",
     profileVerified: "ভেরিফাইড",

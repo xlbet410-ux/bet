@@ -79,14 +79,6 @@ export default function ChatSupport({ onOpenAuth }: { onOpenAuth: (mode: "login"
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [msgs]);
 
-  // lets other UI (e.g. the mobile bottom nav's "Services" button) open this panel
-  // without needing to lift its open state up into a shared parent.
-  useEffect(() => {
-    const openPanel = () => setOpen(true);
-    window.addEventListener("open-chat-support", openPanel);
-    return () => window.removeEventListener("open-chat-support", openPanel);
-  }, []);
-
   const send = async () => {
     const text = input.trim();
     const conversationId = conversationIdRef.current;
@@ -111,7 +103,7 @@ export default function ChatSupport({ onOpenAuth }: { onOpenAuth: (mode: "login"
       <button
         onClick={() => setOpen((o) => !o)}
         aria-label={open ? "Close support chat" : "Open support chat"}
-        className="fixed bottom-24 right-4 z-[95] flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#9B30FF] to-[#4A0E8F] text-xl text-white shadow-[0_0_28px_#7B2FBE80] transition-all hover:scale-110 sm:right-5 lg:bottom-20"
+        className="fixed bottom-[4.5rem] right-4 z-[95] flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#9B30FF] to-[#4A0E8F] text-xl text-white shadow-[0_0_28px_#7B2FBE80] transition-all hover:scale-110 sm:bottom-20 sm:right-5"
       >
         {open ? <FaXmark /> : <FaCommentDots />}
         {!open && (

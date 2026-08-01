@@ -5,7 +5,6 @@ import Link from "next/link";
 import { FaCrown, FaMedal } from "react-icons/fa6";
 import Header from "@/components/site/Header";
 import Footer from "@/components/site/Footer";
-import MobileBottomNav from "@/components/site/MobileBottomNav";
 import AuthModal from "@/components/site/AuthModal";
 import AmbientBackground from "@/components/site/AmbientBackground";
 import { useLang } from "@/lib/language";
@@ -188,7 +187,6 @@ export default function LeaderboardPage() {
       </main>
 
       <Footer />
-      <MobileBottomNav onOpenAuth={(m) => setAuthMode(m)} />
     </>
   );
 }
