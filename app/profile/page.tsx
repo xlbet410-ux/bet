@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Header from "@/components/site/Header";
 import Footer from "@/components/site/Footer";
+import MobileBottomNav from "@/components/site/MobileBottomNav";
 import AuthModal from "@/components/site/AuthModal";
 import AmbientBackground from "@/components/site/AmbientBackground";
 import { useAuth } from "@/lib/auth";
@@ -12,6 +13,8 @@ import { getMyKyc, submitKyc, type KycStatus } from "@/lib/kyc";
 
 type Tab     = "profile" | "wallet" | "deposit" | "withdraw" | "settings" | "kyc";
 type KycStep = "idle" | "phone" | "otp" | "docType" | "upload" | "selfie" | "done";
+
+const TABS: Tab[] = ["profile", "wallet", "deposit", "withdraw", "settings", "kyc"];
 
 const TRANSACTIONS = [
   { id:"TXN8821", type:"deposit",  label:"VISA Deposit",       amount:"+৳500",   date:"Jul 6, 2026",  status:"completed" },
@@ -144,6 +147,14 @@ export default function ProfilePage() {
 
   const [authMode, setAuthMode]       = useState<"login"|"register"|null>(null);
   const [tab, setTab]                 = useState<Tab>("profile");
+
+  // reads ?tab= on mount only — window isn't available during prerendering,
+  // and using useSearchParams() here would force a Suspense boundary around
+  // the whole page (this component isn't wrapped in one).
+  useEffect(() => {
+    const fromUrl = new URLSearchParams(window.location.search).get("tab");
+    if (TABS.includes(fromUrl as Tab)) setTab(fromUrl as Tab);
+  }, []);
 
   // deposit
   const [selMethod, setSelMethod]     = useState("bkash");
@@ -1236,6 +1247,7 @@ export default function ProfilePage() {
       </main>
 
       <Footer />
+      <MobileBottomNav onOpenAuth={setAuthMode} />
     </>
   );
 }

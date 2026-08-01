@@ -6,6 +6,7 @@ import AuthModal from "@/components/site/AuthModal";
 import PromoPopup from "@/components/site/PromoPopup";
 import Header from "@/components/site/Header";
 import Footer from "@/components/site/Footer";
+import MobileBottomNav from "@/components/site/MobileBottomNav";
 import AmbientBackground from "@/components/site/AmbientBackground";
 import BackToTop from "@/components/ui/BackToTop";
 import Reveal from "@/components/ui/Reveal";
@@ -61,7 +62,7 @@ export default function Home() {
         />
       )}
 
-      <div className="relative min-h-screen overflow-x-hidden bg-[#0A0612] text-white antialiased">
+      <div className="relative min-h-screen overflow-x-hidden bg-[#0A0612] pb-20 text-white antialiased lg:pb-0">
         <AmbientBackground />
         <Header onOpenAuth={setAuthMode} />
 
@@ -81,6 +82,7 @@ export default function Home() {
         <Footer />
         <ChatSupport onOpenAuth={setAuthMode} />
         <BackToTop />
+        <MobileBottomNav onOpenAuth={setAuthMode} />
       </div>
     </>
   );
