@@ -7,7 +7,7 @@ export default function HowItWorks() {
   const { t } = useLang();
 
   return (
-    <section className="relative z-10 px-5 py-1 sm:py-2">
+    <section className="relative z-10 px-5 py-0.5 sm:py-1">
       <div className="mx-auto max-w-4xl">
         <div className="mb-12 text-center">
           <h2 className="text-3xl font-bold tracking-tight md:text-4xl">

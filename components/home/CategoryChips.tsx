@@ -9,7 +9,7 @@ export default function CategoryChips() {
   const { t } = useLang();
 
   return (
-    <section className="relative z-10 px-5 pt-1 sm:pt-2">
+    <section className="relative z-10 px-5 pt-0.5 sm:pt-1">
       <div className="mx-auto flex max-w-6xl flex-wrap justify-center gap-2 sm:gap-3">
         {t.categories.map((label, i) => {
           const Icon = CATEGORIES[i]?.icon;

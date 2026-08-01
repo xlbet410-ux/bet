@@ -33,7 +33,7 @@ export default function LiveWinsTicker() {
   const { t } = useLang();
 
   return (
-    <section className="relative z-10 mt-1 overflow-hidden border-y border-[#D4AF37]/15 bg-gradient-to-r from-[#120920] via-[#1B0838]/60 to-[#120920] py-4 sm:mt-2">
+    <section className="relative z-10 mt-0.5 overflow-hidden border-y border-[#D4AF37]/15 bg-gradient-to-r from-[#120920] via-[#1B0838]/60 to-[#120920] py-4 sm:mt-1">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,#9B30FF12,transparent_70%)]" />
 
       <div className="relative flex items-center gap-4 px-5">

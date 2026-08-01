@@ -93,7 +93,7 @@ export default function LiveGames({ onOpenAuth }: { onOpenAuth: (mode: "login" |
 
   if (countsLoading) {
     return (
-      <section className="relative z-10 px-5 py-1 sm:py-2">
+      <section className="relative z-10 px-5 py-0.5 sm:py-1">
         <div className="mx-auto max-w-6xl grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="aspect-[3/4] animate-pulse rounded-xl bg-white/5" />
@@ -105,7 +105,7 @@ export default function LiveGames({ onOpenAuth }: { onOpenAuth: (mode: "login" |
 
   if (countsError) {
     return (
-      <section className="relative z-10 px-5 py-1 sm:py-2">
+      <section className="relative z-10 px-5 py-0.5 sm:py-1">
         <div className="mx-auto flex max-w-6xl flex-col items-center gap-3 text-center">
           <p className="text-sm text-[#7B5EA7]">Couldn&apos;t load games right now.</p>
           <button
@@ -149,7 +149,7 @@ export default function LiveGames({ onOpenAuth }: { onOpenAuth: (mode: "login" |
       )}
 
       {showFavoritesOnly ? (
-        <section className="relative z-10 px-5 py-1 sm:py-2">
+        <section className="relative z-10 px-5 py-0.5 sm:py-1">
           <GamesToolbar {...toolbarProps} />
           <div className="mx-auto max-w-6xl">
             <h2 className="mb-6 mt-6 text-2xl font-extrabold tracking-tight md:text-3xl">
