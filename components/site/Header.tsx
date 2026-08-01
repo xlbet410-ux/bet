@@ -10,13 +10,13 @@ import { useScrolled } from "@/lib/hooks";
 import { NAV_DROPDOWNS, NAV_HREFS } from "@/lib/data";
 import logo from "@/assets/logo.png";
 
-function LangPill({ compact = false }: { compact?: boolean }) {
+function LangPill() {
   const { lang, toggle } = useLang();
   return (
-    <div className={`flex rounded-full border border-white/10 p-0.5 ${compact ? "text-[10px]" : "text-xs"}`}>
+    <div className="flex rounded-full border border-white/10 p-0.5 text-[9px] sm:text-xs">
       <button
         onClick={() => lang !== "en" && toggle()}
-        className={`rounded-full px-2.5 py-1 font-semibold transition-all ${
+        className={`rounded-full px-1.5 py-0.5 font-semibold transition-all sm:px-2.5 sm:py-1 ${
           lang === "en"
             ? "bg-gradient-to-r from-[#D4AF37] to-[#F5C842] text-[#0A0612]"
             : "text-[#9B8EC4] hover:text-white"
@@ -26,7 +26,7 @@ function LangPill({ compact = false }: { compact?: boolean }) {
       </button>
       <button
         onClick={() => lang !== "bn" && toggle()}
-        className={`rounded-full px-2.5 py-1 font-semibold transition-all ${
+        className={`rounded-full px-1.5 py-0.5 font-semibold transition-all sm:px-2.5 sm:py-1 ${
           lang === "bn"
             ? "bg-gradient-to-r from-[#D4AF37] to-[#F5C842] text-[#0A0612]"
             : "text-[#9B8EC4] hover:text-white"
@@ -198,7 +198,7 @@ export default function Header({
           </nav>
 
           {/* right controls */}
-          <div className="flex items-center gap-1.5 sm:gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
             <LangPill />
 
             {user ? (
@@ -324,13 +324,13 @@ export default function Header({
               <>
                 <button
                   onClick={() => onOpenAuth("login")}
-                  className="inline-flex rounded-full border border-[#D4AF37]/60 px-2.5 py-1.5 text-xs font-medium text-[#E8CF7A] transition-all hover:bg-[#D4AF37]/10 sm:px-4 sm:py-2 sm:text-sm"
+                  className="inline-flex rounded-full border border-[#D4AF37]/60 px-2 py-1 text-[10px] font-medium text-[#E8CF7A] transition-all hover:bg-[#D4AF37]/10 sm:px-4 sm:py-2 sm:text-sm"
                 >
                   {t.login}
                 </button>
                 <button
                   onClick={() => onOpenAuth("register")}
-                  className="inline-flex rounded-full bg-gradient-to-r from-[#9B30FF] via-[#7B2FBE] to-[#4A0E8F] px-2.5 py-1.5 text-xs font-semibold shadow-[0_0_14px_#7B2FBE60] transition-all hover:shadow-[0_0_22px_#9B30FF90] sm:px-5 sm:py-2 sm:text-sm"
+                  className="inline-flex rounded-full bg-gradient-to-r from-[#9B30FF] via-[#7B2FBE] to-[#4A0E8F] px-2 py-1 text-[10px] font-semibold shadow-[0_0_14px_#7B2FBE60] transition-all hover:shadow-[0_0_22px_#9B30FF90] sm:px-5 sm:py-2 sm:text-sm"
                 >
                   {t.register}
                 </button>
@@ -496,18 +496,18 @@ export default function Header({
                   <Link
                     href="/profile"
                     onClick={() => setMobileOpen(false)}
-                    className="mb-2 flex w-full items-center gap-3 rounded-xl bg-white/5 px-4 py-3 text-sm font-medium text-[#C9B8E8] transition-all hover:bg-white/10 hover:text-white"
+                    className="mb-2 flex w-full items-center gap-2.5 rounded-xl bg-white/5 px-3.5 py-2.5 text-xs font-medium text-[#C9B8E8] transition-all hover:bg-white/10 hover:text-white"
                   >
-                    <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 fill-none stroke-[#9B8EC4] stroke-2">
+                    <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 shrink-0 fill-none stroke-[#9B8EC4] stroke-2">
                       <circle cx="12" cy="8" r="4" /><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" strokeLinecap="round" />
                     </svg>
                     {t.myProfile}
                   </Link>
                   <button
                     onClick={() => { logout(); setMobileOpen(false); }}
-                    className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-red-400 transition-all hover:bg-red-500/10"
+                    className="flex w-full items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-xs font-medium text-red-400 transition-all hover:bg-red-500/10"
                   >
-                    <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 fill-none stroke-current stroke-2">
+                    <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 shrink-0 fill-none stroke-current stroke-2">
                       <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" strokeLinecap="round" />
                       <polyline points="16,17 21,12 16,7" strokeLinecap="round" strokeLinejoin="round" />
                       <line x1="21" y1="12" x2="9" y2="12" strokeLinecap="round" />
@@ -520,13 +520,13 @@ export default function Header({
                 <div className="flex flex-col gap-3">
                   <button
                     onClick={() => { setMobileOpen(false); onOpenAuth("login"); }}
-                    className="w-full rounded-full border border-[#D4AF37]/60 px-4 py-3 text-sm font-medium text-[#E8CF7A] transition-all hover:bg-[#D4AF37]/10"
+                    className="w-full rounded-full border border-[#D4AF37]/60 px-4 py-2.5 text-xs font-medium text-[#E8CF7A] transition-all hover:bg-[#D4AF37]/10"
                   >
                     {t.login}
                   </button>
                   <button
                     onClick={() => { setMobileOpen(false); onOpenAuth("register"); }}
-                    className="w-full rounded-full bg-gradient-to-r from-[#9B30FF] via-[#7B2FBE] to-[#4A0E8F] px-5 py-3 text-sm font-semibold shadow-[0_0_18px_#7B2FBE70]"
+                    className="w-full rounded-full bg-gradient-to-r from-[#9B30FF] via-[#7B2FBE] to-[#4A0E8F] px-5 py-2.5 text-xs font-semibold shadow-[0_0_18px_#7B2FBE70]"
                   >
                     {t.register}
                   </button>

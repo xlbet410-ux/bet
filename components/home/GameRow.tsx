@@ -56,7 +56,7 @@ export default function GameRow({
       onPointerMove={onPointerMove}
       onPointerUp={endDrag}
       onPointerLeave={endDrag}
-      className="flex select-none gap-4 overflow-x-auto pb-2 cursor-grab active:cursor-grabbing"
+      className="flex select-none gap-2 overflow-x-auto pb-2 cursor-grab active:cursor-grabbing sm:gap-3 md:gap-4"
     >
       {games.map((g) => (
         <div key={g.gameUid} className="w-24 shrink-0 sm:w-36 md:w-40">
