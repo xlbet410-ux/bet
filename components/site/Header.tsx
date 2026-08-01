@@ -7,8 +7,13 @@ import { FaBars, FaXmark, FaChevronDown } from "react-icons/fa6";
 import { useLang } from "@/lib/language";
 import { useAuth } from "@/lib/auth";
 import { useScrolled } from "@/lib/hooks";
-import { NAV_DROPDOWNS, NAV_HREFS } from "@/lib/data";
+import { CATEGORY_ORDER, CATEGORY_ICONS, getCategoryProviders, type GameCategory, type CategoryProvider } from "@/lib/games";
 import logo from "@/assets/logo.png";
+
+// All real game categories (every section name), each with a dropdown of
+// that section's real providers — Featured is a curated cross-provider
+// list, not a browsable section, so it's excluded here.
+const SECTION_CATEGORIES = CATEGORY_ORDER.filter((c) => c !== "featured");
 
 function LangPill() {
   const { lang, toggle } = useLang();
@@ -45,17 +50,31 @@ export default function Header({
 }) {
   const scrolled = useScrolled(20);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [openMenu, setOpenMenu] = useState<number | null>(null);
-  const [mobileExpanded, setMobileExpanded] = useState<number | null>(null);
+  const [openMenu, setOpenMenu] = useState<GameCategory | null>(null);
+  const [mobileExpanded, setMobileExpanded] = useState<GameCategory | null>(null);
   const [profileOpen, setProfileOpen] = useState(false);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const profileRef = useRef<HTMLDivElement>(null);
   const { t } = useLang();
   const { user, logout } = useAuth();
 
-  function handleMouseEnter(idx: number) {
+  // fetched lazily per category the first time its dropdown opens, then cached
+  const [providersByCategory, setProvidersByCategory] = useState<Partial<Record<GameCategory, CategoryProvider[]>>>({});
+  const [loadingCategory, setLoadingCategory] = useState<GameCategory | null>(null);
+
+  function loadCategoryProviders(category: GameCategory) {
+    if (providersByCategory[category] || loadingCategory === category) return;
+    setLoadingCategory(category);
+    getCategoryProviders(category)
+      .then((list) => setProvidersByCategory((prev) => ({ ...prev, [category]: list })))
+      .catch(() => setProvidersByCategory((prev) => ({ ...prev, [category]: [] })))
+      .finally(() => setLoadingCategory((c) => (c === category ? null : c)));
+  }
+
+  function handleMouseEnter(category: GameCategory) {
     if (closeTimer.current) clearTimeout(closeTimer.current);
-    if (NAV_DROPDOWNS[idx]) setOpenMenu(idx);
+    setOpenMenu(category);
+    loadCategoryProviders(category);
   }
 
   function handleMouseLeave() {
@@ -66,8 +85,9 @@ export default function Header({
     if (closeTimer.current) clearTimeout(closeTimer.current);
   }
 
-  function toggleMobileExpand(idx: number) {
-    setMobileExpanded((prev) => (prev === idx ? null : idx));
+  function toggleMobileExpand(category: GameCategory) {
+    setMobileExpanded((prev) => (prev === category ? null : category));
+    loadCategoryProviders(category);
   }
 
   // close profile dropdown on outside click
@@ -102,36 +122,41 @@ export default function Header({
             />
           </Link>
 
-          {/* desktop nav */}
+          {/* desktop nav — Home/Promotions/Leaderboard are plain links; every
+              real game category gets a dropdown of that section's real
+              providers, fetched lazily (and cached) the first time it opens */}
           <nav className="hidden items-center gap-6 text-sm font-medium tracking-wide text-[#C9B8E8] lg:flex xl:gap-8">
-            {t.nav.map((n, idx) => {
-              const hasDropdown = !!NAV_DROPDOWNS[idx];
-              const isOpen = openMenu === idx;
+            <Link href="/" className="whitespace-nowrap transition-colors hover:text-[#F5C842]">
+              {t.nav[0]}
+            </Link>
+
+            {SECTION_CATEGORIES.map((category) => {
+              const isOpen = openMenu === category;
+              const providers = providersByCategory[category];
+              const isLoading = loadingCategory === category && !providers;
               return (
                 <div
-                  key={n}
+                  key={category}
                   className="relative"
-                  onMouseEnter={() => handleMouseEnter(idx)}
+                  onMouseEnter={() => handleMouseEnter(category)}
                   onMouseLeave={handleMouseLeave}
                 >
-                  <Link
-                    href={NAV_HREFS[idx] ?? "#"}
+                  <button
+                    type="button"
                     className={`flex items-center gap-1 whitespace-nowrap transition-colors hover:text-[#F5C842] ${
                       isOpen ? "text-[#F5C842]" : ""
                     }`}
                   >
-                    {n}
-                    {hasDropdown && (
-                      <FaChevronDown
-                        className={`h-2.5 w-2.5 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
-                      />
-                    )}
-                  </Link>
+                    {CATEGORY_ICONS[category]} {t.categoryLabels[category]}
+                    <FaChevronDown
+                      className={`h-2.5 w-2.5 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+                    />
+                  </button>
 
-                  {/* dropdown panel */}
-                  {hasDropdown && isOpen && (
+                  {/* dropdown panel — real providers for this section */}
+                  {isOpen && (
                     <div
-                      className="absolute left-1/2 top-full z-50 mt-3 w-[360px] -translate-x-1/2 animate-[popIn_0.18s_ease] rounded-2xl p-3"
+                      className="absolute left-1/2 top-full z-50 mt-3 w-72 -translate-x-1/2 animate-[popIn_0.18s_ease] rounded-2xl p-3"
                       style={{
                         background:
                           "linear-gradient(145deg, rgba(27,8,56,0.97) 0%, rgba(10,6,18,0.99) 100%)",
@@ -153,48 +178,38 @@ export default function Header({
                         }}
                       />
 
-                      {/* 2×2 grid */}
-                      <div className="grid grid-cols-2 gap-2">
-                        {NAV_DROPDOWNS[idx].map((item) => (
-                          <a
-                            key={item.key}
-                            href="#"
-                            className="group/dd relative overflow-hidden rounded-xl transition-all duration-200 hover:-translate-y-0.5"
-                            style={{
-                              border: "1px solid rgba(255,255,255,0.07)",
-                              background: "rgba(255,255,255,0.02)",
-                            }}
-                          >
-                            {/* image */}
-                            <div className="relative h-24 w-full overflow-hidden rounded-t-xl">
-                              <Image
-                                src={item.img}
-                                alt={t.dropdownLabels[item.key] ?? item.key}
-                                fill
-                                className="object-cover transition-transform duration-300 group-hover/dd:scale-110"
-                                sizes="120px"
-                              />
-                              <div className="absolute inset-0 bg-gradient-to-t from-[#0A0612]/70 via-transparent to-transparent" />
-                              {/* gold shimmer on hover */}
-                              <div className="absolute inset-0 opacity-0 transition-opacity duration-300 group-hover/dd:opacity-100"
-                                style={{
-                                  background: "linear-gradient(135deg, transparent 40%, rgba(212,175,55,0.15) 50%, transparent 60%)",
-                                }}
-                              />
-                            </div>
-
-                            {/* label */}
-                            <p className="truncate px-2 py-1.5 text-[11px] font-semibold text-[#B8AAD4] transition-colors group-hover/dd:text-[#F5C842]">
-                              {t.dropdownLabels[item.key] ?? item.key}
-                            </p>
-                          </a>
-                        ))}
-                      </div>
+                      {isLoading ? (
+                        <div className="flex justify-center py-6">
+                          <span className="h-5 w-5 animate-spin rounded-full border-2 border-white/20 border-t-[#F5C842]" />
+                        </div>
+                      ) : !providers || providers.length === 0 ? (
+                        <p className="px-2 py-4 text-center text-xs text-[#7B5EA7]">No providers yet.</p>
+                      ) : (
+                        <div className="grid max-h-80 grid-cols-2 gap-1.5 overflow-y-auto pr-1">
+                          {providers.map((p) => (
+                            <Link
+                              key={p.code}
+                              href={`/providers/${p.code}`}
+                              onClick={() => setOpenMenu(null)}
+                              className="truncate rounded-lg px-2.5 py-2 text-xs font-medium text-[#B8AAD4] transition-colors hover:bg-white/5 hover:text-[#F5C842]"
+                            >
+                              {p.name}
+                            </Link>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
               );
             })}
+
+            <Link href="#" className="whitespace-nowrap transition-colors hover:text-[#F5C842]">
+              {t.nav[4]}
+            </Link>
+            <Link href="/leaderboard" className="whitespace-nowrap transition-colors hover:text-[#F5C842]">
+              {t.nav[5]}
+            </Link>
           </nav>
 
           {/* right controls */}
@@ -374,63 +389,81 @@ export default function Header({
             </div>
 
             <nav className="flex flex-col gap-1 text-base font-medium text-[#C9B8E8]">
-              {t.nav.map((n, idx) => {
-                const hasDropdown = !!NAV_DROPDOWNS[idx];
-                const isExpanded = mobileExpanded === idx;
+              <Link
+                href="/"
+                onClick={() => setMobileOpen(false)}
+                className="rounded-xl px-3 py-3 transition-colors hover:bg-white/5 hover:text-[#F5C842]"
+              >
+                {t.nav[0]}
+              </Link>
+
+              {SECTION_CATEGORIES.map((category) => {
+                const isExpanded = mobileExpanded === category;
+                const providers = providersByCategory[category];
+                const isLoading = loadingCategory === category && !providers;
                 return (
-                  <div key={n}>
+                  <div key={category}>
                     <div className="flex items-center rounded-xl hover:bg-white/5">
-                      <Link
-                        href={NAV_HREFS[idx] ?? "#"}
-                        onClick={() => { if (!hasDropdown) setMobileOpen(false); }}
-                        className="flex-1 px-3 py-3 transition-colors hover:text-[#F5C842]"
+                      <button
+                        onClick={() => toggleMobileExpand(category)}
+                        className="flex-1 px-3 py-3 text-left transition-colors hover:text-[#F5C842]"
                       >
-                        {n}
-                      </Link>
-                      {hasDropdown && (
-                        <button
-                          onClick={() => toggleMobileExpand(idx)}
-                          className="flex h-11 w-11 items-center justify-center text-[#9B8EC4] transition-colors hover:text-[#F5C842]"
-                          aria-label="Expand submenu"
-                        >
-                          <FaChevronDown
-                            className={`h-3 w-3 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}
-                          />
-                        </button>
-                      )}
+                        {CATEGORY_ICONS[category]} {t.categoryLabels[category]}
+                      </button>
+                      <button
+                        onClick={() => toggleMobileExpand(category)}
+                        className="flex h-11 w-11 items-center justify-center text-[#9B8EC4] transition-colors hover:text-[#F5C842]"
+                        aria-label="Expand submenu"
+                      >
+                        <FaChevronDown
+                          className={`h-3 w-3 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}
+                        />
+                      </button>
                     </div>
 
-                    {/* mobile accordion submenu — 2-col image grid */}
-                    {hasDropdown && isExpanded && (
-                      <div className="mb-2 mt-1 grid grid-cols-2 gap-2 px-2 animate-[fadeIn_0.15s_ease]">
-                        {NAV_DROPDOWNS[idx].map((item) => (
-                          <a
-                            key={item.key}
-                            href="#"
-                            onClick={() => setMobileOpen(false)}
-                            className="group/mob relative overflow-hidden rounded-xl"
-                            style={{ border: "1px solid rgba(255,255,255,0.08)" }}
-                          >
-                            <div className="relative h-16 w-full overflow-hidden rounded-t-xl">
-                              <Image
-                                src={item.img}
-                                alt={t.dropdownLabels[item.key] ?? item.key}
-                                fill
-                                className="object-cover transition-transform duration-300 group-hover/mob:scale-110"
-                                sizes="120px"
-                              />
-                              <div className="absolute inset-0 bg-gradient-to-t from-[#0A0612]/75 via-transparent to-transparent" />
-                            </div>
-                            <p className="truncate px-1.5 py-1.5 text-[10px] font-semibold text-[#B8AAD4] transition-colors group-hover/mob:text-[#F5C842]">
-                              {t.dropdownLabels[item.key] ?? item.key}
-                            </p>
-                          </a>
-                        ))}
+                    {/* mobile accordion submenu — real providers for this section */}
+                    {isExpanded && (
+                      <div className="mb-2 mt-1 px-2 animate-[fadeIn_0.15s_ease]">
+                        {isLoading ? (
+                          <div className="flex justify-center py-4">
+                            <span className="h-5 w-5 animate-spin rounded-full border-2 border-white/20 border-t-[#F5C842]" />
+                          </div>
+                        ) : !providers || providers.length === 0 ? (
+                          <p className="px-2 py-3 text-center text-xs text-[#7B5EA7]">No providers yet.</p>
+                        ) : (
+                          <div className="grid max-h-64 grid-cols-2 gap-1.5 overflow-y-auto">
+                            {providers.map((p) => (
+                              <Link
+                                key={p.code}
+                                href={`/providers/${p.code}`}
+                                onClick={() => setMobileOpen(false)}
+                                className="truncate rounded-lg px-2.5 py-2 text-xs font-medium text-[#B8AAD4] transition-colors hover:bg-white/5 hover:text-[#F5C842]"
+                              >
+                                {p.name}
+                              </Link>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
                 );
               })}
+
+              <Link
+                href="#"
+                onClick={() => setMobileOpen(false)}
+                className="rounded-xl px-3 py-3 transition-colors hover:bg-white/5 hover:text-[#F5C842]"
+              >
+                {t.nav[4]}
+              </Link>
+              <Link
+                href="/leaderboard"
+                onClick={() => setMobileOpen(false)}
+                className="rounded-xl px-3 py-3 transition-colors hover:bg-white/5 hover:text-[#F5C842]"
+              >
+                {t.nav[5]}
+              </Link>
             </nav>
 
             <div className="mt-auto pt-6">

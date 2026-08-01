@@ -19,36 +19,6 @@ export const NAV_LINKS = ["Home", "Live Casino", "Slots", "Sports", "Promotions"
 /** Nav index → target href. "#" entries have no dedicated page yet. */
 export const NAV_HREFS = ["/", "#", "#", "#", "#", "/leaderboard"];
 
-export type NavDropdownItem = { key: string; img: string };
-
-/** Nav index → dropdown items. Index 0 (Home) has no dropdown. */
-export const NAV_DROPDOWNS: Record<number, NavDropdownItem[]> = {
-  1: [ // Live Casino
-    { key: "roulette",    img: "/dragon.jpg" },
-    { key: "blackjack",   img: "/book.png"   },
-    { key: "baccarat",    img: "/drop.png"   },
-    { key: "gameShows",   img: "/mega.png"   },
-  ],
-  2: [ // Slots
-    { key: "popular",     img: "/book.png"   },
-    { key: "newGames",    img: "/dragon.jpg" },
-    { key: "jackpot",     img: "/mega.png"   },
-    { key: "crash",       img: "/drop.png"   },
-  ],
-  3: [ // Sports
-    { key: "football",    img: "/dragon.jpg" },
-    { key: "cricket",     img: "/book.png"   },
-    { key: "basketball",  img: "/mega.png"   },
-    { key: "tennis",      img: "/drop.png"   },
-  ],
-  4: [ // Promotions
-    { key: "welcome",     img: "/hero1.png"  },
-    { key: "freeSpins",   img: "/book.png"   },
-    { key: "reload",      img: "/dragon.jpg" },
-    { key: "vip",         img: "/mega.png"   },
-  ],
-};
-
 export const PROVIDERS = [
   "Evolution Gaming",
   "Pragmatic Play",

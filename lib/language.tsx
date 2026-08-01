@@ -9,8 +9,6 @@ export type Translations = {
   nav: string[];
   login: string;
   register: string;
-  // nav dropdown labels (keyed by item key from NAV_DROPDOWNS)
-  dropdownLabels: Record<string, string>;
   // chat widget
   chatTitle: string;
   chatSubtitle: string;
@@ -268,12 +266,6 @@ const T: Record<Lang, Translations> = {
     nav: ["Home", "Live Casino", "Slots", "Sports", "Promotions", "Leaderboard"],
     login: "Log In",
     register: "Sign Up",
-    dropdownLabels: {
-      roulette: "Roulette", blackjack: "Blackjack", baccarat: "Baccarat", gameShows: "Game Shows",
-      popular: "Popular Slots", newGames: "New Games", jackpot: "Jackpot Slots", crash: "Crash Games",
-      football: "Football", cricket: "Cricket", basketball: "Basketball", tennis: "Tennis",
-      welcome: "Welcome Bonus", freeSpins: "Free Spins", reload: "Reload Bonus", vip: "VIP Club",
-    },
 
     chatTitle: "Live Support",
     chatSubtitle: "Online · Avg. reply < 1 min",
@@ -543,12 +535,6 @@ const T: Record<Lang, Translations> = {
     nav: ["হোম", "লাইভ ক্যাসিনো", "স্লট", "স্পোর্টস", "প্রমোশন", "লিডারবোর্ড"],
     login: "লগইন",
     register: "নিবন্ধন",
-    dropdownLabels: {
-      roulette: "রুলেট", blackjack: "ব্ল্যাকজ্যাক", baccarat: "ব্যাকারাট", gameShows: "গেম শো",
-      popular: "জনপ্রিয় স্লট", newGames: "নতুন গেম", jackpot: "জ্যাকপট স্লট", crash: "ক্র্যাশ গেম",
-      football: "ফুটবল", cricket: "ক্রিকেট", basketball: "বাস্কেটবল", tennis: "টেনিস",
-      welcome: "স্বাগত বোনাস", freeSpins: "ফ্রি স্পিন", reload: "রিলোড বোনাস", vip: "ভিআইপি ক্লাব",
-    },
 
     chatTitle: "লাইভ সাপোর্ট",
     chatSubtitle: "অনলাইন · গড় রিপ্লাই < ১ মিনিট",
