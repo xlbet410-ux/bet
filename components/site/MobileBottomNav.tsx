@@ -35,14 +35,6 @@ export default function MobileBottomNav({
           background: "#0D0620",
           borderTop: "1px solid rgba(212,175,55,0.15)",
           boxShadow: "0 -4px 20px rgba(0,0,0,0.4)",
-          // punches a real circular notch out of the bar's top edge, centered
-          // behind the deposit circle — a mask cutout, not a hand-drawn path,
-          // so it stays a clean circle at every screen width instead of
-          // stretching/distorting.
-          WebkitMaskImage:
-            "radial-gradient(circle 34px at 50% 0%, transparent 32px, black 35px)",
-          maskImage:
-            "radial-gradient(circle 34px at 50% 0%, transparent 32px, black 35px)",
         }}
       >
         <Link
@@ -63,7 +55,9 @@ export default function MobileBottomNav({
           {t.bottomNavPromotion}
         </Link>
 
-        {/* deposit — raised center circle, sitting inside the notch */}
+        {/* deposit — raised center circle, sitting inside a dark backing
+            disc (same color as the bar) so it reads as sunk into a curved
+            gap rather than sitting flush against the bar's flat top */}
         <Link
           href="/profile?tab=deposit"
           onClick={requireAuth}
@@ -72,13 +66,18 @@ export default function MobileBottomNav({
           }`}
         >
           <span
-            className="-mt-7 flex h-12 w-12 items-center justify-center rounded-full text-xl text-[#0A0612]"
-            style={{
-              background: "linear-gradient(135deg, #F5C842, #D4AF37)",
-              boxShadow: "0 4px 18px rgba(212,175,55,0.55)",
-            }}
+            className="-mt-8 flex h-16 w-16 items-center justify-center rounded-full"
+            style={{ background: "#0D0620", boxShadow: "inset 0 2px 6px rgba(0,0,0,0.45)" }}
           >
-            <FaSackDollar />
+            <span
+              className="flex h-12 w-12 items-center justify-center rounded-full text-xl text-[#0A0612]"
+              style={{
+                background: "linear-gradient(135deg, #F5C842, #D4AF37)",
+                boxShadow: "0 4px 18px rgba(212,175,55,0.55)",
+              }}
+            >
+              <FaSackDollar />
+            </span>
           </span>
           {t.deposit}
         </Link>
