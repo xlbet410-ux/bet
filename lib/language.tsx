@@ -520,7 +520,7 @@ const T: Record<Lang, Translations> = {
       featured: "Featured",
       slots: "Slots",
       live_casino: "Live Casino",
-      cards: "Cards",
+      cards: "Poker",
       fishing: "Fishing",
       mini_games: "Mini Games",
       sports: "Sports",
