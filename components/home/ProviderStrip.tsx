@@ -7,7 +7,7 @@ export default function ProviderStrip() {
   const { t, lang } = useLang();
 
   return (
-    <section className="relative z-10 mx-auto mt-8 max-w-6xl px-5">
+    <section className="relative z-10 mx-auto mt-1 max-w-6xl px-5">
       {/* label */}
       <p className="mb-3 text-center text-[9px] font-black uppercase tracking-[0.35em] text-[#6A5E8A]">
         {lang === "bn" ? "বিশ্বের শীর্ষ প্রদানকারী দ্বারা চালিত" : "Powered by the world's leading providers"}

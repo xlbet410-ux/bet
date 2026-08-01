@@ -11,7 +11,7 @@ export default function CtaStrip({
   const { t } = useLang();
 
   return (
-    <section className="relative z-10 px-5 py-12">
+    <section className="relative z-10 px-5 py-1 sm:py-2">
       <div className="mx-auto max-w-3xl rounded-3xl border border-[#D4AF37]/25 bg-gradient-to-br from-[#1B0838] to-[#0A0612] p-10 text-center">
         <h2 className="text-2xl font-bold md:text-3xl">{t.ctaTitle}</h2>
         <p className="mt-3 text-[#9B8EC4]">{t.ctaDesc}</p>

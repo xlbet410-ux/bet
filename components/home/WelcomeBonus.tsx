@@ -11,7 +11,7 @@ export default function WelcomeBonus({
   const { t } = useLang();
 
   return (
-    <section className="relative z-10 px-5 py-12">
+    <section className="relative z-10 px-5 py-1 sm:py-2">
       <div className="mx-auto flex max-w-5xl flex-col items-center justify-between gap-7 overflow-hidden rounded-3xl border border-[#7B2FBE]/40 bg-gradient-to-r from-[#150628] via-[#2D0A5E] to-[#150628] p-8 shadow-[0_0_50px_#7B2FBE25] md:flex-row md:p-10">
         <div className="text-center md:text-left">
           <p className="text-xs font-medium uppercase tracking-[0.25em] text-[#E8CF7A]">

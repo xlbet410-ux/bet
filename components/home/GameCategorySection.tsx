@@ -197,7 +197,7 @@ export default function GameCategorySection({
 
   return (
     <Reveal>
-      <section className="relative z-10 px-5 py-5 sm:py-10">
+      <section className="relative z-10 px-5 py-1 sm:py-2">
         <div className="mx-auto max-w-6xl">
           <div className="hidden sm:block sm:pb-4">
             <GamesToolbar {...toolbar} />

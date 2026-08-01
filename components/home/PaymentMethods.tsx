@@ -7,7 +7,7 @@ export default function PaymentMethods() {
   const { t } = useLang();
 
   return (
-    <section className="relative z-10 px-5 py-12">
+    <section className="relative z-10 px-5 py-1 sm:py-2">
       <div className="mx-auto max-w-4xl text-center">
         <h2 className="mb-2 text-xl font-bold text-white">{t.paymentTitle}</h2>
         <p className="mb-8 text-sm text-[#9B8EC4]">{t.paymentSub}</p>

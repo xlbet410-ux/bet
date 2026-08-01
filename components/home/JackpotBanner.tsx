@@ -8,7 +8,7 @@ export default function JackpotBanner({ run }: { run: boolean }) {
   const { t } = useLang();
 
   return (
-    <section className="relative z-10 px-5 py-14">
+    <section className="relative z-10 px-5 py-1 sm:py-2">
       <div className="relative mx-auto max-w-4xl overflow-hidden rounded-3xl border border-[#D4AF37]/30 bg-gradient-to-br from-[#1B0838] via-[#2D0A5E] to-[#1B0838] p-8 text-center shadow-[0_0_60px_#7B2FBE30] md:p-12">
         <div className="absolute -top-24 left-1/2 h-48 w-48 -translate-x-1/2 rounded-full bg-[#D4AF37]/20 blur-3xl" />
         <p className="relative text-xs font-medium uppercase tracking-[0.3em] text-[#E8CF7A]">
