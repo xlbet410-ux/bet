@@ -37,6 +37,19 @@ export default function MobileBottomNav({
           boxShadow: "0 -4px 20px rgba(0,0,0,0.4)",
         }}
       >
+        {/* real cutout in the bar's top edge, centered behind the deposit
+            circle — a genuinely transparent SVG hole (not a mask/backing
+            disc), so whatever is behind the fixed bar shows through, same
+            as the reference design */}
+        <svg
+          viewBox="0 0 120 40"
+          className="pointer-events-none absolute left-1/2 top-0 h-10 w-33 -translate-x-1/2 -translate-y-full"
+        >
+          <path
+            d="M0,40 V0 H18 V16 A22,22 0 0 0 60,32 A22,22 0 0 0 102,16 V0 H120 V40 Z"
+            fill="#0D0620"
+          />
+        </svg>
         <Link
           href="/"
           className={`flex flex-1 flex-col items-center gap-1 rounded-lg py-1.5 text-[10px] font-semibold transition-colors ${
@@ -55,9 +68,7 @@ export default function MobileBottomNav({
           {t.bottomNavPromotion}
         </Link>
 
-        {/* deposit — raised center circle, sitting inside a dark backing
-            disc (same color as the bar) so it reads as sunk into a curved
-            gap rather than sitting flush against the bar's flat top */}
+        {/* deposit — raised center circle, sitting inside the cutout */}
         <Link
           href="/profile?tab=deposit"
           onClick={requireAuth}
@@ -66,18 +77,13 @@ export default function MobileBottomNav({
           }`}
         >
           <span
-            className="-mt-8 flex h-16 w-16 items-center justify-center rounded-full"
-            style={{ background: "#0D0620", boxShadow: "inset 0 2px 6px rgba(0,0,0,0.45)" }}
+            className="-mt-7 flex h-12 w-12 items-center justify-center rounded-full text-xl text-[#0A0612]"
+            style={{
+              background: "linear-gradient(135deg, #F5C842, #D4AF37)",
+              boxShadow: "0 4px 18px rgba(212,175,55,0.55)",
+            }}
           >
-            <span
-              className="flex h-12 w-12 items-center justify-center rounded-full text-xl text-[#0A0612]"
-              style={{
-                background: "linear-gradient(135deg, #F5C842, #D4AF37)",
-                boxShadow: "0 4px 18px rgba(212,175,55,0.55)",
-              }}
-            >
-              <FaSackDollar />
-            </span>
+            <FaSackDollar />
           </span>
           {t.deposit}
         </Link>
