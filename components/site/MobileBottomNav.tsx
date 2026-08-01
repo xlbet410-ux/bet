@@ -42,11 +42,11 @@ export default function MobileBottomNav({
             disc), so whatever is behind the fixed bar shows through, same
             as the reference design */}
         <svg
-          viewBox="0 0 120 40"
-          className="pointer-events-none absolute left-1/2 top-0 h-10 w-33 -translate-x-1/2 -translate-y-full"
+          viewBox="0 0 120 60"
+          className="pointer-events-none absolute left-1/2 top-0 h-15 w-33 -translate-x-1/2 -translate-y-1/2"
         >
           <path
-            d="M0,40 V0 H18 V16 A22,22 0 0 0 60,32 A22,22 0 0 0 102,16 V0 H120 V40 Z"
+            d="M0,60 V0 H18 V24 A33,33 0 0 0 60,48 A33,33 0 0 0 102,24 V0 H120 V60 Z"
             fill="#0D0620"
           />
         </svg>
