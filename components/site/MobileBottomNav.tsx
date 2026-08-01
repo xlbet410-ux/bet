@@ -77,10 +77,10 @@ export default function MobileBottomNav({
           }`}
         >
           <span
-            className="-mt-7 flex h-12 w-12 items-center justify-center rounded-full text-xl text-[#0A0612]"
+            className="-mt-7 flex h-12 w-12 items-center justify-center rounded-full text-xl text-[#0A0612] ring-2 ring-[#0D0620]"
             style={{
               background: "linear-gradient(135deg, #F5C842, #D4AF37)",
-              boxShadow: "0 4px 18px rgba(212,175,55,0.55)",
+              boxShadow: "0 6px 22px rgba(212,175,55,0.65), 0 2px 6px rgba(0,0,0,0.5)",
             }}
           >
             <FaSackDollar />
