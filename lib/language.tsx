@@ -248,6 +248,7 @@ export type Translations = {
     fishing: string;
     mini_games: string;
     sports: string;
+    esports: string;
   };
 
   // sub-tag filter chips (only within Slots today — see lib/games.ts SUB_TAGS)
@@ -524,6 +525,7 @@ const T: Record<Lang, Translations> = {
       fishing: "Fishing",
       mini_games: "Mini Games",
       sports: "Sports",
+      esports: "Esports",
     },
 
     subTagAll: "All",
@@ -797,6 +799,7 @@ const T: Record<Lang, Translations> = {
       fishing: "মাছ ধরা",
       mini_games: "মিনি গেমস",
       sports: "খেলাধুলা",
+      esports: "ই-স্পোর্টস",
     },
 
     subTagAll: "সব",

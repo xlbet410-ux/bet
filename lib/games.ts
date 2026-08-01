@@ -8,7 +8,8 @@ export type GameCategory =
   | "cards"
   | "fishing"
   | "mini_games"
-  | "sports";
+  | "sports"
+  | "esports";
 
 export const CATEGORY_ORDER: GameCategory[] = [
   "featured",
@@ -18,6 +19,7 @@ export const CATEGORY_ORDER: GameCategory[] = [
   "fishing",
   "mini_games",
   "sports",
+  "esports",
 ];
 
 // Labels are localized (see lib/language.tsx `categoryLabels`) since the
@@ -30,6 +32,7 @@ export const CATEGORY_ICONS: Record<GameCategory, string> = {
   fishing: "🐟",
   mini_games: "🚀",
   sports: "🏏",
+  esports: "🎮",
 };
 
 export const CATEGORY_ACCENT: Record<GameCategory, { from: string; to: string }> = {
@@ -40,6 +43,7 @@ export const CATEGORY_ACCENT: Record<GameCategory, { from: string; to: string }>
   fishing: { from: "#0891B2", to: "#22D3EE" },
   mini_games: { from: "#C41D7F", to: "#FF85C2" },
   sports: { from: "#1D4ED8", to: "#60A5FA" },
+  esports: { from: "#7C3AED", to: "#A78BFA" },
 };
 
 // Real, verifiable sub-tags only. "megaways"/"jackpot" come from a literal
