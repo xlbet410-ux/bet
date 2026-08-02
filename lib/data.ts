@@ -43,14 +43,6 @@ export const WINS = [
   "Tania won $678 — Blackjack VIP",
 ];
 
-export const STEPS = [
-  { step: "01", title: "Register", desc: "Create a free account in under 2 minutes." },
-  { step: "02", title: "Deposit", desc: "Add funds via card, e-wallet, or bank transfer." },
-  { step: "03", title: "Play & Win", desc: "Play your favorite games and claim your rewards." },
-];
-
-export const PAYMENT_METHODS = ["VISA", "Mastercard", "PayPal", "USDT", "Skrill", "Apple Pay", "Bank Transfer"];
-
 export const FOOTER_LINKS: Record<string, string[]> = {
   Casino: ["Slots", "Live Casino", "Jackpots", "Promotions"],
   Support: ["Help Center", "Contact Us", "FAQ", "Live Chat"],

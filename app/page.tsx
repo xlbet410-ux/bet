@@ -11,13 +11,8 @@ import AmbientBackground from "@/components/site/AmbientBackground";
 import BackToTop from "@/components/ui/BackToTop";
 import Reveal from "@/components/ui/Reveal";
 import HeroSlider from "@/components/home/HeroSlider";
-import ProviderStrip from "@/components/home/ProviderStrip";
 import LiveWinsTicker from "@/components/home/LiveWinsTicker";
 import LiveGames from "@/components/home/LiveGames";
-import JackpotBanner from "@/components/home/JackpotBanner";
-import WelcomeBonus from "@/components/home/WelcomeBonus";
-import HowItWorks from "@/components/home/HowItWorks";
-import PaymentMethods from "@/components/home/PaymentMethods";
 import CtaStrip from "@/components/home/CtaStrip";
 import ChatSupport from "@/components/site/ChatSupport";
 
@@ -66,16 +61,11 @@ export default function Home() {
         <Header onOpenAuth={setAuthMode} />
 
         <HeroSlider />
-        <ProviderStrip />
-        <LiveWinsTicker />
 
         <LiveGames onOpenAuth={setAuthMode} />
 
-        <Reveal><JackpotBanner run={!loading} /></Reveal>
-        <Reveal><WelcomeBonus onOpenAuth={setAuthMode} /></Reveal>
-        <Reveal><HowItWorks /></Reveal>
-        <Reveal><PaymentMethods /></Reveal>
         <Reveal><CtaStrip onOpenAuth={setAuthMode} /></Reveal>
+        <LiveWinsTicker />
 
         <Footer />
         <ChatSupport onOpenAuth={setAuthMode} />

@@ -33,23 +33,6 @@ export type Translations = {
   sportsHighlight: string;
   sportLabels: string[];        // must match SPORTS order in data.ts
   noMatches: string;
-  // jackpot banner
-  jackpotEyebrow: string;
-  jackpotDesc: string;
-  jackpotPlay: string;
-  // welcome bonus
-  welcomeEyebrow: string;
-  welcomeAmount: string;
-  welcomeDesc: string;
-  claimBonus: string;
-  // how it works
-  howTitle: string;
-  howHighlight: string;
-  howSub: string;
-  steps: { title: string; desc: string }[];
-  // payment methods
-  paymentTitle: string;
-  paymentSub: string;
   // cta strip
   ctaTitle: string;
   ctaDesc: string;
@@ -288,27 +271,6 @@ const T: Record<Lang, Translations> = {
     sportsHighlight: "Sports",
     sportLabels: ["All Sports", "Football", "Cricket", "Tennis", "Basketball", "Volleyball"],
     noMatches: "No live matches right now — check back soon.",
-
-    jackpotEyebrow: "Mega Jackpot",
-    jackpotDesc: "Growing every second — you could be the next winner",
-    jackpotPlay: "Play Jackpot",
-
-    welcomeEyebrow: "Welcome Package",
-    welcomeAmount: "100% up to $500",
-    welcomeDesc: "Double your first deposit + 100 free spins",
-    claimBonus: "Claim Bonus",
-
-    howTitle: "Get Started in",
-    howHighlight: "3 Steps",
-    howSub: "Simple, fast and secure",
-    steps: [
-      { title: "Register", desc: "Create a free account in under 2 minutes." },
-      { title: "Deposit", desc: "Add funds via card, e-wallet, or bank transfer." },
-      { title: "Play & Win", desc: "Play your favorite games and claim your rewards." },
-    ],
-
-    paymentTitle: "Payment Methods",
-    paymentSub: "Fast · Secure · 100% Confidential",
 
     ctaTitle: "Test Your Luck Today",
     ctaDesc: "Join over 500,000 players — your win is waiting",
@@ -555,27 +517,6 @@ const T: Record<Lang, Translations> = {
     sportsHighlight: "স্পোর্টস",
     sportLabels: ["সব স্পোর্টস", "ফুটবল", "ক্রিকেট", "টেনিস", "বাস্কেটবল", "ভলিবল"],
     noMatches: "এখন কোনো লাইভ ম্যাচ নেই — শীঘ্রই চেক করুন।",
-
-    jackpotEyebrow: "মেগা জ্যাকপট",
-    jackpotDesc: "প্রতি মুহূর্তে বাড়ছে — আপনিই হতে পারেন পরবর্তী বিজয়ী",
-    jackpotPlay: "জ্যাকপট খেলুন",
-
-    welcomeEyebrow: "স্বাগত প্যাকেজ",
-    welcomeAmount: "১০০% পর্যন্ত $৫০০",
-    welcomeDesc: "প্রথম ডিপোজিট দ্বিগুণ + ১০০ ফ্রি স্পিন",
-    claimBonus: "বোনাস নিন",
-
-    howTitle: "শুরু করুন",
-    howHighlight: "৩ ধাপে",
-    howSub: "সহজ, দ্রুত এবং নিরাপদ",
-    steps: [
-      { title: "নিবন্ধন করুন", desc: "২ মিনিটের কম সময়ে বিনামূল্যে অ্যাকাউন্ট তৈরি করুন।" },
-      { title: "ডিপোজিট করুন", desc: "কার্ড, ই-ওয়ালেট বা ব্যাংক ট্রান্সফারের মাধ্যমে অর্থ যোগ করুন।" },
-      { title: "খেলুন ও জিতুন", desc: "আপনার পছন্দের গেম খেলুন এবং পুরস্কার জিতুন।" },
-    ],
-
-    paymentTitle: "পেমেন্ট পদ্ধতি",
-    paymentSub: "দ্রুত · নিরাপদ · ১০০% গোপনীয়",
 
     ctaTitle: "আজই ভাগ্য পরীক্ষা করুন",
     ctaDesc: "৫,০০,০০০+ খেলোয়াড়ের সাথে যোগ দিন — আপনার জয় অপেক্ষা করছে",
