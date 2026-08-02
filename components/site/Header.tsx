@@ -7,12 +7,12 @@ import { FaBars, FaXmark, FaChevronDown } from "react-icons/fa6";
 import { useLang } from "@/lib/language";
 import { useAuth } from "@/lib/auth";
 import { useScrolled } from "@/lib/hooks";
-import { CATEGORY_ORDER, CATEGORY_ICONS, getCategoryProviders, type GameCategory, type CategoryProvider } from "@/lib/games";
+import { CATEGORY_ORDER, CATEGORY_ICONS } from "@/lib/games";
 import logo from "@/assets/logo.png";
 
-// All real game categories (every section name), each with a dropdown of
-// that section's real providers — Featured is a curated cross-provider
-// list, not a browsable section, so it's excluded here.
+// All real game categories (every section name) — shown as plain links in
+// the strip under the header, no dropdown. Featured is a curated
+// cross-provider list, not a browsable section, so it's excluded here.
 const SECTION_CATEGORIES = CATEGORY_ORDER.filter((c) => c !== "featured");
 
 function LangPill() {
@@ -50,45 +50,10 @@ export default function Header({
 }) {
   const scrolled = useScrolled(20);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [openMenu, setOpenMenu] = useState<GameCategory | null>(null);
-  const [mobileExpanded, setMobileExpanded] = useState<GameCategory | null>(null);
   const [profileOpen, setProfileOpen] = useState(false);
-  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const profileRef = useRef<HTMLDivElement>(null);
   const { t } = useLang();
   const { user, logout } = useAuth();
-
-  // fetched lazily per category the first time its dropdown opens, then cached
-  const [providersByCategory, setProvidersByCategory] = useState<Partial<Record<GameCategory, CategoryProvider[]>>>({});
-  const [loadingCategory, setLoadingCategory] = useState<GameCategory | null>(null);
-
-  function loadCategoryProviders(category: GameCategory) {
-    if (providersByCategory[category] || loadingCategory === category) return;
-    setLoadingCategory(category);
-    getCategoryProviders(category)
-      .then((list) => setProvidersByCategory((prev) => ({ ...prev, [category]: list })))
-      .catch(() => setProvidersByCategory((prev) => ({ ...prev, [category]: [] })))
-      .finally(() => setLoadingCategory((c) => (c === category ? null : c)));
-  }
-
-  function handleMouseEnter(category: GameCategory) {
-    if (closeTimer.current) clearTimeout(closeTimer.current);
-    setOpenMenu(category);
-    loadCategoryProviders(category);
-  }
-
-  function handleMouseLeave() {
-    closeTimer.current = setTimeout(() => setOpenMenu(null), 180);
-  }
-
-  function keepOpen() {
-    if (closeTimer.current) clearTimeout(closeTimer.current);
-  }
-
-  function toggleMobileExpand(category: GameCategory) {
-    setMobileExpanded((prev) => (prev === category ? null : category));
-    loadCategoryProviders(category);
-  }
 
   // close profile dropdown on outside click
   useEffect(() => {
@@ -122,88 +87,12 @@ export default function Header({
             />
           </Link>
 
-          {/* desktop nav — Home/Promotions/Leaderboard are plain links; every
-              real game category gets a dropdown of that section's real
-              providers, fetched lazily (and cached) the first time it opens */}
+          {/* desktop nav — no dropdowns; every game section lives in the
+              strip below instead */}
           <nav className="hidden items-center gap-6 text-sm font-medium tracking-wide text-[#C9B8E8] lg:flex xl:gap-8">
             <Link href="/" className="whitespace-nowrap transition-colors hover:text-[#F5C842]">
               {t.nav[0]}
             </Link>
-
-            {SECTION_CATEGORIES.map((category) => {
-              const isOpen = openMenu === category;
-              const providers = providersByCategory[category];
-              const isLoading = loadingCategory === category && !providers;
-              return (
-                <div
-                  key={category}
-                  className="relative"
-                  onMouseEnter={() => handleMouseEnter(category)}
-                  onMouseLeave={handleMouseLeave}
-                >
-                  <button
-                    type="button"
-                    className={`flex items-center gap-1 whitespace-nowrap transition-colors hover:text-[#F5C842] ${
-                      isOpen ? "text-[#F5C842]" : ""
-                    }`}
-                  >
-                    {CATEGORY_ICONS[category]} {t.categoryLabels[category]}
-                    <FaChevronDown
-                      className={`h-2.5 w-2.5 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
-                    />
-                  </button>
-
-                  {/* dropdown panel — real providers for this section */}
-                  {isOpen && (
-                    <div
-                      className="absolute left-1/2 top-full z-50 mt-3 w-72 -translate-x-1/2 animate-[popIn_0.18s_ease] rounded-2xl p-3"
-                      style={{
-                        background:
-                          "linear-gradient(145deg, rgba(27,8,56,0.97) 0%, rgba(10,6,18,0.99) 100%)",
-                        border: "1px solid rgba(212,175,55,0.2)",
-                        boxShadow:
-                          "0 24px 64px rgba(0,0,0,0.75), 0 0 0 1px rgba(255,255,255,0.04), inset 0 1px 0 rgba(255,255,255,0.05)",
-                      }}
-                      onMouseEnter={keepOpen}
-                      onMouseLeave={handleMouseLeave}
-                    >
-                      {/* caret */}
-                      <div
-                        className="absolute -top-[7px] left-1/2 h-3.5 w-3.5 -translate-x-1/2 rotate-45 rounded-tl-sm"
-                        style={{
-                          background: "rgba(27,8,56,0.97)",
-                          border: "1px solid rgba(212,175,55,0.2)",
-                          borderBottom: "none",
-                          borderRight: "none",
-                        }}
-                      />
-
-                      {isLoading ? (
-                        <div className="flex justify-center py-6">
-                          <span className="h-5 w-5 animate-spin rounded-full border-2 border-white/20 border-t-[#F5C842]" />
-                        </div>
-                      ) : !providers || providers.length === 0 ? (
-                        <p className="px-2 py-4 text-center text-xs text-[#7B5EA7]">No providers yet.</p>
-                      ) : (
-                        <div className="grid max-h-80 grid-cols-2 gap-1.5 overflow-y-auto pr-1">
-                          {providers.map((p) => (
-                            <Link
-                              key={p.code}
-                              href={`/providers/${p.code}`}
-                              onClick={() => setOpenMenu(null)}
-                              className="truncate rounded-lg px-2.5 py-2 text-xs font-medium text-[#B8AAD4] transition-colors hover:bg-white/5 hover:text-[#F5C842]"
-                            >
-                              {p.name}
-                            </Link>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-
             <Link href="#" className="whitespace-nowrap transition-colors hover:text-[#F5C842]">
               {t.nav[4]}
             </Link>
@@ -362,8 +251,9 @@ export default function Header({
           </div>
         </div>
 
-        {/* secondary strip — every section, always one tap/click away from
-            any page, jumps to that section's id on the homepage */}
+        {/* secondary strip — every section, plain links (no dropdown), the
+            single place all sections live now; present on every page,
+            desktop and mobile alike */}
         <div className="border-t border-white/5">
           <div
             className="mx-auto flex max-w-7xl items-center gap-2 overflow-x-auto px-4 py-2 sm:px-5"
@@ -416,60 +306,6 @@ export default function Header({
               >
                 {t.nav[0]}
               </Link>
-
-              {SECTION_CATEGORIES.map((category) => {
-                const isExpanded = mobileExpanded === category;
-                const providers = providersByCategory[category];
-                const isLoading = loadingCategory === category && !providers;
-                return (
-                  <div key={category}>
-                    <div className="flex items-center rounded-xl hover:bg-white/5">
-                      <button
-                        onClick={() => toggleMobileExpand(category)}
-                        className="flex-1 px-3 py-3 text-left transition-colors hover:text-[#F5C842]"
-                      >
-                        {CATEGORY_ICONS[category]} {t.categoryLabels[category]}
-                      </button>
-                      <button
-                        onClick={() => toggleMobileExpand(category)}
-                        className="flex h-11 w-11 items-center justify-center text-[#9B8EC4] transition-colors hover:text-[#F5C842]"
-                        aria-label="Expand submenu"
-                      >
-                        <FaChevronDown
-                          className={`h-3 w-3 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}
-                        />
-                      </button>
-                    </div>
-
-                    {/* mobile accordion submenu — real providers for this section */}
-                    {isExpanded && (
-                      <div className="mb-2 mt-1 px-2 animate-[fadeIn_0.15s_ease]">
-                        {isLoading ? (
-                          <div className="flex justify-center py-4">
-                            <span className="h-5 w-5 animate-spin rounded-full border-2 border-white/20 border-t-[#F5C842]" />
-                          </div>
-                        ) : !providers || providers.length === 0 ? (
-                          <p className="px-2 py-3 text-center text-xs text-[#7B5EA7]">No providers yet.</p>
-                        ) : (
-                          <div className="grid max-h-64 grid-cols-2 gap-1.5 overflow-y-auto">
-                            {providers.map((p) => (
-                              <Link
-                                key={p.code}
-                                href={`/providers/${p.code}`}
-                                onClick={() => setMobileOpen(false)}
-                                className="truncate rounded-lg px-2.5 py-2 text-xs font-medium text-[#B8AAD4] transition-colors hover:bg-white/5 hover:text-[#F5C842]"
-                              >
-                                {p.name}
-                              </Link>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-
               <Link
                 href="#"
                 onClick={() => setMobileOpen(false)}

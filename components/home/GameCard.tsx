@@ -35,7 +35,11 @@ export default function GameCard({
   return (
     <div
       onClick={onPlay}
-      className={`group relative select-none overflow-hidden rounded-lg transition-all duration-300 hover:-translate-y-1 ${
+      // aspect-[4/5] matches Oracle's real thumbnail pixel size (200x250,
+      // confirmed live across providers) exactly, so object-cover below
+      // needs no meaningful crop — the whole poster shows as intended,
+      // full-bleed, same size/shape on every card everywhere it's used.
+      className={`group relative select-none overflow-hidden rounded-lg transition-all duration-300 hover:-translate-y-1 aspect-[4/5] ${
         onPlay ? "cursor-pointer" : "cursor-default"
       }`}
       style={{
@@ -49,100 +53,95 @@ export default function GameCard({
         style={{ boxShadow: `inset 0 0 0 1.5px ${game.glow}80, 0 12px 48px ${game.glow}28` }}
       />
 
-      {/* portrait image container — object-contain + a matching background so
-          the real thumbnail always shows in full, never cropped, regardless
-          of its native aspect ratio (letterboxing blends into the card) */}
-      <div
-        className={`relative w-full overflow-hidden ${featured ? "aspect-[2/3]" : "aspect-square"}`}
-        style={{ background: "#0f0720" }}
+      <Image
+        src={game.img}
+        alt={game.name}
+        fill
+        unoptimized={game.img.startsWith('http')}
+        sizes={featured ? "300px" : "200px"}
+        className="object-cover transition-transform duration-700 will-change-transform group-hover:scale-110"
+      />
+
+      {/* tag ribbon – diagonal corner flag, top-left (only when this game has a tag) */}
+      {tag && (
+        <div
+          className={`absolute -left-8 top-3 z-10 w-28 -rotate-45 bg-gradient-to-r ${tag.from} ${tag.to} py-0.5 text-center text-[8px] font-black uppercase tracking-widest text-white sm:top-4 sm:text-[9px]`}
+          style={{ boxShadow: `0 2px 8px ${tag.glow}80` }}
+        >
+          <span className="inline-flex items-center gap-1">
+            {tag.pulse && <span className="inline-block h-1 w-1 animate-pulse rounded-full bg-white/90" />}
+            {game.tag}
+          </span>
+        </div>
+      )}
+
+      {/* provider badge – top center, white pill */}
+      <span className="absolute left-1/2 top-1 z-10 max-w-[70%] -translate-x-1/2 truncate rounded-full bg-white px-2 py-0.5 text-center text-[8px] font-black uppercase tracking-wide text-[#0A0612] shadow-sm sm:top-1.5 sm:px-2.5 sm:py-1 sm:text-[10px]">
+        {game.provider}
+      </span>
+
+      {/* star – top right, small on mobile so it doesn't cover the art */}
+      <button
+        onClick={(e) => { e.stopPropagation(); onToggleFavorite(); }}
+        aria-label={favorited ? "Remove from favorites" : "Add to favorites"}
+        aria-pressed={favorited}
+        className="absolute right-1 top-1 z-10 flex h-5 w-5 items-center justify-center rounded-full border border-white/25 bg-black/40 text-[9px] backdrop-blur-sm transition-all hover:scale-110 hover:border-[#F5C842]/60 sm:right-1.5 sm:top-1.5 sm:h-7 sm:w-7 sm:text-xs"
       >
-        <Image
-          src={game.img}
-          alt={game.name}
-          fill
-          unoptimized={game.img.startsWith('http')}
-          sizes={featured ? "300px" : "160px"}
-          className="object-contain transition-transform duration-700 will-change-transform group-hover:scale-110"
-        />
-
-        {/* tag ribbon – diagonal corner flag, top-left (only when this game has a tag) */}
-        {tag && (
-          <div
-            className={`absolute -left-8 top-3 z-10 w-28 -rotate-45 bg-gradient-to-r ${tag.from} ${tag.to} py-0.5 text-center text-[8px] font-black uppercase tracking-widest text-white sm:top-4 sm:text-[9px]`}
-            style={{ boxShadow: `0 2px 8px ${tag.glow}80` }}
-          >
-            <span className="inline-flex items-center gap-1">
-              {tag.pulse && <span className="inline-block h-1 w-1 animate-pulse rounded-full bg-white/90" />}
-              {game.tag}
-            </span>
-          </div>
+        {favorited ? (
+          <FaStar
+            className="text-[#F5C842]"
+            style={{ filter: "drop-shadow(0 0 5px #F5C84280)" }}
+          />
+        ) : (
+          <FaRegStar className="text-white/70" />
         )}
+      </button>
 
-        {/* provider badge – top center, white pill */}
-        <span className="absolute left-1/2 top-1 z-10 max-w-[70%] -translate-x-1/2 truncate rounded-full bg-white px-2 py-0.5 text-center text-[8px] font-black uppercase tracking-wide text-[#0A0612] shadow-sm sm:top-1.5 sm:px-2.5 sm:py-1 sm:text-[10px]">
-          {game.provider}
-        </span>
+      {/* shine sweep on hover */}
+      <div
+        className="pointer-events-none absolute inset-0 z-10 opacity-0 transition-all duration-700 group-hover:opacity-100"
+        style={{
+          background:
+            "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.09) 50%, transparent 60%)",
+          animation: "none",
+        }}
+        onMouseEnter={(e) => {
+          (e.currentTarget as HTMLElement).style.animation = "shimmer 0.7s ease forwards";
+        }}
+      />
 
-        {/* star – top right, small on mobile so it doesn't cover the art */}
-        <button
-          onClick={(e) => { e.stopPropagation(); onToggleFavorite(); }}
-          aria-label={favorited ? "Remove from favorites" : "Add to favorites"}
-          aria-pressed={favorited}
-          className="absolute right-1 top-1 z-10 flex h-5 w-5 items-center justify-center rounded-full border border-white/25 bg-black/40 text-[9px] backdrop-blur-sm transition-all hover:scale-110 hover:border-[#F5C842]/60 sm:right-1.5 sm:top-1.5 sm:h-7 sm:w-7 sm:text-xs"
-        >
-          {favorited ? (
-            <FaStar
-              className="text-[#F5C842]"
-              style={{ filter: "drop-shadow(0 0 5px #F5C84280)" }}
-            />
-          ) : (
-            <FaRegStar className="text-white/70" />
-          )}
-        </button>
-
-        {/* shine sweep on hover */}
+      {/* gold play button – center, appears on hover (or always, while launching) */}
+      <div
+        className={`absolute inset-0 z-10 flex items-center justify-center transition-all duration-300 ${
+          loading ? "bg-black/60 opacity-100" : "opacity-0 group-hover:opacity-100"
+        }`}
+      >
         <div
-          className="pointer-events-none absolute inset-0 z-10 opacity-0 transition-all duration-700 group-hover:opacity-100"
+          className="flex h-11 w-11 items-center justify-center rounded-full transition-transform duration-300 group-hover:scale-110"
           style={{
-            background:
-              "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.09) 50%, transparent 60%)",
-            animation: "none",
+            background: "radial-gradient(circle at 40% 35%, #fde68a, #D4AF37)",
+            boxShadow: "0 0 0 5px rgba(212,175,55,0.18), 0 0 32px rgba(212,175,55,0.55)",
           }}
-          onMouseEnter={(e) => {
-            (e.currentTarget as HTMLElement).style.animation = "shimmer 0.7s ease forwards";
-          }}
-        />
-
-        {/* gold play button – center, appears on hover (or always, while launching) */}
-        <div
-          className={`absolute inset-0 z-10 flex items-center justify-center transition-all duration-300 ${
-            loading ? "bg-black/60 opacity-100" : "opacity-0 group-hover:opacity-100"
-          }`}
         >
-          <div
-            className="flex h-11 w-11 items-center justify-center rounded-full transition-transform duration-300 group-hover:scale-110"
-            style={{
-              background: "radial-gradient(circle at 40% 35%, #fde68a, #D4AF37)",
-              boxShadow: "0 0 0 5px rgba(212,175,55,0.18), 0 0 32px rgba(212,175,55,0.55)",
-            }}
-          >
-            {loading ? (
-              <span className="h-4 w-4 animate-spin rounded-full border-2 border-[#0A0612]/30 border-t-[#0A0612]" />
-            ) : (
-              <FaPlay className="ml-0.5 h-4 w-4 text-[#0A0612]" />
-            )}
-          </div>
+          {loading ? (
+            <span className="h-4 w-4 animate-spin rounded-full border-2 border-[#0A0612]/30 border-t-[#0A0612]" />
+          ) : (
+            <FaPlay className="ml-0.5 h-4 w-4 text-[#0A0612]" />
+          )}
         </div>
       </div>
 
-      {/* game name – plain row below the image, not overlaid */}
-      <p
-        className={`truncate px-2 py-2 text-center font-bold leading-tight text-white ${
-          featured ? "text-sm" : "text-xs"
-        }`}
-      >
-        {game.name}
-      </p>
+      {/* game name – overlaid at the bottom of the poster with a gradient
+          scrim underneath it for legibility, full-bleed poster style */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-black/90 via-black/50 to-transparent pb-1.5 pt-6">
+        <p
+          className={`truncate px-2 text-center font-bold leading-tight text-white ${
+            featured ? "text-sm" : "text-xs"
+          }`}
+        >
+          {game.name}
+        </p>
+      </div>
     </div>
   );
 }

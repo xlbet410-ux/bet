@@ -113,13 +113,6 @@ export async function getCatalogPage(
 export type CategoryProvider = { code: string; name: string; count: number };
 export type ProviderSort = "name_asc" | "name_desc" | "featured";
 
-export async function getCategoryProviders(category: GameCategory): Promise<CategoryProvider[]> {
-  const params = new URLSearchParams({ category });
-  const res = await fetch(`${API_URL}/games/catalog/category-providers?${params}`, { cache: "no-store" });
-  if (!res.ok) throw new Error(`Failed to load providers (${res.status})`);
-  return res.json();
-}
-
 export async function getAllProviders(): Promise<CategoryProvider[]> {
   const res = await fetch(`${API_URL}/games/catalog/all-providers`, { cache: "no-store" });
   if (!res.ok) throw new Error(`Failed to load providers (${res.status})`);
