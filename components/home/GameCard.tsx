@@ -83,11 +83,12 @@ export default function GameCard({
         </div>
       )}
 
-      {/* provider badge – top center, white pill, capped to a fixed length
-          so it always reads as a short tag rather than a cut-off word */}
+      {/* provider badge – white pill, capped to a fixed length so it always
+          reads as a short tag rather than a cut-off word. Top-left corner
+          on mobile, top-center from sm: up. */}
       <span
         title={game.provider}
-        className="absolute left-1/2 top-1 z-10 -translate-x-1/2 whitespace-nowrap rounded-full bg-white px-2 py-0.5 text-center text-[8px] font-black uppercase tracking-wide text-[#0A0612] shadow-sm sm:top-1.5 sm:px-2.5 sm:py-1 sm:text-[10px]"
+        className="absolute left-1 top-1 z-10 whitespace-nowrap rounded-full bg-white px-2 py-0.5 text-center text-[8px] font-black uppercase tracking-wide text-[#0A0612] shadow-sm sm:left-1/2 sm:top-1.5 sm:-translate-x-1/2 sm:px-2.5 sm:py-1 sm:text-[10px]"
       >
         {shortProviderName(game.provider)}
       </span>

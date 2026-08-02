@@ -210,12 +210,10 @@ export default function GameCategorySection({
             barTo={accent.to}
           />
 
-          <div className="mb-4 sm:hidden">
-            <GamesToolbar {...toolbar} stacked />
-          </div>
-
+          {/* search/favorites toolbar and sub-tag filter chips are desktop
+              only now — mobile shows just the section name and game cards */}
           {showSubTags && (
-            <div className="mb-4 flex flex-wrap gap-2">
+            <div className="mb-4 hidden flex-wrap gap-2 sm:flex">
               <button
                 onClick={() => setActiveTag(undefined)}
                 className={`rounded-full px-4 py-1.5 text-xs font-bold transition-all ${
