@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { FaHeart, FaRegHeart, FaPlay } from "react-icons/fa6";
+import { FaStar, FaRegStar, FaPlay } from "react-icons/fa6";
 import type { GameItem } from "@/lib/data";
 
 /* --- tag colour map (all class strings must appear here for Tailwind to include them) --- */
@@ -49,60 +49,54 @@ export default function GameCard({
         style={{ boxShadow: `inset 0 0 0 1.5px ${game.glow}80, 0 12px 48px ${game.glow}28` }}
       />
 
-      {/* portrait image container */}
-      <div className={`relative w-full overflow-hidden ${featured ? "aspect-[2/3]" : "aspect-square"}`}>
+      {/* portrait image container — object-contain + a matching background so
+          the real thumbnail always shows in full, never cropped, regardless
+          of its native aspect ratio (letterboxing blends into the card) */}
+      <div
+        className={`relative w-full overflow-hidden ${featured ? "aspect-[2/3]" : "aspect-square"}`}
+        style={{ background: "#0f0720" }}
+      >
         <Image
           src={game.img}
           alt={game.name}
           fill
           unoptimized={game.img.startsWith('http')}
           sizes={featured ? "300px" : "160px"}
-          className="object-cover transition-transform duration-700 will-change-transform group-hover:scale-110"
+          className="object-contain transition-transform duration-700 will-change-transform group-hover:scale-110"
         />
 
-        {/* provider badge – top left, small on mobile so it doesn't cover the art */}
-        <span className="absolute left-1 top-1 z-10 max-w-[60%] truncate rounded sm:rounded-md bg-black/60 px-1.5 py-0.5 text-[8px] sm:left-1.5 sm:top-1.5 sm:max-w-[75%] sm:px-2 sm:py-1 sm:text-xs font-black uppercase tracking-wide text-white backdrop-blur-sm">
-          {game.provider}
-        </span>
-
-        {/* provider ribbon – bottom-right corner accent */}
-        <span
-          className="absolute bottom-0 right-0 z-10 max-w-[45%] truncate rounded-tl-md sm:rounded-tl-lg px-1.5 py-1 text-[8px] sm:max-w-[75%] sm:px-3 sm:py-1.5 sm:text-xs font-black uppercase tracking-wide text-white"
-          style={{
-            background: "linear-gradient(135deg, #D4AF37, #7B2FBE)",
-            boxShadow: "0 -2px 10px rgba(0,0,0,0.4)",
-          }}
-        >
-          {game.provider}
-        </span>
-
-        {/* optional promo tag – stacks under the provider badge when present */}
+        {/* tag ribbon – diagonal corner flag, top-left (only when this game has a tag) */}
         {tag && (
-          <span
-            className={`absolute left-1 top-6 z-10 inline-flex items-center gap-1 rounded-full bg-gradient-to-r ${tag.from} ${tag.to} px-1.5 py-0.5 text-[7px] sm:left-1.5 sm:top-9 sm:px-2 sm:text-[9px] font-black uppercase tracking-widest text-white`}
-            style={{ boxShadow: `0 0 10px ${tag.glow}70` }}
+          <div
+            className={`absolute -left-8 top-3 z-10 w-28 -rotate-45 bg-gradient-to-r ${tag.from} ${tag.to} py-0.5 text-center text-[8px] font-black uppercase tracking-widest text-white sm:top-4 sm:text-[9px]`}
+            style={{ boxShadow: `0 2px 8px ${tag.glow}80` }}
           >
-            {tag.pulse && (
-              <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-white/90" />
-            )}
-            {game.tag}
-          </span>
+            <span className="inline-flex items-center gap-1">
+              {tag.pulse && <span className="inline-block h-1 w-1 animate-pulse rounded-full bg-white/90" />}
+              {game.tag}
+            </span>
+          </div>
         )}
 
-        {/* heart – top right, small on mobile so it doesn't cover the art */}
+        {/* provider badge – top center, white pill */}
+        <span className="absolute left-1/2 top-1 z-10 max-w-[70%] -translate-x-1/2 truncate rounded-full bg-white px-2 py-0.5 text-center text-[8px] font-black uppercase tracking-wide text-[#0A0612] shadow-sm sm:top-1.5 sm:px-2.5 sm:py-1 sm:text-[10px]">
+          {game.provider}
+        </span>
+
+        {/* star – top right, small on mobile so it doesn't cover the art */}
         <button
           onClick={(e) => { e.stopPropagation(); onToggleFavorite(); }}
           aria-label={favorited ? "Remove from favorites" : "Add to favorites"}
           aria-pressed={favorited}
-          className="absolute right-1 top-1 z-10 flex h-5 w-5 items-center justify-center rounded-full border border-white/20 bg-black/55 text-[9px] backdrop-blur-sm transition-all hover:scale-110 hover:border-[#F5C842]/60 sm:right-1.5 sm:top-1.5 sm:h-7 sm:w-7 sm:text-xs"
+          className="absolute right-1 top-1 z-10 flex h-5 w-5 items-center justify-center rounded-full border border-white/25 bg-black/40 text-[9px] backdrop-blur-sm transition-all hover:scale-110 hover:border-[#F5C842]/60 sm:right-1.5 sm:top-1.5 sm:h-7 sm:w-7 sm:text-xs"
         >
           {favorited ? (
-            <FaHeart
+            <FaStar
               className="text-[#F5C842]"
               style={{ filter: "drop-shadow(0 0 5px #F5C84280)" }}
             />
           ) : (
-            <FaRegHeart className="text-white/60" />
+            <FaRegStar className="text-white/70" />
           )}
         </button>
 

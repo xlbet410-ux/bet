@@ -361,6 +361,26 @@ export default function Header({
             </button>
           </div>
         </div>
+
+        {/* secondary strip — every section, always one tap/click away from
+            any page, jumps to that section's id on the homepage */}
+        <div className="border-t border-white/5">
+          <div
+            className="mx-auto flex max-w-7xl items-center gap-2 overflow-x-auto px-4 py-2 sm:px-5"
+            style={{ scrollbarWidth: "none" }}
+          >
+            {SECTION_CATEGORIES.map((category) => (
+              <Link
+                key={category}
+                href={`/#${category}`}
+                className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-xs font-semibold text-[#C9B8E8] transition-colors hover:border-[#D4AF37]/50 hover:text-[#F5C842]"
+              >
+                <span>{CATEGORY_ICONS[category]}</span>
+                {t.categoryLabels[category]}
+              </Link>
+            ))}
+          </div>
+        </div>
       </header>
 
       {/* mobile drawer */}

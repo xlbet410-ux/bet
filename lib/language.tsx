@@ -19,8 +19,6 @@ export type Translations = {
   statGames: string;
   statPlayers: string;
   statSupport: string;
-  // category chips (same order as CATEGORIES in data.ts)
-  categories: string[];
   // shared labels
   recommend: string;
   viewAll: string;
@@ -276,8 +274,6 @@ const T: Record<Lang, Translations> = {
     statGames: "Casino Games",
     statPlayers: "Active Players",
     statSupport: "Live Support",
-
-    categories: ["All Games", "Live Casino", "Slots", "Sports", "Crash", "Jackpot"],
 
     recommend: "Recommend",
     viewAll: "View All",
@@ -545,8 +541,6 @@ const T: Record<Lang, Translations> = {
     statGames: "ক্যাসিনো গেমস",
     statPlayers: "সক্রিয় খেলোয়াড়",
     statSupport: "লাইভ সাপোর্ট",
-
-    categories: ["সব গেমস", "লাইভ ক্যাসিনো", "স্লট", "স্পোর্টস", "ক্র্যাশ", "জ্যাকপট"],
 
     recommend: "প্রস্তাবিত",
     viewAll: "সব দেখুন",

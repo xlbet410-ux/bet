@@ -13,7 +13,6 @@ import Reveal from "@/components/ui/Reveal";
 import HeroSlider from "@/components/home/HeroSlider";
 import ProviderStrip from "@/components/home/ProviderStrip";
 import LiveWinsTicker from "@/components/home/LiveWinsTicker";
-import CategoryChips from "@/components/home/CategoryChips";
 import LiveGames from "@/components/home/LiveGames";
 import JackpotBanner from "@/components/home/JackpotBanner";
 import WelcomeBonus from "@/components/home/WelcomeBonus";
@@ -69,7 +68,6 @@ export default function Home() {
         <HeroSlider />
         <ProviderStrip />
         <LiveWinsTicker />
-        <CategoryChips />
 
         <LiveGames onOpenAuth={setAuthMode} />
 

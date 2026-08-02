@@ -3,16 +3,11 @@
 
 import type { IconType } from "react-icons";
 import {
-  FaFutbol,
-  FaGem,
-  FaRocket,
   FaXTwitter,
   FaInstagram,
   FaTelegram,
   FaDiscord,
 } from "react-icons/fa6";
-import { GiCardJoker } from "react-icons/gi";
-import { MdCasino } from "react-icons/md";
 
 export const NAV_LINKS = ["Home", "Live Casino", "Slots", "Sports", "Promotions", "Leaderboard"];
 
@@ -46,15 +41,6 @@ export const WINS = [
   "Nadia won $325 — Crazy Time",
   "Alex won $11,200 — Mega Jackpot",
   "Tania won $678 — Blackjack VIP",
-];
-
-export const CATEGORIES: { label: string; icon?: IconType }[] = [
-  { label: "All Games" },
-  { label: "Live Casino", icon: GiCardJoker },
-  { label: "Slots", icon: MdCasino },
-  { label: "Sports", icon: FaFutbol },
-  { label: "Crash", icon: FaRocket },
-  { label: "Jackpot", icon: FaGem },
 ];
 
 export const STEPS = [
