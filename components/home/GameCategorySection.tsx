@@ -182,7 +182,7 @@ export default function GameCategorySection({
       onClick={loadMore}
       disabled={loadingMore}
       aria-label="Load more games"
-      className="flex aspect-4/5 flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[#D4AF37]/40 text-[#F5C842] transition-colors hover:border-[#D4AF37] hover:bg-[#D4AF37]/5 disabled:opacity-50"
+      className="flex aspect-4/5 w-full flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[#D4AF37]/40 text-[#F5C842] transition-colors hover:border-[#D4AF37] hover:bg-[#D4AF37]/5 disabled:opacity-50"
     >
       {loadingMore ? (
         <span className="h-5 w-5 animate-spin rounded-full border-2 border-[#D4AF37]/30 border-t-[#F5C842]" />

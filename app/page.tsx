@@ -64,8 +64,8 @@ export default function Home() {
 
         <LiveGames onOpenAuth={setAuthMode} />
 
-        <Reveal><CtaStrip onOpenAuth={setAuthMode} /></Reveal>
         <LiveWinsTicker />
+        <Reveal><CtaStrip onOpenAuth={setAuthMode} /></Reveal>
 
         <Footer />
         <ChatSupport onOpenAuth={setAuthMode} />
