@@ -89,9 +89,9 @@ export default function MobileBottomNav({
           className="relative flex flex-col items-center justify-end pt-[22px]"
         >
           <span
-            className="absolute left-1/2 flex h-[62px] w-[62px] -translate-x-1/2 items-center justify-center rounded-full"
+            className="absolute left-1/2 flex h-12.5 w-12.5 -translate-x-1/2 items-center justify-center rounded-full"
             style={{
-              top: "-26px",
+              top: "-16px",
               background:
                 "radial-gradient(circle at 32% 28%, #FFDA85 0%, #F0B040 35%, #C87A1A 75%, #8A4E10 100%)",
               boxShadow:
@@ -99,7 +99,7 @@ export default function MobileBottomNav({
             }}
           >
             <svg
-              className="h-[34px] w-[34px] text-white"
+              className="h-6.5 w-6.5 text-white"
               style={{ filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.3))" }}
               viewBox="0 0 24 24"
               fill="currentColor"
@@ -107,7 +107,7 @@ export default function MobileBottomNav({
               <path d="M8.6 2.2c-.4.3-.7.9-.7 1.5 0 .4.1.7.3 1H7.5c-.3 0-.6.1-.8.4L4.9 8c-.9 1.4-1.9 3.5-1.9 5.5C3 18.2 7 22 12 22s9-3.8 9-8.5c0-2-1-4.1-1.9-5.5l-1.8-2.9c-.2-.3-.5-.4-.8-.4h-.7c.2-.3.3-.6.3-1 0-.6-.3-1.2-.7-1.5-.3-.2-.7-.2-1 0L12 3.4 9.6 2.2c-.3-.2-.7-.2-1 0zM12 8.5c.5 0 .9.4.9.9v.4c1.2.2 2.1 1.1 2.1 2.3h-1.7c0-.4-.4-.8-.9-.8h-.8c-.5 0-.9.3-.9.7 0 .3.2.5.6.6l1.9.5c1.2.3 2 1.1 2 2.2 0 1.2-.9 2.1-2.2 2.3v.4c0 .5-.4.9-.9.9s-.9-.4-.9-.9v-.4c-1.2-.2-2.1-1.1-2.1-2.3h1.7c0 .4.4.8.9.8h.8c.5 0 .9-.3.9-.7 0-.3-.2-.5-.6-.6l-1.9-.5c-1.2-.3-2-1.1-2-2.2 0-1.2.9-2.1 2.2-2.3v-.4c0-.5.4-.9.9-.9z" />
             </svg>
           </span>
-          <span className="mt-[34px] text-center text-[13px] font-medium text-white">{t.deposit}</span>
+          <span className="mt-6.5 text-center text-[13px] font-medium text-white">{t.deposit}</span>
         </Link>
 
         <button

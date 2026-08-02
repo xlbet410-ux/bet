@@ -47,7 +47,7 @@ export default function GameCard({
       // confirmed live across providers) exactly, so object-cover below
       // needs no meaningful crop — the whole poster shows as intended,
       // full-bleed, same size/shape on every card everywhere it's used.
-      className={`group relative select-none overflow-hidden rounded-lg transition-all duration-300 hover:-translate-y-1 aspect-[4/5] ${
+      className={`group relative select-none overflow-hidden rounded-lg transition-all duration-300 hover:-translate-y-1 aspect-4/5 ${
         onPlay ? "cursor-pointer" : "cursor-default"
       }`}
       style={{
