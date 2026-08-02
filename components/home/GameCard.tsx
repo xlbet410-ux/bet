@@ -15,6 +15,14 @@ const TAG_STYLE: Record<string, { from: string; to: string; glow: string; pulse:
   TRENDING: { from: "from-[#006d75]", to: "to-[#36cfc9]", glow: "#13c2c2", pulse: false },
 };
 
+// A fixed character cap keeps the provider pill a predictable short size on
+// every card, instead of CSS truncation, which cuts at whatever happens to
+// fit the container and looks inconsistent from card to card.
+const PROVIDER_NAME_MAX = 13;
+function shortProviderName(name: string): string {
+  return name.length > PROVIDER_NAME_MAX ? `${name.slice(0, PROVIDER_NAME_MAX).trimEnd()}…` : name;
+}
+
 export default function GameCard({
   game,
   featured = false,
@@ -75,9 +83,13 @@ export default function GameCard({
         </div>
       )}
 
-      {/* provider badge – top center, white pill */}
-      <span className="absolute left-1/2 top-1 z-10 max-w-[70%] -translate-x-1/2 truncate rounded-full bg-white px-2 py-0.5 text-center text-[8px] font-black uppercase tracking-wide text-[#0A0612] shadow-sm sm:top-1.5 sm:px-2.5 sm:py-1 sm:text-[10px]">
-        {game.provider}
+      {/* provider badge – top center, white pill, capped to a fixed length
+          so it always reads as a short tag rather than a cut-off word */}
+      <span
+        title={game.provider}
+        className="absolute left-1/2 top-1 z-10 -translate-x-1/2 whitespace-nowrap rounded-full bg-white px-2 py-0.5 text-center text-[8px] font-black uppercase tracking-wide text-[#0A0612] shadow-sm sm:top-1.5 sm:px-2.5 sm:py-1 sm:text-[10px]"
+      >
+        {shortProviderName(game.provider)}
       </span>
 
       {/* star – top right, small on mobile so it doesn't cover the art */}
@@ -132,11 +144,13 @@ export default function GameCard({
       </div>
 
       {/* game name – overlaid at the bottom of the poster with a gradient
-          scrim underneath it for legibility, full-bleed poster style */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-black/90 via-black/50 to-transparent pb-1.5 pt-6">
+          scrim underneath it for legibility. Shows the full name, wrapping
+          onto a second line for longer titles instead of cutting it off. */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-black/95 via-black/60 to-transparent px-2 pb-1.5 pt-7">
         <p
-          className={`truncate px-2 text-center font-bold leading-tight text-white ${
-            featured ? "text-sm" : "text-xs"
+          title={game.name}
+          className={`line-clamp-2 text-center font-bold leading-tight text-white ${
+            featured ? "text-sm" : "text-[11px]"
           }`}
         >
           {game.name}
