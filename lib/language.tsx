@@ -21,7 +21,6 @@ export type Translations = {
   statSupport: string;
   // shared labels
   recommend: string;
-  featuredSectionTitle: string;
   viewAll: string;
   loadMoreGames: string;
   loadMore: string;
@@ -224,6 +223,7 @@ export type Translations = {
   // game category labels (keyed by GameCategory from lib/games.ts)
   categoryLabels: {
     featured: string;
+    hot_games: string;
     slots: string;
     live_casino: string;
     cards: string;
@@ -262,7 +262,6 @@ const T: Record<Lang, Translations> = {
     statSupport: "Live Support",
 
     recommend: "Recommend",
-    featuredSectionTitle: "Recommend Hot Games",
     viewAll: "View All",
     loadMoreGames: "Load More Games",
     loadMore: "Load More",
@@ -475,6 +474,7 @@ const T: Record<Lang, Translations> = {
 
     categoryLabels: {
       featured: "Featured",
+      hot_games: "Hot Games",
       slots: "Slots",
       live_casino: "Live Casino",
       cards: "Poker",
@@ -511,7 +511,6 @@ const T: Record<Lang, Translations> = {
     statSupport: "লাইভ সাপোর্ট",
 
     recommend: "প্রস্তাবিত",
-    featuredSectionTitle: "সুপারিশকৃত হট গেমস",
     viewAll: "সব দেখুন",
     loadMoreGames: "আরও গেমস",
     loadMore: "আরও লোড করুন",
@@ -723,6 +722,7 @@ const T: Record<Lang, Translations> = {
 
     categoryLabels: {
       featured: "সেরা",
+      hot_games: "হট গেমস",
       slots: "স্লট",
       live_casino: "লাইভ",
       cards: "তাস",

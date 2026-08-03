@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import SectionHeading from "@/components/ui/SectionHeading";
 import Reveal from "@/components/ui/Reveal";
+import GameCard from "./GameCard";
 import GameGrid from "./GameGrid";
 import GameRow from "./GameRow";
 import GamesToolbar from "./GamesToolbar";
@@ -21,6 +22,13 @@ import {
 // in the wrapping grid below, which grows as more pages load.
 const TOP_ROW_SIZE = 15;
 const GAMES_PAGE_SIZE = 20;
+
+// Hot Games gets a distinct "hero" desktop layout instead of the usual
+// scrolling top row: one large card + a 5x2 grid beside it (10 games),
+// matching a reference design. Mobile still uses the standard GameRow, same
+// as every other section.
+const HOT_GAMES_GRID_SIZE = 10;
+const HOT_GAMES_HERO_TOTAL = 1 + HOT_GAMES_GRID_SIZE;
 
 function toGameItem(g: { name: string; providerName: string; thumbnail: string; original: string; gameUid: string }): GameItem {
   return {
@@ -258,6 +266,63 @@ export default function GameCategorySection({
             </div>
           ) : games.length === 0 ? (
             <p className="py-10 text-center text-sm text-[#7B5EA7]">No games match this filter right now.</p>
+          ) : category === "hot_games" ? (
+            <>
+              {/* mobile: identical two-row scrolling treatment as every other section */}
+              <div className="sm:hidden">
+                <GameRow
+                  games={games.slice(0, TOP_ROW_SIZE)}
+                  favorites={favorites}
+                  onToggleFavorite={onToggleFavorite}
+                  onPlay={onPlay}
+                  launchingUid={launchingUid}
+                />
+              </div>
+              {(games.length > TOP_ROW_SIZE || games.length < total) && (
+                <div className="mt-3 sm:hidden">
+                  <GameRow
+                    games={games.slice(TOP_ROW_SIZE)}
+                    favorites={favorites}
+                    onToggleFavorite={onToggleFavorite}
+                    onPlay={onPlay}
+                    launchingUid={launchingUid}
+                    trailingTile={games.length < total ? moreTile : undefined}
+                  />
+                </div>
+              )}
+
+              {/* desktop: one big hero card + a 5x2 grid beside it (11 games), matching the reference layout */}
+              <div className="hidden sm:grid sm:grid-cols-[1fr_2fr] sm:gap-4">
+                <GameCard
+                  game={games[0]}
+                  featured
+                  favorited={favorites.has(games[0].name)}
+                  onToggleFavorite={() => onToggleFavorite(games[0])}
+                  onPlay={() => games[0].gameUid && onPlay(games[0].gameUid)}
+                  loading={launchingUid === games[0].gameUid}
+                />
+                <GameGrid
+                  games={games.slice(1, HOT_GAMES_HERO_TOTAL)}
+                  favorites={favorites}
+                  onToggleFavorite={onToggleFavorite}
+                  onPlay={onPlay}
+                  launchingUid={launchingUid}
+                />
+              </div>
+
+              {(games.length > HOT_GAMES_HERO_TOTAL || games.length < total) && (
+                <div className="mt-4 hidden sm:block">
+                  <GameGrid
+                    games={games.slice(HOT_GAMES_HERO_TOTAL)}
+                    favorites={favorites}
+                    onToggleFavorite={onToggleFavorite}
+                    onPlay={onPlay}
+                    launchingUid={launchingUid}
+                    trailingTile={games.length < total ? moreTile : undefined}
+                  />
+                </div>
+              )}
+            </>
           ) : (
             <>
               {/* upper strip — fixed first 15, horizontally scrollable/draggable on every breakpoint */}

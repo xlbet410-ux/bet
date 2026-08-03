@@ -3,6 +3,7 @@ const TOKEN_KEY = "2xlbet:token";
 
 export type GameCategory =
   | "featured"
+  | "hot_games"
   | "slots"
   | "live_casino"
   | "cards"
@@ -13,6 +14,7 @@ export type GameCategory =
 
 export const CATEGORY_ORDER: GameCategory[] = [
   "featured",
+  "hot_games",
   "slots",
   "live_casino",
   "cards",
@@ -25,7 +27,8 @@ export const CATEGORY_ORDER: GameCategory[] = [
 // Labels are localized (see lib/language.tsx `categoryLabels`) since the
 // site has a real EN/BN toggle — these icons are language-agnostic.
 export const CATEGORY_ICONS: Record<GameCategory, string> = {
-  featured: "🔥",
+  featured: "⭐",
+  hot_games: "🔥",
   slots: "🎰",
   live_casino: "💃",
   cards: "🃏",
@@ -37,6 +40,7 @@ export const CATEGORY_ICONS: Record<GameCategory, string> = {
 
 export const CATEGORY_ACCENT: Record<GameCategory, { from: string; to: string }> = {
   featured: { from: "#DC2626", to: "#F97316" },
+  hot_games: { from: "#EA580C", to: "#FBBF24" },
   slots: { from: "#D4AF37", to: "#F5C842" },
   live_casino: { from: "#0F9D58", to: "#34D399" },
   cards: { from: "#B91C1C", to: "#F87171" },

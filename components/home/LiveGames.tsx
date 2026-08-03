@@ -175,7 +175,7 @@ export default function LiveGames({ onOpenAuth }: { onOpenAuth: (mode: "login" |
           <div key={c} ref={c === "featured" ? featuredRef : undefined}>
             <GameCategorySection
               category={c}
-              label={c === "featured" ? t.featuredSectionTitle : t.categoryLabels[c]}
+              label={t.categoryLabels[c]}
               icon={CATEGORY_ICONS[c]}
               eyebrow={c === "featured" ? "" : t.recommend}
               favorites={favorites}
