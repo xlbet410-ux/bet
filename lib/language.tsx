@@ -56,6 +56,8 @@ export type Translations = {
   // footer
   footerDesc: string;
   footerGroups: { heading: string; links: string[] }[];
+  footerResponsibilityTitle: string;
+  footerResponsibilityDesc: string;
   footerAge: string;
   footerCopyright: string;
   // promo popup
@@ -301,12 +303,14 @@ const T: Record<Lang, Translations> = {
     lbPlace3: "3rd Place",
 
     footerDesc:
-      "2XLbet is a premium online casino and sportsbook offering live casino games, slots, and sports betting with fast, secure payouts.",
+      "2xlbet is a premium online casino and sportsbook platform. Offering live casino games, slots, and sports betting with fast and secure payouts.",
     footerGroups: [
       { heading: "Casino", links: ["Slots", "Live Casino", "Jackpots", "Promotions"] },
       { heading: "Support", links: ["Help Center", "Contact Us", "FAQ", "Live Chat"] },
-      { heading: "Legal", links: ["Terms & Conditions", "Privacy Policy", "Responsible Gambling", "License"] },
     ],
+    footerResponsibilityTitle: "Responsibility",
+    footerResponsibilityDesc:
+      "This site offers games with risks involved. To become a user of our website, you must be at least 18 years of age. We are not responsible for violations of local online gaming laws. Play responsibly and have fun at 2xlbet online casino to win real money online casino games.",
     footerAge:
       "Play responsibly. Gambling can be addictive — for ages 18+ only. Licensed and regulated for fair, secure gameplay.",
     footerCopyright: "© 2026 2XLbet Casino — All rights reserved.",
@@ -548,12 +552,14 @@ const T: Record<Lang, Translations> = {
     lbPlace3: "৩য় স্থান",
 
     footerDesc:
-      "2XLbet হলো একটি প্রিমিয়াম অনলাইন ক্যাসিনো এবং স্পোর্টসবুক যা লাইভ ক্যাসিনো গেমস, স্লট এবং স্পোর্টস বেটিং অফার করে দ্রুত, নিরাপদ পেআউট সহ।",
+      "2xlbet হলো একটি প্রিমিয়াম অনলাইন ক্যাসিনো এবং স্পোর্টসবুক প্ল্যাটফর্ম। লাইভ ক্যাসিনো গেমস, স্লট এবং স্পোর্টস বেটিং অফার করে দ্রুত ও নিরাপদ পেআউট সহ।",
     footerGroups: [
       { heading: "ক্যাসিনো", links: ["স্লট", "লাইভ ক্যাসিনো", "জ্যাকপট", "প্রমোশন"] },
       { heading: "সাপোর্ট", links: ["হেল্প সেন্টার", "যোগাযোগ করুন", "FAQ", "লাইভ চ্যাট"] },
-      { heading: "আইনি", links: ["নিয়ম ও শর্তাবলী", "গোপনীয়তা নীতি", "দায়িত্বশীল জুয়া", "লাইসেন্স"] },
     ],
+    footerResponsibilityTitle: "দায়িত্ব",
+    footerResponsibilityDesc:
+      "এই সাইটে ঝুঁকিপূর্ণ গেমস অফার করা হয়। আমাদের ওয়েবসাইটের ব্যবহারকারী হতে হলে আপনার বয়স কমপক্ষে ১৮ বছর হতে হবে। স্থানীয় অনলাইন গেমিং আইন লঙ্ঘনের জন্য আমরা দায়ী নই। দায়িত্বের সাথে খেলুন এবং রিয়েল মানি জেতার জন্য 2xlbet অনলাইন ক্যাসিনোতে মজা করুন।",
     footerAge: "দায়িত্বের সাথে খেলুন। জুয়া আসক্তিকর হতে পারে — শুধুমাত্র ১৮+ বছরের জন্য। ন্যায্য ও নিরাপদ গেমপ্লের জন্য লাইসেন্সপ্রাপ্ত।",
     footerCopyright: "© ২০২৬ 2XLbet ক্যাসিনো — সর্বস্বত্ব সংরক্ষিত।",
 

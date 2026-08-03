@@ -42,6 +42,15 @@ export default function Footer() {
               </ul>
             </div>
           ))}
+
+          {/* responsibility — badge + disclaimer, in place of a Legal links column */}
+          <div>
+            <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-white">
+              {t.footerResponsibilityTitle}
+            </h3>
+            <Image src="/download.png" alt="Curaçao eGaming" width={64} height={64} className="mb-3 h-14 w-auto" />
+            <p className="text-xs leading-relaxed text-[#9B8EC4]">{t.footerResponsibilityDesc}</p>
+          </div>
         </div>
 
         {/* responsible gambling strip */}

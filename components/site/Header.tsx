@@ -108,17 +108,19 @@ export default function Header({
             {user ? (
               /* ── logged-in profile widget ── */
               <div className="flex items-center gap-2" ref={profileRef}>
-                {/* balance pill */}
+                {/* balance pill — visible at every width so mobile shows
+                    balance + wallet icon beside the avatar, not just the
+                    letter avatar on its own */}
                 <div
-                  className="hidden items-center gap-1.5 rounded-full px-3 py-1.5 sm:flex"
+                  className="flex items-center gap-1 rounded-full px-2 py-1 sm:gap-1.5 sm:px-3 sm:py-1.5"
                   style={{ background: "rgba(212,175,55,0.1)", border: "1px solid rgba(212,175,55,0.25)" }}
                 >
-                  <svg viewBox="0 0 24 24" className="h-3 w-3 fill-none stroke-[#D4AF37] stroke-2">
+                  <svg viewBox="0 0 24 24" className="h-2.5 w-2.5 fill-none stroke-[#D4AF37] stroke-2 sm:h-3 sm:w-3">
                     <rect x="2" y="7" width="20" height="14" rx="2" />
                     <path d="M16 3H8a2 2 0 0 0-2 4h12a2 2 0 0 0-2-4z" />
                     <circle cx="16" cy="14" r="1.5" className="fill-[#D4AF37] stroke-none" />
                   </svg>
-                  <span className="text-xs font-black text-[#F5C842]">{user.balance}</span>
+                  <span className="text-[10px] font-black text-[#F5C842] sm:text-xs">{user.balance}</span>
                 </div>
 
                 <button
