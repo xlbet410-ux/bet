@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import SectionHeading from "@/components/ui/SectionHeading";
 import Reveal from "@/components/ui/Reveal";
-import GameCard from "./GameCard";
 import GameGrid from "./GameGrid";
 import GameRow from "./GameRow";
 import GamesToolbar from "./GamesToolbar";
@@ -23,12 +22,13 @@ import {
 const TOP_ROW_SIZE = 15;
 const GAMES_PAGE_SIZE = 20;
 
-// Hot Games gets a distinct "hero" desktop layout instead of the usual
-// scrolling top row: one large card + a 5x2 grid beside it (10 games),
-// matching a reference design. Mobile still uses the standard GameRow, same
-// as every other section.
-const HOT_GAMES_GRID_SIZE = 10;
-const HOT_GAMES_HERO_TOTAL = 1 + HOT_GAMES_GRID_SIZE;
+// Hot Games instead gets three stacked rows, each independently horizontally
+// scrollable (unlike every other section, whose rows beyond the first wrap
+// into a static grid) — the first two rows are fixed at 20, the third grows
+// via Load More. Fetches a bigger page (3x20) up front so all three rows are
+// full on the first load instead of trickling in.
+const HOT_GAMES_ROW_SIZE = 20;
+const HOT_GAMES_PAGE_SIZE = HOT_GAMES_ROW_SIZE * 3;
 
 function toGameItem(g: { name: string; providerName: string; thumbnail: string; original: string; gameUid: string }): GameItem {
   return {
@@ -104,6 +104,8 @@ export default function GameCategorySection({
   const [subTagCounts, setSubTagCounts] = useState<Record<SubTag, number> | null>(null);
   const [activeTag, setActiveTag] = useState<SubTag | undefined>(undefined);
 
+  const pageSize = category === "hot_games" ? HOT_GAMES_PAGE_SIZE : GAMES_PAGE_SIZE;
+
   useEffect(() => {
     let cancelled = false;
     getSubTagCounts(category)
@@ -128,7 +130,7 @@ export default function GameCategorySection({
       const maxAttempts = 3;
       for (let attempt = 1; attempt <= maxAttempts; attempt++) {
         try {
-          const { games: list, total: t } = await getCatalogPage(category, 1, GAMES_PAGE_SIZE, activeTag);
+          const { games: list, total: t } = await getCatalogPage(category, 1, pageSize, activeTag);
           if (!cancelled) {
             setGames(list.map(toGameItem));
             setTotal(t);
@@ -152,14 +154,14 @@ export default function GameCategorySection({
     return () => {
       cancelled = true;
     };
-  }, [category, activeTag, retryKey]);
+  }, [category, activeTag, retryKey, pageSize]);
 
   async function loadMore() {
     if (loadingMore) return;
     setLoadingMore(true);
     const nextPage = page + 1;
     try {
-      const { games: list } = await getCatalogPage(category, nextPage, GAMES_PAGE_SIZE, activeTag);
+      const { games: list } = await getCatalogPage(category, nextPage, pageSize, activeTag);
       setGames((prev) => [...prev, ...list.map(toGameItem)]);
       setPage(nextPage);
     } catch {
@@ -268,52 +270,30 @@ export default function GameCategorySection({
             <p className="py-10 text-center text-sm text-[#7B5EA7]">No games match this filter right now.</p>
           ) : category === "hot_games" ? (
             <>
-              {/* mobile: identical two-row scrolling treatment as every other section */}
-              <div className="sm:hidden">
-                <GameRow
-                  games={games.slice(0, TOP_ROW_SIZE)}
-                  favorites={favorites}
-                  onToggleFavorite={onToggleFavorite}
-                  onPlay={onPlay}
-                  launchingUid={launchingUid}
-                />
-              </div>
-              {(games.length > TOP_ROW_SIZE || games.length < total) && (
-                <div className="mt-3 sm:hidden">
+              {/* three stacked rows, each independently horizontally scrollable at
+                  every breakpoint — first two fixed at 20, third grows via Load More */}
+              <GameRow
+                games={games.slice(0, HOT_GAMES_ROW_SIZE)}
+                favorites={favorites}
+                onToggleFavorite={onToggleFavorite}
+                onPlay={onPlay}
+                launchingUid={launchingUid}
+              />
+              {games.length > HOT_GAMES_ROW_SIZE && (
+                <div className="mt-3">
                   <GameRow
-                    games={games.slice(TOP_ROW_SIZE)}
+                    games={games.slice(HOT_GAMES_ROW_SIZE, HOT_GAMES_ROW_SIZE * 2)}
                     favorites={favorites}
                     onToggleFavorite={onToggleFavorite}
                     onPlay={onPlay}
                     launchingUid={launchingUid}
-                    trailingTile={games.length < total ? moreTile : undefined}
                   />
                 </div>
               )}
-
-              {/* desktop: one big hero card + a 5x2 grid beside it (11 games), matching the reference layout */}
-              <div className="hidden sm:grid sm:grid-cols-[1fr_2fr] sm:gap-4">
-                <GameCard
-                  game={games[0]}
-                  featured
-                  favorited={favorites.has(games[0].name)}
-                  onToggleFavorite={() => onToggleFavorite(games[0])}
-                  onPlay={() => games[0].gameUid && onPlay(games[0].gameUid)}
-                  loading={launchingUid === games[0].gameUid}
-                />
-                <GameGrid
-                  games={games.slice(1, HOT_GAMES_HERO_TOTAL)}
-                  favorites={favorites}
-                  onToggleFavorite={onToggleFavorite}
-                  onPlay={onPlay}
-                  launchingUid={launchingUid}
-                />
-              </div>
-
-              {(games.length > HOT_GAMES_HERO_TOTAL || games.length < total) && (
-                <div className="mt-4 hidden sm:block">
-                  <GameGrid
-                    games={games.slice(HOT_GAMES_HERO_TOTAL)}
+              {(games.length > HOT_GAMES_ROW_SIZE * 2 || games.length < total) && (
+                <div className="mt-3">
+                  <GameRow
+                    games={games.slice(HOT_GAMES_ROW_SIZE * 2)}
                     favorites={favorites}
                     onToggleFavorite={onToggleFavorite}
                     onPlay={onPlay}
