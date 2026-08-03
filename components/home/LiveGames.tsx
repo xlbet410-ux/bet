@@ -177,7 +177,7 @@ export default function LiveGames({ onOpenAuth }: { onOpenAuth: (mode: "login" |
               category={c}
               label={t.categoryLabels[c]}
               icon={CATEGORY_ICONS[c]}
-              eyebrow={t.recommend}
+              eyebrow={c === "featured" ? t.categoryLabels.featured : t.recommend}
               favorites={favorites}
               onToggleFavorite={toggleFavorite}
               launchingUid={launchingUid}
