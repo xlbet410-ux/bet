@@ -28,13 +28,15 @@ export default function SectionHeading({
           }}
         />
         <div>
-          <p
-            className="mb-0.5 flex items-center gap-1.5 text-[9px] font-black uppercase tracking-[0.3em]"
-            style={{ color: eyebrowColor }}
-          >
-            <span style={{ color: eyebrowColor }}>◆</span>
-            {eyebrow}
-          </p>
+          {eyebrow && (
+            <p
+              className="mb-0.5 flex items-center gap-1.5 text-[9px] font-black uppercase tracking-[0.3em]"
+              style={{ color: eyebrowColor }}
+            >
+              <span style={{ color: eyebrowColor }}>◆</span>
+              {eyebrow}
+            </p>
+          )}
           <h2 className="text-2xl font-extrabold tracking-tight md:text-3xl">{title}</h2>
         </div>
       </div>

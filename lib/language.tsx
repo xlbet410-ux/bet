@@ -21,6 +21,7 @@ export type Translations = {
   statSupport: string;
   // shared labels
   recommend: string;
+  featuredSectionTitle: string;
   viewAll: string;
   loadMoreGames: string;
   loadMore: string;
@@ -259,6 +260,7 @@ const T: Record<Lang, Translations> = {
     statSupport: "Live Support",
 
     recommend: "Recommend",
+    featuredSectionTitle: "Recommend Hot Games",
     viewAll: "View All",
     loadMoreGames: "Load More Games",
     loadMore: "Load More",
@@ -505,6 +507,7 @@ const T: Record<Lang, Translations> = {
     statSupport: "লাইভ সাপোর্ট",
 
     recommend: "প্রস্তাবিত",
+    featuredSectionTitle: "সুপারিশকৃত হট গেমস",
     viewAll: "সব দেখুন",
     loadMoreGames: "আরও গেমস",
     loadMore: "আরও লোড করুন",
