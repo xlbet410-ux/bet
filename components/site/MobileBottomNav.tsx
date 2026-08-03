@@ -99,7 +99,7 @@ export default function MobileBottomNav({
             }}
           >
             <svg
-              className="h-[24px] w-[24px] text-white"
+              className="h-[24px] w-[24px] animate-[pulseGlow_1.6s_ease-in-out_infinite] text-white"
               style={{ filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.3))" }}
               viewBox="0 0 24 24"
               fill="currentColor"
