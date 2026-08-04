@@ -7,13 +7,7 @@ import { FaBars, FaXmark, FaChevronDown } from "react-icons/fa6";
 import { useLang } from "@/lib/language";
 import { useAuth } from "@/lib/auth";
 import { useScrolled } from "@/lib/hooks";
-import { CATEGORY_ORDER, CATEGORY_ICONS } from "@/lib/games";
 import logo from "@/assets/logo.png";
-
-// All real game categories (every section name) — shown as plain links in
-// the strip under the header, no dropdown. Featured is a curated
-// cross-provider list, not a browsable section, so it's excluded here.
-const SECTION_CATEGORIES = CATEGORY_ORDER.filter((c) => c !== "featured");
 
 function LangPill() {
   const { lang, toggle } = useLang();
@@ -250,27 +244,6 @@ export default function Header({
             >
               <FaBars />
             </button>
-          </div>
-        </div>
-
-        {/* secondary strip — every section, plain links (no dropdown), the
-            single place all sections live now; present on every page,
-            desktop and mobile alike */}
-        <div className="border-t border-white/5">
-          <div
-            className="mx-auto flex max-w-7xl items-center gap-2 overflow-x-auto px-4 py-2 sm:px-5"
-            style={{ scrollbarWidth: "none" }}
-          >
-            {SECTION_CATEGORIES.map((category) => (
-              <Link
-                key={category}
-                href={`/#${category}`}
-                className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-xs font-semibold text-[#C9B8E8] transition-colors hover:border-[#D4AF37]/50 hover:text-[#F5C842]"
-              >
-                <span>{CATEGORY_ICONS[category]}</span>
-                {t.categoryLabels[category]}
-              </Link>
-            ))}
           </div>
         </div>
       </header>

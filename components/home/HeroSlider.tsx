@@ -1,10 +1,17 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa6";
 import { useLang } from "@/lib/language";
 import { getSliderImages, sliderImageUrl, type SliderImage } from "@/lib/sliderImages";
+import { CATEGORY_ORDER, CATEGORY_ICONS } from "@/lib/games";
+
+// Every real game category (Featured is a curated cross-provider list, not
+// a browsable section, so it's excluded) — this used to live as a fixed
+// strip under the header; now it's a card row under the hero stats instead.
+const NAV_CATEGORIES = CATEGORY_ORDER.filter((c) => c !== "featured");
 
 export default function HeroSlider() {
   const [active, setActive] = useState(0);
@@ -168,6 +175,26 @@ export default function HeroSlider() {
             </p>
             <p className="mt-0.5 text-[10px] text-[#9B8EC4] sm:mt-1 sm:text-xs md:text-sm">{label}</p>
           </div>
+        ))}
+      </div>
+
+      {/* category quick-nav — horizontally scrollable on mobile (doesn't
+          fit 8 cards), a normal wrapping grid from sm: up */}
+      <div
+        className="mx-auto mt-3 flex max-w-6xl gap-2 overflow-x-auto pb-1 sm:mt-4 sm:grid sm:grid-cols-4 sm:gap-3 sm:overflow-visible sm:pb-0 lg:grid-cols-8"
+        style={{ scrollbarWidth: "none" }}
+      >
+        {NAV_CATEGORIES.map((category) => (
+          <Link
+            key={category}
+            href={`/#${category}`}
+            className="flex w-20 shrink-0 flex-col items-center justify-center gap-1.5 rounded-xl border border-white/5 bg-white/[0.03] py-3 text-center backdrop-blur-sm transition-all hover:border-[#D4AF37]/40 hover:bg-[#D4AF37]/5 sm:w-auto sm:py-4"
+          >
+            <span className="text-xl sm:text-2xl">{CATEGORY_ICONS[category]}</span>
+            <span className="text-[10px] font-semibold text-[#C9B8E8] sm:text-xs">
+              {t.categoryLabels[category]}
+            </span>
+          </Link>
         ))}
       </div>
     </section>
