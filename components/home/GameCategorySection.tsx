@@ -207,7 +207,7 @@ export default function GameCategorySection({
 
   return (
     <Reveal>
-      <section id={category} className="relative z-10 scroll-mt-32 px-5 py-0.5 sm:py-1">
+      <section id={category} className="relative z-10 scroll-mt-32 px-3 py-0.5 sm:px-5 sm:py-1">
         <div className="mx-auto max-w-6xl">
           <div className="hidden sm:block sm:pb-4">
             <GamesToolbar {...toolbar} />
@@ -280,7 +280,7 @@ export default function GameCategorySection({
                 launchingUid={launchingUid}
               />
               {games.length > HOT_GAMES_ROW_SIZE && (
-                <div className="mt-3">
+                <div className="mt-2 sm:mt-3">
                   <GameRow
                     games={games.slice(HOT_GAMES_ROW_SIZE, HOT_GAMES_ROW_SIZE * 2)}
                     favorites={favorites}
@@ -291,7 +291,7 @@ export default function GameCategorySection({
                 </div>
               )}
               {(games.length > HOT_GAMES_ROW_SIZE * 2 || games.length < total) && (
-                <div className="mt-3">
+                <div className="mt-2 sm:mt-3">
                   <GameRow
                     games={games.slice(HOT_GAMES_ROW_SIZE * 2)}
                     favorites={favorites}
@@ -317,7 +317,7 @@ export default function GameCategorySection({
               {(games.length > TOP_ROW_SIZE || games.length < total) && (
                 <>
                   {/* mobile: second row, also horizontally scrollable — keeps the section to exactly two rows */}
-                  <div className="mt-3 sm:hidden">
+                  <div className="mt-2 sm:hidden">
                     <GameRow
                       games={games.slice(TOP_ROW_SIZE)}
                       favorites={favorites}

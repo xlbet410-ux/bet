@@ -9,7 +9,7 @@ export default function Footer() {
   const { t } = useLang();
 
   return (
-    <footer className="relative z-10 border-t border-[#D4AF37]/15 bg-[#080410] px-5 pt-14">
+    <footer className="relative z-10 border-t border-[#D4AF37]/15 bg-[#080410] px-3 pt-14 sm:px-5">
       <div className="mx-auto max-w-6xl">
         <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
           {/* brand */}

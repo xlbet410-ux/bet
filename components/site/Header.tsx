@@ -100,23 +100,10 @@ export default function Header({
             <LangPill />
 
             {user ? (
-              /* ── logged-in profile widget ── */
+              /* ── logged-in profile widget — one combined pill, balance
+                  shown in the same field/style as the name instead of a
+                  separate wallet-icon pill next to it ── */
               <div className="flex items-center gap-2" ref={profileRef}>
-                {/* balance pill — visible at every width so mobile shows
-                    balance + wallet icon beside the avatar, not just the
-                    letter avatar on its own */}
-                <div
-                  className="flex items-center gap-1 rounded-full px-2 py-1 sm:gap-1.5 sm:px-3 sm:py-1.5"
-                  style={{ background: "rgba(212,175,55,0.1)", border: "1px solid rgba(212,175,55,0.25)" }}
-                >
-                  <svg viewBox="0 0 24 24" className="h-2.5 w-2.5 fill-none stroke-[#D4AF37] stroke-2 sm:h-3 sm:w-3">
-                    <rect x="2" y="7" width="20" height="14" rx="2" />
-                    <path d="M16 3H8a2 2 0 0 0-2 4h12a2 2 0 0 0-2-4z" />
-                    <circle cx="16" cy="14" r="1.5" className="fill-[#D4AF37] stroke-none" />
-                  </svg>
-                  <span className="text-[10px] font-black text-[#F5C842] sm:text-xs">{user.balance}</span>
-                </div>
-
                 <button
                   onClick={() => setProfileOpen((v) => !v)}
                   className="flex items-center gap-2 rounded-full border border-[#D4AF37]/40 bg-white/5 py-1.5 pl-1.5 pr-3 transition-all hover:border-[#D4AF37]/70 hover:bg-white/10"
@@ -139,8 +126,13 @@ export default function Header({
                       </svg>
                     </div>
                   </div>
-                  <span className="hidden max-w-[96px] truncate text-sm font-semibold text-[#E8CF7A] sm:block">
-                    {user.name}
+                  {/* name + balance, stacked in the name's own field — name
+                      only from sm: up (no room on mobile), balance always shown */}
+                  <span className="flex flex-col items-start leading-tight">
+                    <span className="hidden max-w-[96px] truncate text-sm font-semibold text-[#E8CF7A] sm:block">
+                      {user.name}
+                    </span>
+                    <span className="text-xs font-black text-[#F5C842] sm:text-[11px]">{user.balance}</span>
                   </span>
                   <FaChevronDown
                     className={`h-2.5 w-2.5 text-[#9B8EC4] transition-transform duration-200 ${profileOpen ? "rotate-180" : ""}`}

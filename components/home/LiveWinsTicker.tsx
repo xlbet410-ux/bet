@@ -36,7 +36,7 @@ export default function LiveWinsTicker() {
     <section className="relative z-10 mt-8 overflow-hidden border-y border-[#D4AF37]/15 bg-gradient-to-r from-[#120920] via-[#1B0838]/60 to-[#120920] py-4 sm:mt-12">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,#9B30FF12,transparent_70%)]" />
 
-      <div className="relative flex items-center gap-4 px-5">
+      <div className="relative flex items-center gap-4 px-3 sm:px-5">
         <div className="flex shrink-0 flex-col gap-0.5">
           <span className="flex items-center gap-2 rounded-full bg-[#9B30FF]/20 px-3 py-1 text-xs font-bold uppercase tracking-wider text-[#F5C842] shadow-[0_0_12px_#9B30FF30]">
             <span className="relative flex h-2 w-2">
