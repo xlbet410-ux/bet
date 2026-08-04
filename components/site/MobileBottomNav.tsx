@@ -91,7 +91,7 @@ export default function MobileBottomNav({
           <span
             className="absolute left-1/2 flex h-[46px] w-[46px] -translate-x-1/2 items-center justify-center rounded-full"
             style={{
-              top: "-6px",
+              top: "1px",
               background:
                 "radial-gradient(circle at 32% 28%, #FFDA85 0%, #F0B040 35%, #C87A1A 75%, #8A4E10 100%)",
               boxShadow:
