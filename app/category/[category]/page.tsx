@@ -3,6 +3,7 @@
 import { use, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { FaHeart, FaMagnifyingGlass } from "react-icons/fa6";
 import Header from "@/components/site/Header";
 import Footer from "@/components/site/Footer";
 import MobileBottomNav from "@/components/site/MobileBottomNav";
@@ -58,6 +59,7 @@ export default function CategoryPage({ params }: { params: Promise<{ category: s
   const [error, setError] = useState(false);
   const [sort, setSort] = useState<ProviderSort>("name_asc");
   const [query, setQuery] = useState("");
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [favorites, setFavorites] = useState<Map<string, GameItem>>(new Map());
   const [launchingUid, setLaunchingUid] = useState<string | null>(null);
 
@@ -176,9 +178,10 @@ export default function CategoryPage({ params }: { params: Promise<{ category: s
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return games;
-    return games.filter((g) => g.name.toLowerCase().includes(q));
-  }, [games, query]);
+    let list = showFavoritesOnly ? games.filter((g) => favorites.has(g.name)) : games;
+    if (q) list = list.filter((g) => g.name.toLowerCase().includes(q));
+    return list;
+  }, [games, query, showFavoritesOnly, favorites]);
 
   return (
     <>
@@ -188,22 +191,28 @@ export default function CategoryPage({ params }: { params: Promise<{ category: s
         <AuthModal mode={authMode} onClose={() => setAuthMode(null)} onSwitch={(m) => setAuthMode(m)} />
       )}
 
-      <main className="relative z-10 min-h-screen px-3 pb-24 pt-24 sm:px-5 lg:pt-28">
+      <main className="relative z-10 min-h-screen px-3 pb-20 pt-20 sm:px-5 sm:pb-24 sm:pt-24 lg:pt-28">
         <div className="mx-auto max-w-7xl">
-          {/* category tabs — switch section without leaving this page layout */}
-          <div className="mb-6 flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
+          {/* category cards — same card design as the homepage hero nav, switch
+              section without leaving this page layout */}
+          <div
+            className="mb-4 flex gap-2 overflow-x-auto pb-1 sm:mb-6 sm:grid sm:grid-cols-4 sm:gap-3 sm:overflow-visible sm:pb-0 lg:grid-cols-8"
+            style={{ scrollbarWidth: "none" }}
+          >
             {CATEGORY_ORDER.map((c) => (
               <Link
                 key={c}
                 href={`/category/${c}`}
-                className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border px-3.5 py-2 text-xs font-semibold transition-colors ${
+                className={`flex w-20 shrink-0 flex-col items-center justify-center gap-1.5 rounded-xl border py-3 text-center backdrop-blur-sm transition-all sm:w-auto sm:py-4 ${
                   c === category
-                    ? "border-[#D4AF37]/60 bg-[#D4AF37]/15 text-[#F5C842]"
-                    : "border-white/10 bg-white/[0.03] text-[#C9B8E8] hover:border-[#D4AF37]/40 hover:text-white"
+                    ? "border-[#D4AF37]/60 bg-[#D4AF37]/15"
+                    : "border-white/5 bg-white/[0.03] hover:border-[#D4AF37]/40 hover:bg-[#D4AF37]/5"
                 }`}
               >
-                <span>{CATEGORY_ICONS[c]}</span>
-                {t.categoryLabels[c]}
+                <span className="text-xl sm:text-2xl">{CATEGORY_ICONS[c]}</span>
+                <span className={`text-[10px] font-semibold sm:text-xs ${c === category ? "text-[#F5C842]" : "text-[#C9B8E8]"}`}>
+                  {t.categoryLabels[c]}
+                </span>
               </Link>
             ))}
           </div>
@@ -244,43 +253,50 @@ export default function CategoryPage({ params }: { params: Promise<{ category: s
 
             {/* main content */}
             <div className="min-w-0 flex-1">
-              <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-                <h1 className="flex items-center gap-2 text-2xl font-extrabold text-white">
-                  <span>{CATEGORY_ICONS[category]}</span>
-                  {t.categoryLabels[category]}
-                </h1>
-                <div className="flex items-center gap-2">
+              <h1 className="mb-3 flex items-center gap-2 text-xl font-extrabold text-white sm:mb-4 sm:text-2xl">
+                <span>{CATEGORY_ICONS[category]}</span>
+                {t.categoryLabels[category]}
+              </h1>
+
+              {/* toolbar — search, favorites, sort; same icon-button language as
+                  each homepage section's own toolbar, shown at every breakpoint */}
+              <div className="mb-4 flex flex-wrap items-center gap-2">
+                <button
+                  onClick={() => setShowFavoritesOnly((v) => !v)}
+                  aria-label="Favorites"
+                  aria-pressed={showFavoritesOnly}
+                  className={`relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border transition-colors ${
+                    showFavoritesOnly
+                      ? "border-[#D4AF37]/60 bg-[#D4AF37]/15 text-[#F5C842]"
+                      : "border-white/10 bg-white/[0.03] text-[#9B8EC4] hover:border-[#D4AF37]/50 hover:text-[#F5C842]"
+                  }`}
+                >
+                  <FaHeart />
+                  {favorites.size > 0 && (
+                    <span className="absolute -right-1.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#D4AF37] px-1 text-[9px] font-black text-[#0A0612]">
+                      {favorites.size}
+                    </span>
+                  )}
+                </button>
+
+                <div className="relative min-w-0 flex-1">
                   <input
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     placeholder={lang === "bn" ? "অনুসন্ধান" : "Search games"}
-                    className="w-40 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2 text-sm text-white placeholder-[#7B5EA7] outline-none transition-colors focus:border-[#D4AF37]/60 sm:w-56"
+                    className="w-full rounded-xl border border-white/10 bg-white/[0.03] py-2.5 pl-4 pr-10 text-sm text-white placeholder-[#7B5EA7] outline-none transition-colors focus:border-[#D4AF37]/60"
                   />
-                  <select
-                    value={sort}
-                    onChange={(e) => setSort(e.target.value as ProviderSort)}
-                    className="rounded-xl border border-white/10 bg-[#160A2E] px-3 py-2 text-sm text-white outline-none transition-colors focus:border-[#D4AF37]/60"
-                  >
-                    <option value="name_asc">{lang === "bn" ? "নাম A-Z" : "Name A-Z"}</option>
-                    <option value="name_desc">{lang === "bn" ? "নাম Z-A" : "Name Z-A"}</option>
-                    <option value="featured">{lang === "bn" ? "ফিচার্ড আগে" : "Featured first"}</option>
-                  </select>
+                  <FaMagnifyingGlass className="pointer-events-none absolute right-3.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#7B5EA7]" />
                 </div>
-              </div>
 
-              {/* provider switcher for narrow screens (no sidebar there) */}
-              <div className="mb-4 md:hidden">
                 <select
-                  value={activeProvider ?? ""}
-                  onChange={(e) => setActiveProvider(e.target.value || null)}
-                  className="w-full rounded-xl border border-white/10 bg-[#160A2E] px-3 py-2.5 text-sm text-white outline-none transition-colors focus:border-[#D4AF37]/60"
+                  value={sort}
+                  onChange={(e) => setSort(e.target.value as ProviderSort)}
+                  className="shrink-0 rounded-xl border border-white/10 bg-[#160A2E] px-3 py-2.5 text-sm text-white outline-none transition-colors focus:border-[#D4AF37]/60"
                 >
-                  <option value="">{lang === "bn" ? "সব প্রোভাইডার" : "All providers"}</option>
-                  {providers.map((p) => (
-                    <option key={p.code} value={p.code}>
-                      {p.name} ({p.count})
-                    </option>
-                  ))}
+                  <option value="name_asc">{lang === "bn" ? "নাম A-Z" : "Name A-Z"}</option>
+                  <option value="name_desc">{lang === "bn" ? "নাম Z-A" : "Name Z-A"}</option>
+                  <option value="featured">{lang === "bn" ? "ফিচার্ড আগে" : "Featured first"}</option>
                 </select>
               </div>
 
@@ -296,7 +312,13 @@ export default function CategoryPage({ params }: { params: Promise<{ category: s
                 </p>
               ) : filtered.length === 0 ? (
                 <p className="py-10 text-center text-sm text-[#7B5EA7]">
-                  {lang === "bn" ? "কোনো গেম মেলেনি।" : "No games match your search."}
+                  {showFavoritesOnly
+                    ? lang === "bn"
+                      ? "আপনার এখনো কোনো প্রিয় গেম নেই।"
+                      : "You haven't favorited any games yet."
+                    : lang === "bn"
+                      ? "কোনো গেম মেলেনি।"
+                      : "No games match your search."}
                 </p>
               ) : (
                 <>
@@ -307,7 +329,7 @@ export default function CategoryPage({ params }: { params: Promise<{ category: s
                     onPlay={handlePlay}
                     launchingUid={launchingUid}
                   />
-                  {games.length < total && !query && (
+                  {games.length < total && !query && !showFavoritesOnly && (
                     <div className="mt-6 flex justify-center">
                       <button
                         onClick={loadMore}

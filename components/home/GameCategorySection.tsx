@@ -185,6 +185,9 @@ export default function GameCategorySection({
     <Reveal>
       <section id={category} className="relative z-10 scroll-mt-32 px-3 py-0.5 sm:px-5 sm:py-1">
         <div className="mx-auto max-w-6xl">
+          <div className="pb-3 sm:hidden">
+            <GamesToolbar {...toolbar} stacked />
+          </div>
           <div className="hidden sm:block sm:pb-4">
             <GamesToolbar {...toolbar} />
           </div>
@@ -196,8 +199,8 @@ export default function GameCategorySection({
             barTo={accent.to}
           />
 
-          {/* search/favorites toolbar and sub-tag filter chips are desktop
-              only now — mobile shows just the section name and game cards */}
+          {/* sub-tag filter chips stay desktop-only — mobile keeps just the
+              toolbar above and the game cards, to avoid too many filter rows */}
           {showSubTags && (
             <div className="mb-4 hidden flex-wrap gap-2 sm:flex">
               <button
