@@ -187,7 +187,7 @@ export default function HeroSlider() {
         {NAV_CATEGORIES.map((category) => (
           <Link
             key={category}
-            href={`/#${category}`}
+            href={`/category/${category}`}
             className="flex w-20 shrink-0 flex-col items-center justify-center gap-1.5 rounded-xl border border-white/5 bg-white/[0.03] py-3 text-center backdrop-blur-sm transition-all hover:border-[#D4AF37]/40 hover:bg-[#D4AF37]/5 sm:w-auto sm:py-4"
           >
             <span className="text-xl sm:text-2xl">{CATEGORY_ICONS[category]}</span>

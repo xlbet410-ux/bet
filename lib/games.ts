@@ -101,21 +101,33 @@ export async function getSubTagCounts(category: GameCategory): Promise<Record<Su
   return res.json();
 }
 
+export type ProviderSort = "name_asc" | "name_desc" | "featured";
+
 export async function getCatalogPage(
   category: GameCategory,
   page: number,
   pageSize: number,
-  tag?: SubTag
+  tag?: SubTag,
+  providerCode?: string,
+  sort?: ProviderSort
 ): Promise<{ games: CatalogGame[]; total: number }> {
   const params = new URLSearchParams({ category, page: String(page), pageSize: String(pageSize) });
   if (tag) params.set("tag", tag);
+  if (providerCode) params.set("providerCode", providerCode);
+  if (sort) params.set("sort", sort);
   const res = await fetch(`${API_URL}/games/catalog?${params}`, { cache: "no-store" });
   if (!res.ok) throw new Error(`Failed to load games (${res.status})`);
   return res.json();
 }
 
 export type CategoryProvider = { code: string; name: string; count: number };
-export type ProviderSort = "name_asc" | "name_desc" | "featured";
+
+export async function getCategoryProviders(category: GameCategory): Promise<CategoryProvider[]> {
+  const params = new URLSearchParams({ category });
+  const res = await fetch(`${API_URL}/games/catalog/category-providers?${params}`, { cache: "no-store" });
+  if (!res.ok) throw new Error(`Failed to load providers (${res.status})`);
+  return res.json();
+}
 
 export async function getAllProviders(): Promise<CategoryProvider[]> {
   const res = await fetch(`${API_URL}/games/catalog/all-providers`, { cache: "no-store" });

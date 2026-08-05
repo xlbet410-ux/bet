@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import SectionHeading from "@/components/ui/SectionHeading";
 import Reveal from "@/components/ui/Reveal";
 import GameGrid from "./GameGrid";
@@ -87,9 +88,7 @@ export default function GameCategorySection({
 
   const [games, setGames] = useState<GameItem[]>([]);
   const [total, setTotal] = useState(0);
-  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState(false);
   const [retryKey, setRetryKey] = useState(0);
 
@@ -126,7 +125,6 @@ export default function GameCategorySection({
     async function load() {
       setLoading(true);
       setError(false);
-      setPage(1);
       const maxAttempts = 3;
       for (let attempt = 1; attempt <= maxAttempts; attempt++) {
         try {
@@ -156,21 +154,6 @@ export default function GameCategorySection({
     };
   }, [category, activeTag, retryKey, pageSize]);
 
-  async function loadMore() {
-    if (loadingMore) return;
-    setLoadingMore(true);
-    const nextPage = page + 1;
-    try {
-      const { games: list } = await getCatalogPage(category, nextPage, pageSize, activeTag);
-      setGames((prev) => [...prev, ...list.map(toGameItem)]);
-      setPage(nextPage);
-    } catch {
-      // transient — the Load More button just stays put and can be retried
-    } finally {
-      setLoadingMore(false);
-    }
-  }
-
   // Nothing in this category and nothing to recover from — don't show an empty section.
   if (!loading && !error && games.length === 0 && !activeTag) return null;
 
@@ -188,21 +171,14 @@ export default function GameCategorySection({
   const showSubTags = subTagCounts && SUB_TAGS.some((tag) => subTagCounts[tag] > 0);
 
   const moreTile = (
-    <button
-      onClick={loadMore}
-      disabled={loadingMore}
-      aria-label="Load more games"
-      className="flex aspect-4/5 w-full flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[#D4AF37]/40 text-[#F5C842] transition-colors hover:border-[#D4AF37] hover:bg-[#D4AF37]/5 disabled:opacity-50"
+    <Link
+      href={`/category/${category}`}
+      aria-label={`See all ${label}`}
+      className="flex aspect-4/5 w-full flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[#D4AF37]/40 text-[#F5C842] transition-colors hover:border-[#D4AF37] hover:bg-[#D4AF37]/5"
     >
-      {loadingMore ? (
-        <span className="h-5 w-5 animate-spin rounded-full border-2 border-[#D4AF37]/30 border-t-[#F5C842]" />
-      ) : (
-        <>
-          <span className="text-lg tracking-widest">•••</span>
-          <span className="text-xs font-bold uppercase tracking-wide">More</span>
-        </>
-      )}
-    </button>
+      <span className="text-lg tracking-widest">•••</span>
+      <span className="text-xs font-bold uppercase tracking-wide">More</span>
+    </Link>
   );
 
   return (

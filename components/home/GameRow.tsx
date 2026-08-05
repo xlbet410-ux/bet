@@ -32,15 +32,22 @@ export default function GameRow({
     const el = scrollRef.current;
     if (!el) return;
     drag.current = { active: true, startX: e.clientX, startScrollLeft: el.scrollLeft, moved: false };
-    el.setPointerCapture(e.pointerId);
+    // Capturing here (before any real movement) redirects pointerup/click to
+    // this element for every mouse interaction, including a plain click —
+    // that silently breaks clicking game cards and the trailing "More" tile.
+    // Capture is instead acquired lazily in onPointerMove, only once an
+    // actual drag is detected, so a non-drag click passes through normally.
   }
 
   function onPointerMove(e: React.PointerEvent<HTMLDivElement>) {
     const el = scrollRef.current;
     if (!el || !drag.current.active) return;
     const dx = e.clientX - drag.current.startX;
-    if (Math.abs(dx) > 3) drag.current.moved = true;
-    el.scrollLeft = drag.current.startScrollLeft - dx;
+    if (!drag.current.moved && Math.abs(dx) > 3) {
+      drag.current.moved = true;
+      el.setPointerCapture(e.pointerId);
+    }
+    if (drag.current.moved) el.scrollLeft = drag.current.startScrollLeft - dx;
   }
 
   function endDrag(e: React.PointerEvent<HTMLDivElement>) {
