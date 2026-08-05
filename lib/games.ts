@@ -175,9 +175,12 @@ export async function getProviderCatalog(
   return res.json();
 }
 
-export async function searchCatalog(q: string): Promise<{ games: CatalogGame[]; total: number }> {
+export async function searchCatalog(
+  q: string,
+  signal?: AbortSignal
+): Promise<{ games: CatalogGame[]; total: number }> {
   const params = new URLSearchParams({ q });
-  const res = await fetch(`${API_URL}/games/catalog/search?${params}`, { cache: "no-store" });
+  const res = await fetch(`${API_URL}/games/catalog/search?${params}`, { cache: "no-store", signal });
   if (!res.ok) throw new Error(`Search failed (${res.status})`);
   return res.json();
 }

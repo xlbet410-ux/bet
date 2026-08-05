@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useCallback, useRef } from "react";
 import type { ReactNode } from "react";
 import GameCard from "./GameCard";
 import type { GameItem } from "@/lib/data";
@@ -56,6 +56,17 @@ export default function GameRow({
     scrollRef.current?.releasePointerCapture(e.pointerId);
   }
 
+  // One stable function shared by every card in the row (instead of a fresh
+  // closure per card per render) — required for GameCard's memo() to skip
+  // re-rendering cards untouched by whatever caused this row to re-render.
+  const handlePlay = useCallback(
+    (gameUid: string) => {
+      if (drag.current.moved) return; // don't launch a game right after a drag gesture
+      onPlay(gameUid);
+    },
+    [onPlay]
+  );
+
   return (
     <div
       ref={scrollRef}
@@ -70,11 +81,8 @@ export default function GameRow({
           <GameCard
             game={g}
             favorited={favorites.has(g.name)}
-            onToggleFavorite={() => onToggleFavorite(g)}
-            onPlay={() => {
-              if (drag.current.moved) return; // don't launch a game right after a drag gesture
-              if (g.gameUid) onPlay(g.gameUid);
-            }}
+            onToggleFavorite={onToggleFavorite}
+            onPlay={handlePlay}
             loading={launchingUid === g.gameUid}
           />
         </div>

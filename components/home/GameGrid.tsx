@@ -26,8 +26,8 @@ export default function GameGrid({
           key={g.gameUid}
           game={g}
           favorited={favorites.has(g.name)}
-          onToggleFavorite={() => onToggleFavorite(g)}
-          onPlay={() => g.gameUid && onPlay(g.gameUid)}
+          onToggleFavorite={onToggleFavorite}
+          onPlay={onPlay}
           loading={launchingUid === g.gameUid}
         />
       ))}

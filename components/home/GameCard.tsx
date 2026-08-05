@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { memo, useState } from "react";
 import Image from "next/image";
 import { FaHeart, FaRegHeart, FaPlay } from "react-icons/fa6";
 import type { GameItem } from "@/lib/data";
@@ -25,7 +25,11 @@ function shortProviderName(name: string): string {
   return name.length > PROVIDER_NAME_MAX ? `${name.slice(0, PROVIDER_NAME_MAX).trimEnd()}…` : name;
 }
 
-export default function GameCard({
+// Callbacks take the game (or its gameUid) as an argument rather than being
+// pre-bound per-card by the parent, so GameGrid/GameRow can pass the exact
+// same function reference to every card instead of a fresh closure each
+// render — required for the memo() below to actually skip re-renders.
+function GameCard({
   game,
   featured = false,
   favorited,
@@ -36,8 +40,8 @@ export default function GameCard({
   game: GameItem;
   featured?: boolean;
   favorited: boolean;
-  onToggleFavorite: () => void;
-  onPlay?: () => void;
+  onToggleFavorite: (game: GameItem) => void;
+  onPlay?: (gameUid: string) => void;
   loading?: boolean;
 }) {
   const tag = game.tag ? (TAG_STYLE[game.tag] ?? TAG_STYLE.NEW) : null;
@@ -51,12 +55,18 @@ export default function GameCard({
 
   return (
     <div
-      onClick={onPlay}
+      onClick={() => game.gameUid && onPlay?.(game.gameUid)}
       // aspect-[4/5] matches Oracle's real thumbnail pixel size (200x250,
       // confirmed live across providers) exactly, so object-cover below
       // needs no meaningful crop — the whole poster shows as intended,
       // full-bleed, same size/shape on every card everywhere it's used.
-      className={`group relative select-none overflow-hidden rounded-lg transition-all duration-300 hover:-translate-y-1 aspect-4/5 ${
+      //
+      // isolate traps this card's internal z-10/z-20 layers (badges, glow,
+      // play button) in their own stacking context so they can never bleed
+      // through an unrelated overlay elsewhere on the page (e.g. a search
+      // dropdown) just because that overlay's own z-index happens to be
+      // lower than one of these internal values.
+      className={`group relative isolate select-none overflow-hidden rounded-lg transition-all duration-300 hover:-translate-y-1 aspect-4/5 ${
         onPlay ? "cursor-pointer" : "cursor-default"
       }`}
       style={{
@@ -113,7 +123,7 @@ export default function GameCard({
       {/* favorite – dark corner flag flush against the top-right corner,
           mirroring the provider badge */}
       <button
-        onClick={(e) => { e.stopPropagation(); onToggleFavorite(); }}
+        onClick={(e) => { e.stopPropagation(); onToggleFavorite(game); }}
         aria-label={favorited ? "Remove from favorites" : "Add to favorites"}
         aria-pressed={favorited}
         className="absolute right-0 top-0 z-10 flex h-7 w-7 items-center justify-center rounded-tr-lg rounded-bl-lg bg-black/75 text-xs backdrop-blur-sm transition-all hover:scale-110 sm:h-9 sm:w-9 sm:text-base"
@@ -141,9 +151,13 @@ export default function GameCard({
         }}
       />
 
-      {/* gold play button – center, appears on hover (or always, while launching) */}
+      {/* gold play button – center, appears on hover (or always, while launching).
+          pointer-events-none: purely decorative, the root div's onClick
+          already handles play — without this, its full-card hit area
+          (opacity aside) silently blocked clicks on the favorite badge
+          whenever it was showing on hover. */}
       <div
-        className={`absolute inset-0 z-10 flex items-center justify-center transition-all duration-300 ${
+        className={`pointer-events-none absolute inset-0 z-10 flex items-center justify-center transition-all duration-300 ${
           loading ? "bg-black/60 opacity-100" : "opacity-0 group-hover:opacity-100"
         }`}
       >
@@ -178,3 +192,9 @@ export default function GameCard({
     </div>
   );
 }
+
+// Memoized so a re-render of a whole grid (e.g. from an unrelated search
+// box's keystroke elsewhere on the page) doesn't re-render every card —
+// effective as long as callers pass stable `onToggleFavorite`/`onPlay`
+// references (see GameGrid/GameRow).
+export default memo(GameCard);

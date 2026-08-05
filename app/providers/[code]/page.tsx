@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useEffect, useMemo, useState } from "react";
+import { use, useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Header from "@/components/site/Header";
@@ -93,21 +93,25 @@ export default function ProviderPage({ params }: { params: Promise<{ code: strin
     };
   }, [code, sort]);
 
-  const toggleFavorite = (game: GameItem) =>
+  const toggleFavorite = useCallback((game: GameItem) => {
     setFavorites((prev) => {
       const next = new Map(prev);
       if (next.has(game.name)) next.delete(game.name);
       else next.set(game.name, game);
       return next;
     });
+  }, []);
 
-  function handlePlay(gameUid: string) {
-    if (!user) {
-      setAuthMode("login");
-      return;
-    }
-    router.push(`/play/${gameUid}`);
-  }
+  const handlePlay = useCallback(
+    (gameUid: string) => {
+      if (!user) {
+        setAuthMode("login");
+        return;
+      }
+      router.push(`/play/${gameUid}`);
+    },
+    [user, router]
+  );
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();

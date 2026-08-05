@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import GameCategorySection from "./GameCategorySection";
 import GameGrid from "./GameGrid";
@@ -66,20 +66,24 @@ export default function LiveGames({ onOpenAuth }: { onOpenAuth: (mode: "login" |
     };
   }, [countsRetryKey]);
 
-  const toggleFavorite = (game: GameItem) =>
+  const toggleFavorite = useCallback((game: GameItem) => {
     setFavorites((prev) => {
       const next = new Map(prev);
       if (next.has(game.name)) next.delete(game.name); else next.set(game.name, game);
       return next;
     });
+  }, []);
 
-  function handlePlay(gameUid: string) {
-    if (!user) {
-      onOpenAuth("login");
-      return;
-    }
-    router.push(`/play/${gameUid}`);
-  }
+  const handlePlay = useCallback(
+    (gameUid: string) => {
+      if (!user) {
+        onOpenAuth("login");
+        return;
+      }
+      router.push(`/play/${gameUid}`);
+    },
+    [user, onOpenAuth, router]
+  );
 
   if (countsLoading) {
     return (

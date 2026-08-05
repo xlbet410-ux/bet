@@ -34,33 +34,37 @@ export default function GamesToolbar({
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    let cancelled = false;
+    const q = query.trim();
+
+    // AbortController actually cancels the in-flight request on fast
+    // typing, instead of just discarding its result client-side — avoids
+    // piling up stale requests against the backend while a user is typing.
+    const controller = new AbortController();
 
     async function run() {
-      const q = query.trim();
       if (q.length < 2) {
         setResults([]);
         setOpen(false);
+        setSearching(false);
         return;
       }
       setSearching(true);
       try {
-        const { games } = await searchCatalog(q);
-        if (!cancelled) {
-          setResults(games);
-          setOpen(true);
-        }
-      } catch {
-        if (!cancelled) setResults([]);
-      } finally {
-        if (!cancelled) setSearching(false);
+        const { games } = await searchCatalog(q, controller.signal);
+        setResults(games);
+        setOpen(true);
+        setSearching(false);
+      } catch (err) {
+        if ((err as { name?: string }).name === "AbortError") return;
+        setResults([]);
+        setSearching(false);
       }
     }
 
-    const timer = setTimeout(run, 300);
+    const timer = setTimeout(run, q.length < 2 ? 0 : 300);
     return () => {
-      cancelled = true;
       clearTimeout(timer);
+      controller.abort();
     };
   }, [query]);
 
@@ -80,7 +84,12 @@ export default function GamesToolbar({
 
   return (
     <div
-      className={`relative z-10 flex gap-2 ${
+      // isolate traps this toolbar's own z-index layers (including the
+      // search dropdown below) in their own stacking context — with ~18 of
+      // these rendered on the homepage at once, this stops any one
+      // instance's dropdown from competing against another's internal
+      // layers just because of paint order.
+      className={`relative isolate z-10 flex gap-2 ${
         stacked ? "flex-col items-stretch" : "flex-wrap items-center justify-end"
       }`}
     >
@@ -149,7 +158,7 @@ export default function GamesToolbar({
         </span>
 
         {open && results.length > 0 && (
-          <div className="absolute right-0 top-full z-30 mt-2 max-h-96 w-full min-w-[280px] overflow-y-auto rounded-xl border border-white/10 bg-[#160A2E] shadow-2xl">
+          <div className="absolute right-0 top-full z-50 mt-2 max-h-96 w-full min-w-[280px] overflow-y-auto rounded-xl border border-white/10 bg-[#160A2E] shadow-2xl">
             {results.map((g) => (
               <button
                 key={g.gameUid}
@@ -176,7 +185,7 @@ export default function GamesToolbar({
         )}
 
         {open && results.length === 0 && !searching && query.trim().length >= 2 && (
-          <div className="absolute right-0 top-full z-30 mt-2 w-full rounded-xl border border-white/10 bg-[#160A2E] px-4 py-3 text-center text-sm text-[#7B5EA7] shadow-2xl">
+          <div className="absolute right-0 top-full z-50 mt-2 w-full rounded-xl border border-white/10 bg-[#160A2E] px-4 py-3 text-center text-sm text-[#7B5EA7] shadow-2xl">
             No games found.
           </div>
         )}
