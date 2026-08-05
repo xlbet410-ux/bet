@@ -2,6 +2,7 @@
 
 import { use, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Header from "@/components/site/Header";
 import Footer from "@/components/site/Footer";
 import MobileBottomNav from "@/components/site/MobileBottomNav";
@@ -10,7 +11,7 @@ import AmbientBackground from "@/components/site/AmbientBackground";
 import GameGrid from "@/components/home/GameGrid";
 import { useAuth } from "@/lib/auth";
 import { useLang } from "@/lib/language";
-import { getAllProviders, getProviderCatalog, launchGame, type CategoryProvider, type ProviderSort } from "@/lib/games";
+import { getAllProviders, getProviderCatalog, type CategoryProvider, type ProviderSort } from "@/lib/games";
 import type { GameItem } from "@/lib/data";
 
 const PAGE_SIZE = 20;
@@ -28,6 +29,7 @@ function toGameItem(g: { name: string; providerName: string; providerCode: strin
 
 export default function ProviderPage({ params }: { params: Promise<{ code: string }> }) {
   const { code } = use(params);
+  const router = useRouter();
   const { user } = useAuth();
   const { lang } = useLang();
 
@@ -40,7 +42,6 @@ export default function ProviderPage({ params }: { params: Promise<{ code: strin
   const [sort, setSort] = useState<ProviderSort>("name_asc");
   const [query, setQuery] = useState("");
   const [favorites, setFavorites] = useState<Map<string, GameItem>>(new Map());
-  const [launchingUid, setLaunchingUid] = useState<string | null>(null);
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   useEffect(() => {
@@ -100,20 +101,12 @@ export default function ProviderPage({ params }: { params: Promise<{ code: strin
       return next;
     });
 
-  async function handlePlay(gameUid: string) {
+  function handlePlay(gameUid: string) {
     if (!user) {
       setAuthMode("login");
       return;
     }
-    setLaunchingUid(gameUid);
-    try {
-      const { gameUrl } = await launchGame(gameUid);
-      window.open(gameUrl, "_blank", "noopener,noreferrer");
-    } catch {
-      // transient — user can just click Play again
-    } finally {
-      setLaunchingUid(null);
-    }
+    router.push(`/play/${gameUid}`);
   }
 
   const filtered = useMemo(() => {
@@ -218,7 +211,7 @@ export default function ProviderPage({ params }: { params: Promise<{ code: strin
                   favorites={favorites}
                   onToggleFavorite={toggleFavorite}
                   onPlay={handlePlay}
-                  launchingUid={launchingUid}
+                  launchingUid={null}
                 />
                 {visibleCount < filtered.length && (
                   <div className="mt-6 flex justify-center">

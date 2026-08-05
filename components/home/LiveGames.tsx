@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import GameCategorySection from "./GameCategorySection";
 import GameGrid from "./GameGrid";
 import GamesToolbar from "./GamesToolbar";
 import type { GameItem } from "@/lib/data";
 import {
   getCatalogCounts,
-  launchGame,
   CATEGORY_ORDER,
   CATEGORY_ICONS,
   type GameCategory,
@@ -16,6 +16,7 @@ import { useAuth } from "@/lib/auth";
 import { useLang } from "@/lib/language";
 
 export default function LiveGames({ onOpenAuth }: { onOpenAuth: (mode: "login" | "register") => void }) {
+  const router = useRouter();
   const { user } = useAuth();
   const { t } = useLang();
 
@@ -24,8 +25,6 @@ export default function LiveGames({ onOpenAuth }: { onOpenAuth: (mode: "login" |
   const [countsError, setCountsError] = useState(false);
   const [countsRetryKey, setCountsRetryKey] = useState(0);
 
-  const [launchingUid, setLaunchingUid] = useState<string | null>(null);
-  const [error, setError] = useState("");
   const [favorites, setFavorites] = useState<Map<string, GameItem>>(new Map());
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
 
@@ -74,21 +73,12 @@ export default function LiveGames({ onOpenAuth }: { onOpenAuth: (mode: "login" |
       return next;
     });
 
-  async function handlePlay(gameUid: string) {
+  function handlePlay(gameUid: string) {
     if (!user) {
       onOpenAuth("login");
       return;
     }
-    setError("");
-    setLaunchingUid(gameUid);
-    try {
-      const { gameUrl } = await launchGame(gameUid);
-      window.open(gameUrl, "_blank", "noopener,noreferrer");
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Couldn't launch this game right now.");
-    } finally {
-      setLaunchingUid(null);
-    }
+    router.push(`/play/${gameUid}`);
   }
 
   if (countsLoading) {
@@ -142,12 +132,6 @@ export default function LiveGames({ onOpenAuth }: { onOpenAuth: (mode: "login" |
 
   return (
     <div ref={topRef}>
-      {error && (
-        <p className="mx-auto mb-4 mt-4 max-w-6xl rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-2.5 text-center text-sm text-red-300">
-          {error}
-        </p>
-      )}
-
       {showFavoritesOnly ? (
         <section className="relative z-10 px-3 py-0.5 sm:px-5 sm:py-1">
           <GamesToolbar {...toolbarProps} />
@@ -165,7 +149,7 @@ export default function LiveGames({ onOpenAuth }: { onOpenAuth: (mode: "login" |
                 favorites={favorites}
                 onToggleFavorite={toggleFavorite}
                 onPlay={handlePlay}
-                launchingUid={launchingUid}
+                launchingUid={null}
               />
             )}
           </div>
@@ -180,7 +164,7 @@ export default function LiveGames({ onOpenAuth }: { onOpenAuth: (mode: "login" |
               eyebrow={c === "featured" ? "" : t.recommend}
               favorites={favorites}
               onToggleFavorite={toggleFavorite}
-              launchingUid={launchingUid}
+              launchingUid={null}
               onPlay={handlePlay}
               toolbar={toolbarProps}
             />

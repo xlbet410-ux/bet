@@ -2,7 +2,7 @@
 
 import { use, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, useRouter } from "next/navigation";
 import { FaHeart, FaMagnifyingGlass } from "react-icons/fa6";
 import Header from "@/components/site/Header";
 import Footer from "@/components/site/Footer";
@@ -15,7 +15,6 @@ import { useLang } from "@/lib/language";
 import {
   getCatalogPage,
   getCategoryProviders,
-  launchGame,
   CATEGORY_ORDER,
   CATEGORY_ICONS,
   type CategoryProvider,
@@ -46,6 +45,7 @@ export default function CategoryPage({ params }: { params: Promise<{ category: s
   if (!isGameCategory(rawCategory)) notFound();
   const category = rawCategory;
 
+  const router = useRouter();
   const { user } = useAuth();
   const { t, lang } = useLang();
 
@@ -62,7 +62,6 @@ export default function CategoryPage({ params }: { params: Promise<{ category: s
   const [query, setQuery] = useState("");
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [favorites, setFavorites] = useState<Map<string, GameItem>>(new Map());
-  const [launchingUid, setLaunchingUid] = useState<string | null>(null);
 
   // Reset the provider filter when the category itself changes (a provider
   // from the old category's sidebar makes no sense once we've navigated
@@ -161,20 +160,12 @@ export default function CategoryPage({ params }: { params: Promise<{ category: s
       return next;
     });
 
-  async function handlePlay(gameUid: string) {
+  function handlePlay(gameUid: string) {
     if (!user) {
       setAuthMode("login");
       return;
     }
-    setLaunchingUid(gameUid);
-    try {
-      const { gameUrl } = await launchGame(gameUid);
-      window.open(gameUrl, "_blank", "noopener,noreferrer");
-    } catch {
-      // transient — user can just click Play again
-    } finally {
-      setLaunchingUid(null);
-    }
+    router.push(`/play/${gameUid}`);
   }
 
   const filtered = useMemo(() => {
@@ -328,7 +319,7 @@ export default function CategoryPage({ params }: { params: Promise<{ category: s
                     favorites={favorites}
                     onToggleFavorite={toggleFavorite}
                     onPlay={handlePlay}
-                    launchingUid={launchingUid}
+                    launchingUid={null}
                   />
                   {games.length < total && !query && !showFavoritesOnly && (
                     <div className="mt-6 flex justify-center">
