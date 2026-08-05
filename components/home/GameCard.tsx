@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { FaStar, FaRegStar, FaPlay } from "react-icons/fa6";
+import { FaHeart, FaRegHeart, FaPlay } from "react-icons/fa6";
 import type { GameItem } from "@/lib/data";
 
 /* --- tag colour map (all class strings must appear here for Tailwind to include them) --- */
@@ -83,30 +83,32 @@ export default function GameCard({
         </div>
       )}
 
-      {/* provider badge – white pill, capped to a fixed length so it always
-          reads as a short tag rather than a cut-off word. Top-left corner
-          on mobile, top-center from sm: up. */}
+      {/* provider badge – dark corner flag flush against the card's own
+          top-left corner, capped to a fixed length so it always reads as a
+          short tag rather than a cut-off word. Same corner on every
+          breakpoint (no more desktop-only centering). */}
       <span
         title={game.provider}
-        className="absolute left-1 top-1 z-10 whitespace-nowrap rounded-full bg-white px-2 py-0.5 text-center text-[8px] font-black uppercase tracking-wide text-[#0A0612] shadow-sm sm:left-1/2 sm:top-1.5 sm:-translate-x-1/2 sm:px-2.5 sm:py-1 sm:text-[10px]"
+        className="absolute left-0 top-0 z-10 whitespace-nowrap rounded-tl-lg rounded-br-lg bg-black/75 px-2.5 py-1 text-center text-[9px] font-black uppercase tracking-wide text-[#F5C842] backdrop-blur-sm sm:px-3 sm:py-1.5 sm:text-[11px]"
       >
         {shortProviderName(game.provider)}
       </span>
 
-      {/* star – top right, small on mobile so it doesn't cover the art */}
+      {/* favorite – dark corner flag flush against the top-right corner,
+          mirroring the provider badge */}
       <button
         onClick={(e) => { e.stopPropagation(); onToggleFavorite(); }}
         aria-label={favorited ? "Remove from favorites" : "Add to favorites"}
         aria-pressed={favorited}
-        className="absolute right-1 top-1 z-10 flex h-5 w-5 items-center justify-center rounded-full border border-white/25 bg-black/40 text-[9px] backdrop-blur-sm transition-all hover:scale-110 hover:border-[#F5C842]/60 sm:right-1.5 sm:top-1.5 sm:h-7 sm:w-7 sm:text-xs"
+        className="absolute right-0 top-0 z-10 flex h-7 w-7 items-center justify-center rounded-tr-lg rounded-bl-lg bg-black/75 text-xs backdrop-blur-sm transition-all hover:scale-110 sm:h-9 sm:w-9 sm:text-base"
       >
         {favorited ? (
-          <FaStar
+          <FaHeart
             className="text-[#F5C842]"
             style={{ filter: "drop-shadow(0 0 5px #F5C84280)" }}
           />
         ) : (
-          <FaRegStar className="text-white/70" />
+          <FaRegHeart className="text-white" />
         )}
       </button>
 
