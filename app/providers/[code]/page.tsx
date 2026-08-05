@@ -15,10 +15,11 @@ import type { GameItem } from "@/lib/data";
 
 const PAGE_SIZE = 20;
 
-function toGameItem(g: { name: string; providerName: string; thumbnail: string; original: string; gameUid: string }): GameItem {
+function toGameItem(g: { name: string; providerName: string; providerCode: string; thumbnail: string; original: string; gameUid: string }): GameItem {
   return {
     name: g.name,
     provider: g.providerName,
+    providerCode: g.providerCode,
     img: g.thumbnail || g.original,
     glow: "#D4AF37",
     gameUid: g.gameUid,

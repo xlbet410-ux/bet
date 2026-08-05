@@ -31,10 +31,11 @@ const GAMES_PAGE_SIZE = 20;
 const HOT_GAMES_ROW_SIZE = 20;
 const HOT_GAMES_PAGE_SIZE = HOT_GAMES_ROW_SIZE * 3;
 
-function toGameItem(g: { name: string; providerName: string; thumbnail: string; original: string; gameUid: string }): GameItem {
+function toGameItem(g: { name: string; providerName: string; providerCode: string; thumbnail: string; original: string; gameUid: string }): GameItem {
   return {
     name: g.name,
     provider: g.providerName,
+    providerCode: g.providerCode,
     img: g.thumbnail || g.original,
     glow: "#D4AF37",
     gameUid: g.gameUid,

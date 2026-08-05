@@ -28,6 +28,7 @@ export const PROVIDERS = [
 export type GameItem = {
   name: string;
   provider: string;
+  providerCode?: string;
   tag?: string;
   glow: string;
   img: string;

@@ -1,8 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import { FaHeart, FaRegHeart, FaPlay } from "react-icons/fa6";
 import type { GameItem } from "@/lib/data";
+import { resolveSportsCardImage, GENERIC_CARD_IMAGE } from "@/lib/games";
 
 /* --- tag colour map (all class strings must appear here for Tailwind to include them) --- */
 const TAG_STYLE: Record<string, { from: string; to: string; glow: string; pulse: boolean }> = {
@@ -40,6 +42,13 @@ export default function GameCard({
 }) {
   const tag = game.tag ? (TAG_STYLE[game.tag] ?? TAG_STYLE.NEW) : null;
 
+  // Sportsbook "games" (SABA, SBO, Betby, ...) get a specific poster image
+  // instead of Oracle's own thumbnail, which is consistently broken for
+  // these — see resolveSportsCardImage. Anything else falls back to a
+  // generic branded card if its real image 404s at runtime.
+  const initialSrc = resolveSportsCardImage(game.providerCode, game.name) ?? game.img;
+  const [imgSrc, setImgSrc] = useState(initialSrc);
+
   return (
     <div
       onClick={onPlay}
@@ -62,12 +71,19 @@ export default function GameCard({
       />
 
       <Image
-        src={game.img}
+        src={imgSrc}
         alt={game.name}
         fill
-        unoptimized={game.img.startsWith('http')}
+        // Oracle's URLs were always unoptimized (external, no benefit from
+        // Next's pipeline). The local sports-card overrides need it too —
+        // Next's dev-server image optimizer was unreliable for these under
+        // concurrent fill+sizes requests (some would just never resolve),
+        // confirmed via a live network trace; serving them directly sidesteps
+        // it entirely and always works.
+        unoptimized
         sizes={featured ? "300px" : "200px"}
         className="object-cover transition-transform duration-700 will-change-transform group-hover:scale-110"
+        onError={() => setImgSrc(GENERIC_CARD_IMAGE)}
       />
 
       {/* tag ribbon – diagonal corner flag, top-left (only when this game has a tag) */}

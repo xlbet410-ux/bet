@@ -10,7 +10,6 @@ export type GameCategory =
   | "fishing"
   | "mini_games"
   | "sports"
-  | "ea_sports"
   | "esports";
 
 export const CATEGORY_ORDER: GameCategory[] = [
@@ -22,7 +21,6 @@ export const CATEGORY_ORDER: GameCategory[] = [
   "fishing",
   "mini_games",
   "sports",
-  "ea_sports",
   "esports",
 ];
 
@@ -37,7 +35,6 @@ export const CATEGORY_ICONS: Record<GameCategory, string> = {
   fishing: "🐟",
   mini_games: "🚀",
   sports: "🏏",
-  ea_sports: "🐎",
   esports: "🎮",
 };
 
@@ -50,9 +47,35 @@ export const CATEGORY_ACCENT: Record<GameCategory, { from: string; to: string }>
   fishing: { from: "#0891B2", to: "#22D3EE" },
   mini_games: { from: "#C41D7F", to: "#FF85C2" },
   sports: { from: "#1D4ED8", to: "#60A5FA" },
-  ea_sports: { from: "#15803D", to: "#4ADE80" },
   esports: { from: "#7C3AED", to: "#A78BFA" },
 };
+
+// Sportsbook aggregators expose one entry-point "game" per provider rather
+// than real per-title artwork, and Oracle's own thumbnail for these is
+// consistently broken — these operator-supplied poster images replace it.
+// SBO ships two different games under the same provider code, so that one
+// needs the game name too. Every other provider (still shown in Live
+// Sports/Esports, or anywhere else) falls back to a generic branded card —
+// see GameCard's onError handler for when Oracle's own image 404s at runtime.
+const SPORTS_CARD_IMAGES: Record<string, string> = {
+  SABA: "/SPORTS_SABA_IBC.png",
+  UG: "/SPORTS_UG.png",
+  BTI: "/SPORTS_BTI.png",
+  BETBY: "/SPORTS_BETBY.png",
+};
+export const GENERIC_CARD_IMAGE = "/gamecard.png";
+
+export function resolveSportsCardImage(
+  providerCode: string | undefined,
+  gameName: string
+): string | null {
+  if (!providerCode) return null;
+  const code = providerCode.trim().toUpperCase();
+  if (code === "SBO") {
+    return /virtual/i.test(gameName) ? "/SPORTS_SBO_VP.png" : "/SPORTS_SBO_SPORTSBOOK.png";
+  }
+  return SPORTS_CARD_IMAGES[code] ?? null;
+}
 
 // Real, verifiable sub-tags only. "megaways"/"jackpot" come from a literal
 // name match; the rest come from Oracle's own per-game raw category, so they
