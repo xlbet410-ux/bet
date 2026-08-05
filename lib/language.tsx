@@ -230,6 +230,7 @@ export type Translations = {
     fishing: string;
     mini_games: string;
     sports: string;
+    ea_sports: string;
     esports: string;
   };
 
@@ -481,6 +482,7 @@ const T: Record<Lang, Translations> = {
       fishing: "Fishing",
       mini_games: "Mini Games",
       sports: "Sports",
+      ea_sports: "EA Sports",
       esports: "Esports",
     },
 
@@ -729,6 +731,7 @@ const T: Record<Lang, Translations> = {
       fishing: "মাছ ধরা",
       mini_games: "মিনি গেমস",
       sports: "খেলাধুলা",
+      ea_sports: "ইএ স্পোর্টস",
       esports: "ই-স্পোর্টস",
     },
 
