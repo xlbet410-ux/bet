@@ -84,7 +84,7 @@ export default function MobileBottomNav({
 
         {/* deposit — keeps its grid column, label sits low, circle floats up out of the notch */}
         <Link
-          href="/profile?tab=deposit"
+          href="/deposit-withdraw?tab=deposit"
           onClick={requireAuth}
           className="relative flex flex-col items-center justify-end pt-[22px]"
         >

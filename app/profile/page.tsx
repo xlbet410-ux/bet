@@ -10,6 +10,7 @@ import AmbientBackground from "@/components/site/AmbientBackground";
 import { useAuth } from "@/lib/auth";
 import { useLang } from "@/lib/language";
 import { getMyKyc, submitKyc, type KycStatus } from "@/lib/kyc";
+import { fmt } from "@/lib/format";
 
 type Tab     = "profile" | "wallet" | "deposit" | "withdraw" | "settings" | "kyc";
 type KycStep = "idle" | "phone" | "otp" | "docType" | "upload" | "selfie" | "done";
@@ -24,26 +25,6 @@ const TRANSACTIONS = [
   { id:"TXN8817", type:"win",      label:"Lightning Roulette",  amount:"+৳400",   date:"Jun 28, 2026", status:"completed" },
   { id:"TXN8816", type:"deposit",  label:"Nagad Deposit",       amount:"+৳3,000", date:"Jun 25, 2026", status:"completed" },
 ];
-
-const PAYMENT_METHODS = [
-  { id:"bkash",      name:"bKash",      accent:"#E2136E" },
-  { id:"nagad",      name:"Nagad",      accent:"#F2631F" },
-  { id:"rocket",     name:"Rocket",     accent:"#8C3494" },
-  { id:"usdt",       name:"USDT",       accent:"#26A17B" },
-  { id:"visa",       name:"VISA",       accent:"#1565C0" },
-  { id:"mastercard", name:"Mastercard", accent:"#D32F2F" },
-];
-
-const QUICK_AMOUNTS = [100, 200, 500, 1000, 2000, 5000];
-
-const MERCHANT_ACCOUNTS: Record<string, { number: string; note: string }> = {
-  bkash:      { number: "01700-000000", note: "Send Money (Personal)" },
-  nagad:      { number: "01800-000000", note: "Send Money (Personal)" },
-  rocket:     { number: "01900-0000000-2", note: "Send Money" },
-  usdt:       { number: "TQn9Y2khEsLMWD8VnQ3Sk7XampLeAddr", note: "USDT (TRC20) wallet address" },
-  visa:       { number: "4532 1122 3344 1090", note: "Casino merchant card" },
-  mastercard: { number: "5412 4455 6677 7734", note: "Casino merchant card" },
-};
 
 function DocTypeIcon({ id, className = "" }: { id: string; className?: string }) {
   if (id === "passport") {
@@ -112,11 +93,6 @@ function EyeBtn({ visible, onToggle }: { visible: boolean; onToggle: () => void 
 const CARD  = { background:"linear-gradient(145deg,rgba(27,8,56,.65),rgba(10,6,18,.85))", border:"1px solid rgba(255,255,255,.07)", boxShadow:"0 8px 32px rgba(0,0,0,.4)" };
 const INNER = { background:"rgba(255,255,255,.03)", border:"1px solid rgba(255,255,255,.06)" };
 
-// Fills {placeholder} tokens in a translated string, e.g. fmt(t.profileStepXOf2, { n: "1" }).
-function fmt(template: string, vars: Record<string, string>) {
-  return Object.entries(vars).reduce((s, [k, v]) => s.replaceAll(`{${k}}`, v), template);
-}
-
 // Splits a translated string on a single {token} and renders the replacement
 // (usually a styled <span>) in place, e.g. a sentence with the document name
 // highlighted in white in the middle of it.
@@ -150,27 +126,19 @@ export default function ProfilePage() {
 
   // reads ?tab= on mount only — window isn't available during prerendering,
   // and using useSearchParams() here would force a Suspense boundary around
-  // the whole page (this component isn't wrapped in one).
+  // the whole page (this component isn't wrapped in one). Deposit/withdraw
+  // moved to their own page — redirect any stale links/bookmarks there.
   useEffect(() => {
-    const fromUrl = new URLSearchParams(window.location.search).get("tab");
-    if (TABS.includes(fromUrl as Tab)) setTab(fromUrl as Tab);
-  }, []);
-
-  // deposit
-  const [selMethod, setSelMethod]     = useState("bkash");
-  const [depositAmt, setDepositAmt]   = useState("");
-  const [depositError, setDepositError] = useState("");
-
-  // deposit request panel (opens after clicking Deposit, can minimize to a floating bubble)
-  const [depositPanelOpen, setDepositPanelOpen]     = useState(false);
-  const [depositMinimized, setDepositMinimized]     = useState(false);
-  const [depositTrxId, setDepositTrxId]             = useState("");
-  const [depositRequestSubmitted, setDepositRequestSubmitted] = useState(false);
-  const [numberCopied, setNumberCopied]             = useState(false);
-
-  // withdraw
-  const [selWMethod, setSelWMethod]   = useState("bkash");
-  const [withdrawAmt, setWithdrawAmt] = useState("");
+    function applyTabFromUrl() {
+      const fromUrl = new URLSearchParams(window.location.search).get("tab");
+      if (fromUrl === "deposit" || fromUrl === "withdraw") {
+        router.replace(`/deposit-withdraw?tab=${fromUrl}`);
+        return;
+      }
+      if (TABS.includes(fromUrl as Tab)) setTab(fromUrl as Tab);
+    }
+    applyTabFromUrl();
+  }, [router]);
 
   // settings — update password
   const [oldPassword, setOldPassword]   = useState("");
@@ -209,14 +177,6 @@ export default function ProfilePage() {
   const streamRef = useRef<MediaStream|null>(null);
 
   useEffect(() => { if (!authLoading && !user) router.replace("/"); }, [authLoading, user, router]);
-
-  useEffect(() => {
-    if (!depositPanelOpen || depositMinimized) return;
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setDepositMinimized(true); };
-    window.addEventListener("keydown", onKey);
-    document.body.style.overflow = "hidden";
-    return () => { window.removeEventListener("keydown", onKey); document.body.style.overflow = ""; };
-  }, [depositPanelOpen, depositMinimized]);
 
   useEffect(() => {
     if (!user) return;
@@ -345,25 +305,6 @@ export default function ProfilePage() {
     });
   }
 
-  function openDepositRequest() {
-    if (!depositAmt || Number(depositAmt) <= 0) { setDepositError("Please select or enter an amount first."); return; }
-    setDepositError("");
-    setDepositTrxId("");
-    setDepositRequestSubmitted(false);
-    setDepositMinimized(false);
-    setDepositPanelOpen(true);
-  }
-
-  function closeDepositRequest() {
-    setDepositPanelOpen(false);
-    setDepositMinimized(false);
-  }
-
-  function submitDepositRequest() {
-    if (!depositTrxId.trim()) return;
-    setDepositRequestSubmitted(true);
-  }
-
   // ── tabs ─────────────────────────────────────────────────
   const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
     { id:"profile", label:t.profileTabProfile, icon:<svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" strokeLinecap="round"/></svg> },
@@ -374,109 +315,21 @@ export default function ProfilePage() {
     { id:"kyc",     label:t.profileTabKyc,     icon:<svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9,12 11,14 15,10" strokeLinecap="round" strokeLinejoin="round"/></svg> },
   ];
 
+  // Deposit/Withdraw now live on their own page — every other tab still
+  // switches locally.
+  function handleTabClick(id: Tab) {
+    if (id === "deposit" || id === "withdraw") {
+      router.push(`/deposit-withdraw?tab=${id}`);
+      return;
+    }
+    setTab(id);
+  }
+
   return (
     <>
       <AmbientBackground />
       <Header onOpenAuth={(m) => setAuthMode(m)} />
       {authMode && <AuthModal mode={authMode} onClose={() => setAuthMode(null)} onSwitch={(m) => setAuthMode(m)} />}
-
-      {/* ── Deposit request panel ── */}
-      {depositPanelOpen && !depositMinimized && (
-        <div className="fixed inset-0 z-[130] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm animate-[fadeIn_0.2s_ease]" onClick={() => setDepositMinimized(true)} />
-
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="relative w-full max-w-md animate-[popIn_0.25s_ease] overflow-hidden rounded-3xl border border-[#D4AF37]/30 bg-gradient-to-b from-[#1B0838] to-[#0A0612] p-6 shadow-[0_0_60px_#7B2FBE40]"
-          >
-            <div className="mb-5 flex items-center justify-between gap-2">
-              <div className="flex min-w-0 items-center gap-2.5">
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-black text-white"
-                  style={{ background: PAYMENT_METHODS.find((m) => m.id === selMethod)?.accent ?? "#7B2FBE" }}>
-                  {PAYMENT_METHODS.find((m) => m.id === selMethod)?.name[0]}
-                </span>
-                <div className="min-w-0">
-                  <h3 className="truncate text-base font-extrabold text-white">{t.profileDepositModalTitle}</h3>
-                  <p className="text-xs text-[#9B8EC4]">{PAYMENT_METHODS.find((m) => m.id === selMethod)?.name} · ৳{Number(depositAmt || 0).toLocaleString()}</p>
-                </div>
-              </div>
-              <div className="flex shrink-0 items-center gap-1.5">
-                <button onClick={() => setDepositMinimized(true)} aria-label="Minimize"
-                  className="flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-white/5 text-[#C9B8E8] transition-all hover:bg-white/10">
-                  <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 fill-none stroke-current stroke-2"><line x1="5" y1="12" x2="19" y2="12" strokeLinecap="round"/></svg>
-                </button>
-                <button onClick={closeDepositRequest} aria-label="Close"
-                  className="flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-white/5 text-[#C9B8E8] transition-all hover:bg-white/10">
-                  <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 fill-none stroke-current stroke-2"><path d="M18 6 6 18"/><path d="M6 6l12 12"/></svg>
-                </button>
-              </div>
-            </div>
-
-            {!depositRequestSubmitted ? (
-              <>
-                <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#7B5EA7]">{t.profileSendMoneyTo}</p>
-                <div className="mb-4 flex items-center gap-2 rounded-xl px-4 py-3" style={INNER}>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate font-mono text-lg font-bold text-[#F5C842]">{MERCHANT_ACCOUNTS[selMethod]?.number}</p>
-                    <p className="text-[11px] text-[#9B8EC4]">{MERCHANT_ACCOUNTS[selMethod]?.note}</p>
-                  </div>
-                  <button onClick={() => copyText(MERCHANT_ACCOUNTS[selMethod]?.number ?? "", setNumberCopied)}
-                    className="shrink-0 rounded-lg px-3 py-2 text-xs font-bold text-[#0A0612] transition-all hover:scale-105"
-                    style={{ background:"linear-gradient(to right,#D4AF37,#F5C842)" }}>
-                    {numberCopied ? t.profileCopied : t.profileCopy}
-                  </button>
-                </div>
-                <p className="mb-5 text-xs leading-relaxed text-[#9B8EC4]">
-                  {fmt(t.profileSendInstructions, {
-                    amount: Number(depositAmt || 0).toLocaleString(),
-                    method: PAYMENT_METHODS.find((m) => m.id === selMethod)?.name ?? "",
-                  })}
-                </p>
-
-                <label className="mb-1.5 block text-xs font-medium text-[#C9B8E8]">{t.profileTrxIdLabel}</label>
-                <input value={depositTrxId} onChange={(e) => setDepositTrxId(e.target.value)}
-                  placeholder={t.profileTrxIdPlaceholder}
-                  className="mb-5 w-full rounded-xl border border-[#7B2FBE]/40 bg-white/4 px-4 py-3 text-sm text-white placeholder-[#8A7DB0] outline-none transition-all focus:border-[#D4AF37] focus:bg-white/[.07]" />
-
-                <button onClick={submitDepositRequest} disabled={!depositTrxId.trim()}
-                  className="w-full rounded-full py-3.5 text-sm font-bold text-[#0A0612] transition-all hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-40"
-                  style={{ background:"linear-gradient(to right,#D4AF37,#F5C842)" }}>
-                  {t.profileConfirmDeposit}
-                </button>
-              </>
-            ) : (
-              <div className="py-2 text-center">
-                <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full text-white"
-                  style={{ background:"linear-gradient(135deg,#22c55e,#16a34a)", boxShadow:"0 0 30px rgba(34,197,94,.35)" }}>
-                  <Tick size={20} />
-                </div>
-                <h4 className="mb-1 text-lg font-extrabold text-white">{t.profileRequestSubmittedTitle}</h4>
-                <p className="mb-6 text-sm text-[#9B8EC4]">
-                  {fmt(t.profileRequestSubmittedDesc, { amount: Number(depositAmt || 0).toLocaleString() })}
-                </p>
-                <button onClick={closeDepositRequest}
-                  className="w-full rounded-full py-3.5 text-sm font-bold text-[#0A0612] transition-all hover:scale-[1.02]"
-                  style={{ background:"linear-gradient(to right,#D4AF37,#F5C842)" }}>
-                  {t.profileDone}
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* ── Minimized floating bubble ── */}
-      {depositPanelOpen && depositMinimized && (
-        <button onClick={() => setDepositMinimized(false)} aria-label="Resume deposit request"
-          className="fixed bottom-20 right-5 z-[130] flex items-center gap-2.5 rounded-full py-3 pl-4 pr-5 text-sm font-bold text-[#0A0612] shadow-[0_0_28px_#D4AF3780] transition-all hover:scale-105 sm:bottom-24"
-          style={{ background:"linear-gradient(to right,#D4AF37,#F5C842)" }}>
-          <span className="relative flex h-2.5 w-2.5">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#0A0612]/40" />
-            <span className="relative h-2.5 w-2.5 rounded-full bg-[#0A0612]/70" />
-          </span>
-          {depositRequestSubmitted ? t.profileDepositSubmittedShort : fmt(t.profileDepositBubble, { amount: Number(depositAmt || 0).toLocaleString() })}
-        </button>
-      )}
 
       <main className="relative z-10 min-h-screen px-4 pb-20 pt-24 sm:px-5 lg:pt-28">
         <div className="mx-auto max-w-6xl">
@@ -516,7 +369,7 @@ export default function ProfilePage() {
           {/* ══ MOBILE: always-visible tab grid ══ */}
           <div className="mb-4 grid grid-cols-3 gap-1.5 rounded-2xl p-1.5 lg:hidden" style={CARD}>
             {tabs.map((tb) => (
-              <button key={tb.id} onClick={() => setTab(tb.id)}
+              <button key={tb.id} onClick={() => handleTabClick(tb.id)}
                 className="flex flex-col items-center gap-1.5 rounded-xl py-3 transition-all"
                 style={tab === tb.id
                   ? { background:"rgba(212,175,55,.1)", border:"1px solid rgba(212,175,55,.25)" }
@@ -555,7 +408,7 @@ export default function ProfilePage() {
                 <div className="mb-3 h-px" style={{ background:"rgba(255,255,255,.06)" }} />
                 <nav className="flex flex-col gap-1">
                   {tabs.map((tb) => (
-                    <button key={tb.id} onClick={() => setTab(tb.id)}
+                    <button key={tb.id} onClick={() => handleTabClick(tb.id)}
                       className="flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all"
                       style={tab === tb.id
                         ? { background:"rgba(212,175,55,.1)", border:"1px solid rgba(212,175,55,.25)", color:"#F5C842" }
@@ -648,97 +501,6 @@ export default function ProfilePage() {
                       })}
                     </div>
                   </div>
-                </div>
-              )}
-
-              {/* ════ DEPOSIT ════ */}
-              {tab === "deposit" && (
-                <div className="rounded-2xl p-6" style={CARD}>
-                  <h3 className="mb-5 text-lg font-extrabold text-white">{t.profileMakeDeposit}</h3>
-                  <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#7B5EA7]">{t.profilePaymentMethod}</p>
-                  <div className="mb-6 grid grid-cols-3 gap-2 sm:grid-cols-6">
-                    {PAYMENT_METHODS.map((m) => (
-                      <button key={m.id} onClick={() => setSelMethod(m.id)}
-                        className="rounded-xl py-3 text-xs font-bold transition-all"
-                        style={selMethod === m.id
-                          ? { background:`${m.accent}25`, border:`1px solid ${m.accent}70`, color:"#fff", boxShadow:`0 0 20px ${m.accent}25` }
-                          : { background:"rgba(255,255,255,.03)", border:"1px solid rgba(255,255,255,.07)", color:"#9B8EC4" }}>
-                        {m.name}
-                      </button>
-                    ))}
-                  </div>
-                  <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#7B5EA7]">{t.profileQuickAmount}</p>
-                  <div className="mb-4 grid grid-cols-3 gap-2 sm:grid-cols-6">
-                    {QUICK_AMOUNTS.map((amt) => (
-                      <button key={amt} onClick={() => setDepositAmt(String(amt))}
-                        className="rounded-xl py-2.5 text-sm font-bold transition-all"
-                        style={depositAmt === String(amt)
-                          ? { background:"rgba(212,175,55,.15)", border:"1px solid rgba(212,175,55,.5)", color:"#F5C842" }
-                          : { background:"rgba(255,255,255,.03)", border:"1px solid rgba(255,255,255,.07)", color:"#9B8EC4" }}>
-                        ৳{amt.toLocaleString()}
-                      </button>
-                    ))}
-                  </div>
-                  <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#7B5EA7]">{t.profileCustomAmount}</p>
-                  <div className="relative mb-6">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-[#9B8EC4]">৳</span>
-                    <input type="number" min="100" value={depositAmt} onChange={(e) => setDepositAmt(e.target.value)}
-                      placeholder={t.profileEnterAmountPlaceholder}
-                      className="w-full rounded-xl border border-[#7B2FBE]/40 bg-white/4 py-3 pl-8 pr-4 text-sm text-white placeholder-[#8A7DB0] outline-none transition-all focus:border-[#D4AF37] focus:bg-white/[.07]" />
-                  </div>
-                  <button onClick={openDepositRequest} disabled={depositAmt !== "" && Number(depositAmt) < 100}
-                    className="w-full rounded-full py-4 text-base font-bold text-[#0A0612] transition-all hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:scale-100"
-                    style={{ background:"linear-gradient(to right,#D4AF37,#F5C842)", boxShadow:"0 0 32px rgba(212,175,55,.35)" }}>
-                    {t.deposit}{depositAmt ? ` ৳${Number(depositAmt).toLocaleString()}` : ` ${t.profileNow}`}
-                  </button>
-                  {depositError && (
-                    <p className="mt-3 text-center text-[11px] text-red-400">{depositError}</p>
-                  )}
-                  <p className="mt-3 text-center text-[11px] text-[#7B5EA7]">{t.profileDepositFootnote}</p>
-                </div>
-              )}
-
-              {/* ════ WITHDRAW ════ */}
-              {tab === "withdraw" && (
-                <div className="rounded-2xl p-6" style={CARD}>
-                  <h3 className="mb-5 text-lg font-extrabold text-white">{t.profileWithdrawFunds}</h3>
-                  <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#7B5EA7]">{t.profileWithdrawMethod}</p>
-                  <div className="mb-6 grid grid-cols-3 gap-2 sm:grid-cols-6">
-                    {PAYMENT_METHODS.map((m) => (
-                      <button key={m.id} onClick={() => setSelWMethod(m.id)}
-                        className="rounded-xl py-3 text-xs font-bold transition-all"
-                        style={selWMethod === m.id
-                          ? { background:`${m.accent}25`, border:`1px solid ${m.accent}70`, color:"#fff", boxShadow:`0 0 20px ${m.accent}25` }
-                          : { background:"rgba(255,255,255,.03)", border:"1px solid rgba(255,255,255,.07)", color:"#9B8EC4" }}>
-                        {m.name}
-                      </button>
-                    ))}
-                  </div>
-                  <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#7B5EA7]">{t.profileQuickAmount}</p>
-                  <div className="mb-4 grid grid-cols-3 gap-2 sm:grid-cols-6">
-                    {QUICK_AMOUNTS.map((amt) => (
-                      <button key={amt} onClick={() => setWithdrawAmt(String(amt))}
-                        className="rounded-xl py-2.5 text-sm font-bold transition-all"
-                        style={withdrawAmt === String(amt)
-                          ? { background:"rgba(212,175,55,.15)", border:"1px solid rgba(212,175,55,.5)", color:"#F5C842" }
-                          : { background:"rgba(255,255,255,.03)", border:"1px solid rgba(255,255,255,.07)", color:"#9B8EC4" }}>
-                        ৳{amt.toLocaleString()}
-                      </button>
-                    ))}
-                  </div>
-                  <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#7B5EA7]">{t.profileCustomAmount}</p>
-                  <div className="relative mb-6">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-[#9B8EC4]">৳</span>
-                    <input type="number" min="100" value={withdrawAmt} onChange={(e) => setWithdrawAmt(e.target.value)}
-                      placeholder={t.profileEnterAmountPlaceholder}
-                      className="w-full rounded-xl border border-[#7B2FBE]/40 bg-white/4 py-3 pl-8 pr-4 text-sm text-white placeholder-[#8A7DB0] outline-none transition-all focus:border-[#D4AF37] focus:bg-white/[.07]" />
-                  </div>
-                  <button disabled={withdrawAmt !== "" && Number(withdrawAmt) < 100}
-                    className="w-full rounded-full py-4 text-base font-bold text-[#0A0612] transition-all hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:scale-100"
-                    style={{ background:"linear-gradient(to right,#D4AF37,#F5C842)", boxShadow:"0 0 32px rgba(212,175,55,.35)" }}>
-                    {t.profileTabWithdraw}{withdrawAmt ? ` ৳${Number(withdrawAmt).toLocaleString()}` : ` ${t.profileNow}`}
-                  </button>
-                  <p className="mt-3 text-center text-[11px] text-[#7B5EA7]">{t.profileWithdrawFootnote}</p>
                 </div>
               )}
 

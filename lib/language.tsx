@@ -149,6 +149,13 @@ export type Translations = {
   profileWithdrawFunds: string;
   profileWithdrawMethod: string;
   profileWithdrawFootnote: string;
+  depositWithdrawTitle: string;
+  noActiveAccountsForMethod: string;
+  profileWithdrawAccountLabel: string;
+  profileWithdrawAccountPlaceholder: string;
+  profileSubmitWithdrawal: string;
+  profileWithdrawRequestSubmittedTitle: string;
+  profileWithdrawRequestSubmittedDesc: string;
   profileUpdatePasswordTitle: string;
   profileUpdatePasswordDesc: string;
   profileCurrentPasswordLabel: string;
@@ -401,6 +408,13 @@ const T: Record<Lang, Translations> = {
     profileWithdrawFunds: "Withdraw Funds",
     profileWithdrawMethod: "Withdraw Method",
     profileWithdrawFootnote: "Minimum ৳100 · KYC required · Processed within 24 hours",
+    depositWithdrawTitle: "Deposit & Withdraw",
+    noActiveAccountsForMethod: "No active {method} account is available right now. Please choose another method or contact support.",
+    profileWithdrawAccountLabel: "Your {method} Account Number",
+    profileWithdrawAccountPlaceholder: "Enter your account number",
+    profileSubmitWithdrawal: "Request Withdrawal",
+    profileWithdrawRequestSubmittedTitle: "Withdrawal Requested",
+    profileWithdrawRequestSubmittedDesc: "Your withdrawal of ৳{amount} is being processed. This usually takes up to 24 hours.",
     profileUpdatePasswordTitle: "Update Password",
     profileUpdatePasswordDesc: "Change the password you use to log in to your account.",
     profileCurrentPasswordLabel: "Current Password",
@@ -649,6 +663,13 @@ const T: Record<Lang, Translations> = {
     profileWithdrawFunds: "টাকা উত্তোলন করুন",
     profileWithdrawMethod: "উত্তোলন পদ্ধতি",
     profileWithdrawFootnote: "সর্বনিম্ন ৳১০০ · কেওয়াইসি প্রয়োজন · ২৪ ঘণ্টার মধ্যে প্রসেস হবে",
+    depositWithdrawTitle: "ডিপোজিট ও উত্তোলন",
+    noActiveAccountsForMethod: "এই মুহূর্তে কোনো সক্রিয় {method} অ্যাকাউন্ট নেই। অন্য পদ্ধতি বেছে নিন বা সাপোর্টে যোগাযোগ করুন।",
+    profileWithdrawAccountLabel: "আপনার {method} অ্যাকাউন্ট নম্বর",
+    profileWithdrawAccountPlaceholder: "আপনার অ্যাকাউন্ট নম্বর লিখুন",
+    profileSubmitWithdrawal: "উত্তোলনের অনুরোধ করুন",
+    profileWithdrawRequestSubmittedTitle: "উত্তোলনের অনুরোধ সম্পন্ন হয়েছে",
+    profileWithdrawRequestSubmittedDesc: "আপনার ৳{amount} উত্তোলনের অনুরোধ প্রক্রিয়াধীন। এতে সাধারণত ২৪ ঘণ্টা পর্যন্ত সময় লাগতে পারে।",
     profileUpdatePasswordTitle: "পাসওয়ার্ড আপডেট করুন",
     profileUpdatePasswordDesc: "আপনার অ্যাকাউন্টে লগইন করার পাসওয়ার্ড পরিবর্তন করুন।",
     profileCurrentPasswordLabel: "বর্তমান পাসওয়ার্ড",
