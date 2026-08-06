@@ -158,15 +158,7 @@ export default function GamesToolbar({
         </span>
 
         {open && results.length > 0 && (
-          <div
-            // On mobile this opens the on-screen keyboard, which covers the
-            // bottom of the viewport — showing the dropdown above the input
-            // instead of below keeps it clear of the keyboard no matter
-            // where on the page this toolbar sits.
-            className={`absolute right-0 z-50 max-h-96 w-full min-w-[280px] overflow-y-auto rounded-xl border border-white/10 bg-[#160A2E] shadow-2xl ${
-              stacked ? "bottom-full mb-2" : "top-full mt-2"
-            }`}
-          >
+          <div className="absolute right-0 top-full z-50 mt-2 max-h-96 w-full min-w-[280px] overflow-y-auto rounded-xl border border-white/10 bg-[#160A2E] shadow-2xl">
             {results.map((g) => (
               <button
                 key={g.gameUid}
@@ -193,11 +185,7 @@ export default function GamesToolbar({
         )}
 
         {open && results.length === 0 && !searching && query.trim().length >= 2 && (
-          <div
-            className={`absolute right-0 z-50 w-full rounded-xl border border-white/10 bg-[#160A2E] px-4 py-3 text-center text-sm text-[#7B5EA7] shadow-2xl ${
-              stacked ? "bottom-full mb-2" : "top-full mt-2"
-            }`}
-          >
+          <div className="absolute right-0 top-full z-50 mt-2 w-full rounded-xl border border-white/10 bg-[#160A2E] px-4 py-3 text-center text-sm text-[#7B5EA7] shadow-2xl">
             No games found.
           </div>
         )}
