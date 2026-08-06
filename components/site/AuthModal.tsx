@@ -72,7 +72,7 @@ export default function AuthModal({
   };
 
   const inputBase =
-    "w-full rounded-xl border border-[#7B2FBE]/40 bg-white/[0.04] px-4 py-3 pr-11 text-sm text-white placeholder-[#8A7DB0] outline-none transition-all focus:border-[#D4AF37] focus:bg-white/[0.07]";
+    "w-full rounded-xl border border-[#7B2FBE]/40 bg-white/[0.04] px-4 py-2.5 pr-11 text-sm text-white placeholder-[#8A7DB0] outline-none transition-all focus:border-[#D4AF37] focus:bg-white/[0.07]";
 
   function EyeBtn({ visible, onToggle }: { visible: boolean; onToggle: () => void }) {
     return (
@@ -108,7 +108,11 @@ export default function AuthModal({
 
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-md animate-[popIn_0.3s_ease] overflow-hidden rounded-3xl border border-[#D4AF37]/30 bg-gradient-to-b from-[#1B0838] to-[#0A0612] p-7 shadow-[0_0_60px_#7B2FBE40] md:p-8"
+        // max-h + overflow-y-auto is a hard guarantee the form never gets
+        // cut off on short mobile viewports, regardless of field count —
+        // overflow-x stays hidden so the decorative blur glow and rounded
+        // corners still clip correctly.
+        className="relative max-h-[90vh] w-full max-w-md animate-[popIn_0.3s_ease] overflow-y-auto overflow-x-hidden rounded-3xl border border-[#D4AF37]/30 bg-gradient-to-b from-[#1B0838] to-[#0A0612] p-5 shadow-[0_0_60px_#7B2FBE40] sm:p-6"
       >
         <div className="pointer-events-none absolute -top-20 left-1/2 h-44 w-44 -translate-x-1/2 rounded-full bg-[#9B30FF]/30 blur-3xl" />
 
@@ -120,23 +124,23 @@ export default function AuthModal({
           <FaXmark />
         </button>
 
-        <div className="relative mb-5 flex justify-center">
-          <Image src={logo} alt="2XLbet Casino" width={220} height={220} className="h-20 w-auto drop-shadow-[0_0_18px_#9B30FF66]" />
+        <div className="relative mb-3 flex justify-center">
+          <Image src={logo} alt="2XLbet Casino" width={220} height={220} className="h-12 w-auto drop-shadow-[0_0_18px_#9B30FF66]" />
         </div>
 
-        <h2 className="relative text-center text-2xl font-extrabold">
+        <h2 className="relative text-center text-xl font-extrabold">
           <span className="bg-gradient-to-r from-[#F5C842] to-[#D4AF37] bg-clip-text text-transparent">
             {isLogin ? t.authLoginTitle : t.authRegisterTitle}
           </span>
         </h2>
-        <p className="relative mb-6 mt-1 text-center text-sm text-[#9B8EC4]">
+        <p className="relative mb-4 mt-1 text-center text-sm text-[#9B8EC4]">
           {isLogin ? t.authLoginSub : t.authRegisterSub}
         </p>
 
         {/* name — register only */}
         {!isLogin && (
-          <div className="relative mb-4">
-            <label className="mb-1.5 block text-xs font-medium text-[#C9B8E8]">{t.authNameLabel}</label>
+          <div className="relative mb-3">
+            <label className="mb-1 block text-xs font-medium text-[#C9B8E8]">{t.authNameLabel}</label>
             <input
               type="text"
               value={name}
@@ -148,8 +152,8 @@ export default function AuthModal({
         )}
 
         {/* phone */}
-        <div className="relative mb-4">
-          <label className="mb-1.5 block text-xs font-medium text-[#C9B8E8]">{t.authPhoneLabel}</label>
+        <div className="relative mb-3">
+          <label className="mb-1 block text-xs font-medium text-[#C9B8E8]">{t.authPhoneLabel}</label>
           <input
             type="tel"
             inputMode="tel"
@@ -161,8 +165,8 @@ export default function AuthModal({
         </div>
 
         {/* password */}
-        <div className="relative mb-4">
-          <label className="mb-1.5 block text-xs font-medium text-[#C9B8E8]">{t.authPasswordLabel}</label>
+        <div className="relative mb-3">
+          <label className="mb-1 block text-xs font-medium text-[#C9B8E8]">{t.authPasswordLabel}</label>
           <div className="relative">
             <input
               type={showPwd ? "text" : "password"}
@@ -178,8 +182,8 @@ export default function AuthModal({
         {/* register-only fields */}
         {!isLogin && (
           <>
-            <div className="relative mb-4">
-              <label className="mb-1.5 block text-xs font-medium text-[#C9B8E8]">{t.authConfirmLabel}</label>
+            <div className="relative mb-3">
+              <label className="mb-1 block text-xs font-medium text-[#C9B8E8]">{t.authConfirmLabel}</label>
               <div className="relative">
                 <input
                   type={showConfirm ? "text" : "password"}
@@ -191,8 +195,8 @@ export default function AuthModal({
                 <EyeBtn visible={showConfirm} onToggle={() => setShowConfirm((v) => !v)} />
               </div>
             </div>
-            <div className="relative mb-4">
-              <label className="mb-1.5 block text-xs font-medium text-[#C9B8E8]">
+            <div className="relative mb-3">
+              <label className="mb-1 block text-xs font-medium text-[#C9B8E8]">
                 {t.authReferralLabel} <span className="text-[#8A7DB0]">{t.authReferralOptional}</span>
               </label>
               <input
@@ -203,7 +207,7 @@ export default function AuthModal({
                 className={inputBase}
               />
             </div>
-            <label className="relative mb-4 flex cursor-pointer items-start gap-2 text-xs text-[#9B8EC4]">
+            <label className="relative mb-3 flex cursor-pointer items-start gap-2 text-xs text-[#9B8EC4]">
               <input
                 type="checkbox"
                 checked={agree}
@@ -220,7 +224,7 @@ export default function AuthModal({
         )}
 
         {isLogin && (
-          <div className="relative mb-4 text-right">
+          <div className="relative mb-3 text-right">
             <a href="#" className="text-xs text-[#D4AF37] hover:underline">{t.authForgot}</a>
           </div>
         )}
@@ -234,12 +238,12 @@ export default function AuthModal({
         <button
           onClick={handleSubmit}
           disabled={submitting}
-          className="relative w-full rounded-full bg-gradient-to-r from-[#D4AF37] to-[#F5C842] py-3.5 text-base font-bold text-[#0A0612] shadow-[0_0_25px_#D4AF3760] transition-all hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-60"
+          className="relative w-full rounded-full bg-gradient-to-r from-[#D4AF37] to-[#F5C842] py-3 text-base font-bold text-[#0A0612] shadow-[0_0_25px_#D4AF3760] transition-all hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-60"
         >
           {submitting ? "..." : isLogin ? t.authLoginBtn : t.authSignupBtn}
         </button>
 
-        <p className="relative mt-5 text-center text-sm text-[#9B8EC4]">
+        <p className="relative mt-4 text-center text-sm text-[#9B8EC4]">
           {isLogin ? t.authHaveAccount : t.authNoAccount}{" "}
           <button
             onClick={() => onSwitch(isLogin ? "register" : "login")}
