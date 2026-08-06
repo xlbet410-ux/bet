@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 import { useLang } from "@/lib/language";
 import { NAV_HREFS } from "@/lib/data";
+import { useKeyboardOffset } from "@/lib/useKeyboardOpen";
 
 // Fixed bottom tab bar for mobile/tablet, matching an exact reference design:
 // a full-width SVG background with a curved notch cut into the top-center,
@@ -18,6 +19,7 @@ export default function MobileBottomNav({
   const pathname = usePathname();
   const { user } = useAuth();
   const { t } = useLang();
+  const keyboardOffset = useKeyboardOffset();
 
   function requireAuth(e: React.MouseEvent) {
     if (!user) {
@@ -30,7 +32,14 @@ export default function MobileBottomNav({
   const isProfile = pathname === "/profile";
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-[90] h-[78px] lg:hidden">
+    <nav
+      // Shifts up by the on-screen keyboard's height while it's open, so the
+      // bar stays visible sitting just above the keyboard instead of being
+      // hidden underneath it — a fixed `bottom: 0` alone would leave it
+      // pinned to the layout viewport, i.e. behind the keyboard.
+      className="fixed inset-x-0 z-[90] h-[78px] transition-[bottom] duration-200 lg:hidden"
+      style={{ bottom: keyboardOffset }}
+    >
       <svg
         className="pointer-events-none absolute inset-0 h-full w-full"
         viewBox="0 0 420 78"
