@@ -79,14 +79,6 @@ export default function ChatSupport({ onOpenAuth }: { onOpenAuth: (mode: "login"
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [msgs]);
 
-  // lets other UI (e.g. the mobile bottom nav's "Services" button) open this panel
-  // without needing to lift its open state up into a shared parent.
-  useEffect(() => {
-    const openPanel = () => setOpen(true);
-    window.addEventListener("open-chat-support", openPanel);
-    return () => window.removeEventListener("open-chat-support", openPanel);
-  }, []);
-
   const send = async () => {
     const text = input.trim();
     const conversationId = conversationIdRef.current;
@@ -107,11 +99,12 @@ export default function ChatSupport({ onOpenAuth }: { onOpenAuth: (mode: "login"
 
   return (
     <>
-      {/* floating trigger */}
+      {/* floating trigger — desktop only; mobile reaches chat via the bottom
+          nav's Services link, which goes to the dedicated /live-chat page */}
       <button
         onClick={() => setOpen((o) => !o)}
         aria-label={open ? "Close support chat" : "Open support chat"}
-        className="fixed bottom-24 right-4 z-[95] flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#9B30FF] to-[#4A0E8F] text-xl text-white shadow-[0_0_28px_#7B2FBE80] transition-all hover:scale-110 sm:right-5 lg:bottom-20"
+        className="fixed bottom-20 right-5 z-[95] hidden h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#9B30FF] to-[#4A0E8F] text-xl text-white shadow-[0_0_28px_#7B2FBE80] transition-all hover:scale-110 lg:flex"
       >
         {open ? <FaXmark /> : <FaCommentDots />}
         {!open && (
@@ -122,9 +115,9 @@ export default function ChatSupport({ onOpenAuth }: { onOpenAuth: (mode: "login"
         )}
       </button>
 
-      {/* chat panel */}
+      {/* chat panel — only ever opens from the desktop-only trigger above */}
       {open && (
-        <div className="fixed bottom-32 right-4 z-[95] flex w-[calc(100vw-32px)] max-w-sm animate-[popIn_0.3s_ease] flex-col overflow-hidden rounded-2xl border border-[#7B2FBE]/40 bg-[#110722] shadow-[0_8px_60px_#7B2FBE55] sm:bottom-36 sm:right-5">
+        <div className="fixed bottom-36 right-5 z-[95] flex w-full max-w-sm animate-[popIn_0.3s_ease] flex-col overflow-hidden rounded-2xl border border-[#7B2FBE]/40 bg-[#110722] shadow-[0_8px_60px_#7B2FBE55]">
 
           {/* panel header */}
           <div className="flex items-center gap-3 bg-gradient-to-r from-[#2D0A5E] to-[#1B0838] px-4 py-3">

@@ -30,6 +30,7 @@ export default function MobileBottomNav({
 
   const isHome = pathname === "/";
   const isProfile = pathname === "/profile";
+  const isLiveChat = pathname === "/live-chat";
 
   return (
     <nav
@@ -119,9 +120,10 @@ export default function MobileBottomNav({
           <span className="mt-[26px] text-center text-[13px] font-medium text-white">{t.deposit}</span>
         </Link>
 
-        <button
-          onClick={() => window.dispatchEvent(new CustomEvent("open-chat-support"))}
-          className="flex flex-col items-center justify-end gap-[5px] py-1 text-white"
+        <Link
+          href="/live-chat"
+          onClick={requireAuth}
+          className={`flex flex-col items-center justify-end gap-[5px] py-1 ${isLiveChat ? "text-[#E8A93B]" : "text-white"}`}
         >
           <svg
             className="h-[26px] w-[26px]"
@@ -138,7 +140,7 @@ export default function MobileBottomNav({
             <circle cx="15.5" cy="10" r="1" fill="currentColor" stroke="none" />
           </svg>
           <span className="text-[13px] font-medium tracking-[0.2px]">{t.bottomNavServices}</span>
-        </button>
+        </Link>
 
         <Link
           href="/profile"
