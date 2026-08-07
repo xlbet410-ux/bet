@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { FaChevronLeft, FaTrophy } from "react-icons/fa6";
 import Header from "@/components/site/Header";
 import Footer from "@/components/site/Footer";
 import MobileBottomNav from "@/components/site/MobileBottomNav";
@@ -28,6 +29,34 @@ const METHODS: { id: PaymentMethod; name: string; nameBn: string; accent: string
 ];
 
 const QUICK_AMOUNTS = [100, 200, 500, 1000, 2000, 5000];
+
+// "No promotion" is represented as promo id null, so it isn't part of this
+// list — the picker always renders it as a final, permanent option.
+type Promotion = {
+  id: string;
+  title: string;
+  titleBn: string;
+  minAmount: number;
+  turnover?: string;
+  example?: { deposit: number; bonus: number };
+};
+
+const PROMOTIONS: Promotion[] = [
+  {
+    id: "daily-first",
+    title: "8% Bonus For Daily 1st Deposit",
+    titleBn: "প্রতিদিন প্রথম জমার জন্য ৮% বোনাস",
+    minAmount: 100,
+    turnover: "2x",
+    example: { deposit: 100, bonus: 8 },
+  },
+  {
+    id: "first-deposit-50",
+    title: "First Deposit 50% Bonus",
+    titleBn: "প্রথম জমায় ৫০% বোনাস",
+    minAmount: 100,
+  },
+];
 
 const CARD = { background: "#ffffff", border: "1px solid #E5E7EB", boxShadow: "0 4px 20px rgba(17,17,17,.06)" };
 const INNER = { background: "#F9FAFB", border: "1px solid #E5E7EB" };
@@ -114,6 +143,92 @@ function AmountPicker({
   );
 }
 
+function PromotionsPicker({
+  promo,
+  onSelect,
+  lang,
+}: {
+  promo: string | null;
+  onSelect: (id: string | null) => void;
+  lang: string;
+}) {
+  const strings = lang === "bn"
+    ? { heading: "প্রমোশন", noneLabel: "কোনো প্রমোশনে অংশগ্রহণ করবেন না", eg: "যেমন", deposit: "জমা", bonus: "বোনাস", turnover: "টার্নওভার" }
+    : { heading: "Promotions", noneLabel: "Do not participate in any promotions", eg: "eg", deposit: "DEPOSIT", bonus: "BONUS", turnover: "TURNOVER" };
+
+  return (
+    <div className="mb-6">
+      <div className="mb-2 flex items-center gap-1.5">
+        <span className="h-1.5 w-1.5 rounded-full bg-[#D4AF37]" />
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">{strings.heading}</p>
+      </div>
+
+      <div className="flex flex-col gap-2">
+        {PROMOTIONS.map((p) => {
+          const selected = promo === p.id;
+          return (
+            <button
+              key={p.id}
+              type="button"
+              onClick={() => onSelect(p.id)}
+              className="w-full rounded-xl px-4 py-3 text-left transition-all"
+              style={selected
+                ? { background: "rgba(212,175,55,.08)", border: "1px solid #D4AF37" }
+                : { background: "#F9FAFB", border: "1px solid #E5E7EB" }}
+            >
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2.5">
+                  <span
+                    className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2"
+                    style={selected ? { borderColor: "#D4AF37" } : { borderColor: "#D1D5DB" }}
+                  >
+                    {selected && <span className="h-2 w-2 rounded-full bg-[#D4AF37]" />}
+                  </span>
+                  <span className={`text-sm font-bold ${selected ? "text-[#9A7B1F]" : "text-gray-700"}`}>
+                    {lang === "bn" ? p.titleBn : p.title}
+                  </span>
+                </div>
+                <span className="shrink-0 text-xs font-semibold text-gray-400">≥ ৳{p.minAmount.toLocaleString()}</span>
+              </div>
+
+              {selected && (p.turnover || p.example) && (
+                <div className="mt-2.5 border-t border-[#D4AF37]/20 pt-2.5 text-xs text-gray-500">
+                  {p.turnover && <p className="mb-1">{strings.turnover}: {p.turnover}</p>}
+                  {p.example && (
+                    <p>
+                      {strings.eg}: {strings.deposit} {p.example.deposit} · {strings.bonus} {p.example.bonus} · {strings.turnover} {p.example.deposit + p.example.bonus}
+                    </p>
+                  )}
+                </div>
+              )}
+            </button>
+          );
+        })}
+
+        <button
+          type="button"
+          onClick={() => onSelect(null)}
+          className="flex w-full items-center justify-between gap-2 rounded-xl px-4 py-3 text-left transition-all"
+          style={promo === null
+            ? { background: "rgba(212,175,55,.08)", border: "1px solid #D4AF37" }
+            : { background: "#F9FAFB", border: "1px solid #E5E7EB" }}
+        >
+          <div className="flex items-center gap-2.5">
+            <span
+              className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2"
+              style={promo === null ? { borderColor: "#D4AF37" } : { borderColor: "#D1D5DB" }}
+            >
+              {promo === null && <span className="h-2 w-2 rounded-full bg-[#D4AF37]" />}
+            </span>
+            <span className={`text-sm font-bold ${promo === null ? "text-[#9A7B1F]" : "text-gray-700"}`}>{strings.noneLabel}</span>
+          </div>
+          <FaTrophy className="shrink-0 text-base text-[#D4AF37]/60" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function SuccessPanel({ title, desc, onDone, t }: { title: string; desc: string; onDone: () => void; t: ReturnType<typeof useLang>["t"] }) {
   return (
     <div className="py-4 text-center">
@@ -136,6 +251,133 @@ function SuccessPanel({ title, desc, onDone, t }: { title: string; desc: string;
   );
 }
 
+function AccountStep({
+  methodEntry,
+  account,
+  accountsLoading,
+  accountsError,
+  onRetryAccounts,
+  amount,
+  promoLabel,
+  trxId,
+  onTrxIdChange,
+  onBack,
+  onConfirm,
+  valid,
+  lang,
+  t,
+  copied,
+  onCopy,
+}: {
+  methodEntry: { id: PaymentMethod; name: string; nameBn: string; accent: string } | undefined;
+  account: PaymentAccount | undefined;
+  accountsLoading: boolean;
+  accountsError: boolean;
+  onRetryAccounts: () => void;
+  amount: string;
+  promoLabel: string;
+  trxId: string;
+  onTrxIdChange: (v: string) => void;
+  onBack: () => void;
+  onConfirm: () => void;
+  valid: boolean;
+  lang: string;
+  t: ReturnType<typeof useLang>["t"];
+  copied: boolean;
+  onCopy: () => void;
+}) {
+  const methodName = methodEntry ? (lang === "bn" ? methodEntry.nameBn : methodEntry.name) : "";
+  const accent = methodEntry?.accent ?? "#D4AF37";
+  const summaryLabels = lang === "bn" ? { amount: "পরিমাণ", promo: "প্রমোশন", none: "কোনোটি নয়", back: "মেথড ও পরিমাণ পরিবর্তন করুন" } : { amount: "Amount", promo: "Promotion", none: "None", back: "Change method or amount" };
+
+  return (
+    <>
+      <button onClick={onBack} className="mb-4 flex items-center gap-1.5 text-xs font-semibold text-gray-500 transition-colors hover:text-[#B8892E]">
+        <FaChevronLeft className="text-[10px]" /> {summaryLabels.back}
+      </button>
+
+      <div
+        className="mb-5 flex items-center gap-3 rounded-2xl p-4"
+        style={{ background: `linear-gradient(135deg, ${accent}14, ${accent}05)`, border: `1px solid ${accent}33` }}
+      >
+        {methodEntry && (
+          <span className="relative h-10 w-10 shrink-0">
+            <Image src={`/${methodEntry.id}.png`} alt={methodName} fill unoptimized sizes="40px" className="object-contain" />
+          </span>
+        )}
+        <div>
+          <p className="text-base font-extrabold text-gray-900">{methodName}</p>
+          <p className="text-xs text-gray-500">{t.profileMakeDeposit}</p>
+        </div>
+      </div>
+
+      <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-gray-400">{t.profileSendMoneyTo}</p>
+      {accountsLoading ? (
+        <div className="mb-5 h-16 animate-pulse rounded-xl" style={INNER} />
+      ) : accountsError ? (
+        <div className="mb-5 flex items-center justify-between rounded-xl px-4 py-3" style={INNER}>
+          <p className="text-xs text-red-500">{t.profileErrGeneric}</p>
+          <button onClick={onRetryAccounts} className="shrink-0 text-xs font-bold text-[#B8892E]">{t.profileTryAgain}</button>
+        </div>
+      ) : !account ? (
+        <p className="mb-5 rounded-xl px-4 py-3 text-xs text-gray-500" style={INNER}>
+          {fmt(t.noActiveAccountsForMethod, { method: methodName })}
+        </p>
+      ) : (
+        <div className="mb-5 flex items-center gap-2 rounded-xl px-4 py-3" style={{ background: `${accent}0A`, border: `1px solid ${accent}40` }}>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-[11px] text-gray-500">{account.label}</p>
+            <p className="truncate font-mono text-xl font-black" style={{ color: accent }}>{account.accountNumber}</p>
+            {account.accountName && <p className="truncate text-[11px] text-gray-500">{account.accountName}</p>}
+            {account.details && <p className="truncate text-[11px] text-gray-400">{account.details}</p>}
+          </div>
+          <button
+            onClick={onCopy}
+            className="shrink-0 rounded-lg px-3 py-2 text-xs font-bold text-white transition-all hover:scale-105"
+            style={{ background: accent }}
+          >
+            {copied ? t.profileCopied : t.profileCopy}
+          </button>
+        </div>
+      )}
+
+      <div className="mb-5 grid grid-cols-2 gap-2">
+        <div className="rounded-xl px-4 py-3" style={INNER}>
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">{summaryLabels.amount}</p>
+          <p className="mt-0.5 text-sm font-bold text-gray-900">৳{Number(amount || 0).toLocaleString()}</p>
+        </div>
+        <div className="rounded-xl px-4 py-3" style={INNER}>
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">{summaryLabels.promo}</p>
+          <p className="mt-0.5 truncate text-sm font-bold text-gray-900">{promoLabel || summaryLabels.none}</p>
+        </div>
+      </div>
+
+      {account && (
+        <p className="mb-2 text-xs leading-relaxed text-gray-500">
+          {fmt(t.profileSendInstructions, { amount: Number(amount || 0).toLocaleString(), method: methodName })}
+        </p>
+      )}
+      <label className="mb-1.5 block text-xs font-medium text-gray-600">{t.profileTrxIdLabel}</label>
+      <input
+        value={trxId}
+        onChange={(e) => onTrxIdChange(e.target.value)}
+        placeholder={t.profileTrxIdPlaceholder}
+        className="mb-5 w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 placeholder-gray-400 outline-none transition-all focus:border-[#D4AF37]"
+      />
+
+      <button
+        onClick={onConfirm}
+        disabled={!valid}
+        className="w-full rounded-full py-4 text-base font-bold text-[#0A0612] transition-all hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:scale-100"
+        style={{ background: "linear-gradient(to right,#D4AF37,#F5C842)", boxShadow: "0 0 32px rgba(212,175,55,.35)" }}
+      >
+        {t.profileConfirmDeposit}
+      </button>
+      <p className="mt-3 text-center text-[11px] text-gray-400">{t.profileDepositFootnote}</p>
+    </>
+  );
+}
+
 export default function DepositWithdrawPage() {
   const { user, loading: authLoading } = useAuth();
   const { t, lang } = useLang();
@@ -150,8 +392,10 @@ export default function DepositWithdrawPage() {
   const [accountsRetryKey, setAccountsRetryKey] = useState(0);
 
   // deposit
+  const [depositStep, setDepositStep] = useState<1 | 2>(1);
   const [depositMethod, setDepositMethod] = useState<PaymentMethod>("bkash");
   const [depositAmt, setDepositAmt] = useState("");
+  const [depositPromo, setDepositPromo] = useState<string | null>(PROMOTIONS[0]?.id ?? null);
   const [depositTrxId, setDepositTrxId] = useState("");
   const [depositSubmitted, setDepositSubmitted] = useState(false);
   const [copiedAccountId, setCopiedAccountId] = useState<string | null>(null);
@@ -219,12 +463,16 @@ export default function DepositWithdrawPage() {
   }
 
   const depositAccounts = accounts.filter((a) => a.method === depositMethod);
+  const depositAccount = depositAccounts[0];
   const depositMethodEntry = METHODS.find((m) => m.id === depositMethod);
   const withdrawMethodEntry = METHODS.find((m) => m.id === withdrawMethod);
   const depositMethodName = (lang === "bn" ? depositMethodEntry?.nameBn : depositMethodEntry?.name) ?? "";
   const withdrawMethodName = (lang === "bn" ? withdrawMethodEntry?.nameBn : withdrawMethodEntry?.name) ?? "";
+  const depositPromoEntry = PROMOTIONS.find((p) => p.id === depositPromo);
+  const depositPromoLabel = depositPromoEntry ? (lang === "bn" ? depositPromoEntry.titleBn : depositPromoEntry.title) : "";
 
-  const depositValid = depositAmt !== "" && Number(depositAmt) >= 100 && depositTrxId.trim() !== "" && depositAccounts.length > 0;
+  const depositStep1Valid = depositAmt !== "" && Number(depositAmt) >= 100 && !accountsLoading && !accountsError && depositAccounts.length > 0;
+  const depositValid = depositStep1Valid && depositTrxId.trim() !== "";
   const withdrawValid = withdrawAmt !== "" && Number(withdrawAmt) >= 100 && withdrawAccountNumber.trim() !== "";
 
   return (
@@ -267,8 +515,33 @@ export default function DepositWithdrawPage() {
                 <SuccessPanel
                   title={t.profileRequestSubmittedTitle}
                   desc={fmt(t.profileRequestSubmittedDesc, { amount: Number(depositAmt || 0).toLocaleString() })}
-                  onDone={() => { setDepositSubmitted(false); setDepositAmt(""); setDepositTrxId(""); }}
+                  onDone={() => {
+                    setDepositSubmitted(false);
+                    setDepositAmt("");
+                    setDepositTrxId("");
+                    setDepositPromo(PROMOTIONS[0]?.id ?? null);
+                    setDepositStep(1);
+                  }}
                   t={t}
+                />
+              ) : depositStep === 2 ? (
+                <AccountStep
+                  methodEntry={depositMethodEntry}
+                  account={depositAccount}
+                  accountsLoading={accountsLoading}
+                  accountsError={accountsError}
+                  onRetryAccounts={() => setAccountsRetryKey((k) => k + 1)}
+                  amount={depositAmt}
+                  promoLabel={depositPromoLabel}
+                  trxId={depositTrxId}
+                  onTrxIdChange={setDepositTrxId}
+                  onBack={() => setDepositStep(1)}
+                  onConfirm={() => setDepositSubmitted(true)}
+                  valid={depositValid}
+                  lang={lang}
+                  t={t}
+                  copied={depositAccount ? copiedAccountId === depositAccount.id : false}
+                  onCopy={() => depositAccount && copyText(depositAccount.accountNumber, depositAccount.id)}
                 />
               ) : (
                 <>
@@ -276,68 +549,24 @@ export default function DepositWithdrawPage() {
                   <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-gray-400">{t.profilePaymentMethod}</p>
                   <MethodGrid method={depositMethod} onSelect={setDepositMethod} lang={lang} />
 
-                  <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-gray-400">{t.profileSendMoneyTo}</p>
-                  {accountsLoading ? (
-                    <div className="mb-6 h-16 animate-pulse rounded-xl" style={INNER} />
-                  ) : accountsError ? (
-                    <div className="mb-6 flex items-center justify-between rounded-xl px-4 py-3" style={INNER}>
-                      <p className="text-xs text-red-500">{t.profileErrGeneric}</p>
-                      <button onClick={() => setAccountsRetryKey((k) => k + 1)} className="shrink-0 text-xs font-bold text-[#B8892E]">
-                        {t.profileTryAgain}
-                      </button>
-                    </div>
-                  ) : depositAccounts.length === 0 ? (
-                    <p className="mb-6 rounded-xl px-4 py-3 text-xs text-gray-500" style={INNER}>
-                      {fmt(t.noActiveAccountsForMethod, { method: depositMethodName })}
-                    </p>
-                  ) : (
-                    <div className="mb-6 flex flex-col gap-2">
-                      {depositAccounts.map((a) => (
-                        <div key={a.id} className="flex items-center gap-2 rounded-xl px-4 py-3" style={INNER}>
-                          <div className="min-w-0 flex-1">
-                            <p className="truncate text-[11px] text-gray-500">{a.label}</p>
-                            <p className="truncate font-mono text-lg font-bold text-[#9A7B1F]">{a.accountNumber}</p>
-                            {a.accountName && <p className="truncate text-[11px] text-gray-500">{a.accountName}</p>}
-                            {a.details && <p className="truncate text-[11px] text-gray-400">{a.details}</p>}
-                          </div>
-                          <button
-                            onClick={() => copyText(a.accountNumber, a.id)}
-                            className="shrink-0 rounded-lg px-3 py-2 text-xs font-bold text-[#0A0612] transition-all hover:scale-105"
-                            style={{ background: "linear-gradient(to right,#D4AF37,#F5C842)" }}
-                          >
-                            {copiedAccountId === a.id ? t.profileCopied : t.profileCopy}
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
                   <AmountPicker amount={depositAmt} onSelect={setDepositAmt} onCustom={setDepositAmt} t={t} />
 
-                  {depositAmt !== "" && Number(depositAmt) >= 100 && depositAccounts.length > 0 && (
-                    <>
-                      <p className="mb-2 text-xs leading-relaxed text-gray-500">
-                        {fmt(t.profileSendInstructions, { amount: Number(depositAmt).toLocaleString(), method: depositMethodName })}
-                      </p>
-                      <label className="mb-1.5 block text-xs font-medium text-gray-600">{t.profileTrxIdLabel}</label>
-                      <input
-                        value={depositTrxId}
-                        onChange={(e) => setDepositTrxId(e.target.value)}
-                        placeholder={t.profileTrxIdPlaceholder}
-                        className="mb-5 w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 placeholder-gray-400 outline-none transition-all focus:border-[#D4AF37]"
-                      />
-                    </>
+                  <PromotionsPicker promo={depositPromo} onSelect={setDepositPromo} lang={lang} />
+
+                  {!accountsLoading && !accountsError && depositAccounts.length === 0 && (
+                    <p className="mb-5 rounded-xl px-4 py-3 text-xs text-gray-500" style={INNER}>
+                      {fmt(t.noActiveAccountsForMethod, { method: depositMethodName })}
+                    </p>
                   )}
 
                   <button
-                    onClick={() => setDepositSubmitted(true)}
-                    disabled={!depositValid}
+                    onClick={() => setDepositStep(2)}
+                    disabled={!depositStep1Valid}
                     className="w-full rounded-full py-4 text-base font-bold text-[#0A0612] transition-all hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:scale-100"
                     style={{ background: "linear-gradient(to right,#D4AF37,#F5C842)", boxShadow: "0 0 32px rgba(212,175,55,.35)" }}
                   >
-                    {t.profileConfirmDeposit}
+                    {lang === "bn" ? "ঠিক আছে" : "OK"}
                   </button>
-                  <p className="mt-3 text-center text-[11px] text-gray-400">{t.profileDepositFootnote}</p>
                 </>
               )}
             </div>

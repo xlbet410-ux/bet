@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import Image from "next/image";
 import { FaTableCells, FaFire, FaHeart, FaMagnifyingGlass } from "react-icons/fa6";
 import { searchCatalog, type CatalogGame } from "@/lib/games";
@@ -32,6 +33,29 @@ export default function GamesToolbar({
   const [searching, setSearching] = useState(false);
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const [coords, setCoords] = useState<{ top: number; right: number; minWidth: number } | null>(null);
+
+  // The dropdown is portaled straight to <body> and fixed-positioned from
+  // here — with ~18 of these toolbars stacked down the homepage, every
+  // section shares the same z-10 stacking context, so an absolutely
+  // positioned dropdown that overflows past its own section's bottom edge
+  // gets painted over by the next section instead of floating above it.
+  // Escaping to <body> sidesteps that stacking-context fight entirely.
+  useEffect(() => {
+    if (!open || !wrapperRef.current) return;
+    function updateCoords() {
+      if (!wrapperRef.current) return;
+      const r = wrapperRef.current.getBoundingClientRect();
+      setCoords({ top: r.bottom + 8, right: window.innerWidth - r.right, minWidth: Math.max(r.width, 280) });
+    }
+    updateCoords();
+    window.addEventListener("scroll", updateCoords, true);
+    window.addEventListener("resize", updateCoords);
+    return () => {
+      window.removeEventListener("scroll", updateCoords, true);
+      window.removeEventListener("resize", updateCoords);
+    };
+  }, [open]);
 
   useEffect(() => {
     const q = query.trim();
@@ -84,11 +108,12 @@ export default function GamesToolbar({
 
   return (
     <div
-      // isolate traps this toolbar's own z-index layers (including the
-      // search dropdown below) in their own stacking context — with ~18 of
-      // these rendered on the homepage at once, this stops any one
-      // instance's dropdown from competing against another's internal
-      // layers just because of paint order.
+      // isolate traps this toolbar's own internal layers (icon buttons,
+      // spinner) in their own stacking context so paint order between the
+      // ~18 instances of this toolbar never bleeds through. The search
+      // results dropdown itself is portaled straight to <body> (see below)
+      // since even an isolated z-50 here would still lose to the next
+      // section's own z-10 stacking context when it overflows downward.
       className={`relative isolate z-10 flex gap-2 ${
         stacked ? "flex-col items-stretch" : "flex-wrap items-center justify-end"
       }`}
@@ -157,38 +182,48 @@ export default function GamesToolbar({
           )}
         </span>
 
-        {open && results.length > 0 && (
-          <div className="absolute right-0 top-full z-50 mt-2 max-h-96 w-full min-w-[280px] overflow-y-auto rounded-xl border border-white/10 bg-[#160A2E] shadow-2xl">
-            {results.map((g) => (
-              <button
-                key={g.gameUid}
-                onClick={() => pick(g)}
-                className="flex w-full items-center gap-3 px-3 py-2 text-left transition-colors hover:bg-white/5"
+        {open &&
+          coords &&
+          typeof document !== "undefined" &&
+          createPortal(
+            results.length > 0 ? (
+              <div
+                style={{ position: "fixed", top: coords.top, right: coords.right, minWidth: coords.minWidth, zIndex: 9999 }}
+                className="max-h-96 overflow-y-auto rounded-xl border border-white/10 bg-[#160A2E] shadow-2xl"
               >
-                <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg">
-                  <Image
-                    src={g.thumbnail || g.original}
-                    alt={g.name}
-                    fill
-                    unoptimized
-                    sizes="40px"
-                    className="object-cover"
-                  />
-                </div>
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold text-white">{g.name}</p>
-                  <p className="truncate text-xs text-[#7B5EA7]">{g.providerName}</p>
-                </div>
-              </button>
-            ))}
-          </div>
-        )}
-
-        {open && results.length === 0 && !searching && query.trim().length >= 2 && (
-          <div className="absolute right-0 top-full z-50 mt-2 w-full rounded-xl border border-white/10 bg-[#160A2E] px-4 py-3 text-center text-sm text-[#7B5EA7] shadow-2xl">
-            No games found.
-          </div>
-        )}
+                {results.map((g) => (
+                  <button
+                    key={g.gameUid}
+                    onClick={() => pick(g)}
+                    className="flex w-full items-center gap-3 px-3 py-2 text-left transition-colors hover:bg-white/5"
+                  >
+                    <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg">
+                      <Image
+                        src={g.thumbnail || g.original}
+                        alt={g.name}
+                        fill
+                        unoptimized
+                        sizes="40px"
+                        className="object-cover"
+                      />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold text-white">{g.name}</p>
+                      <p className="truncate text-xs text-[#7B5EA7]">{g.providerName}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            ) : !searching && query.trim().length >= 2 ? (
+              <div
+                style={{ position: "fixed", top: coords.top, right: coords.right, minWidth: coords.minWidth, zIndex: 9999 }}
+                className="rounded-xl border border-white/10 bg-[#160A2E] px-4 py-3 text-center text-sm text-[#7B5EA7] shadow-2xl"
+              >
+                No games found.
+              </div>
+            ) : null,
+            document.body
+          )}
       </div>
     </div>
   );
