@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Header from "@/components/site/Header";
 import Footer from "@/components/site/Footer";
 import MobileBottomNav from "@/components/site/MobileBottomNav";
 import AuthModal from "@/components/site/AuthModal";
-import AmbientBackground from "@/components/site/AmbientBackground";
 import { useAuth } from "@/lib/auth";
 import { useLang } from "@/lib/language";
 import { fmt } from "@/lib/format";
@@ -15,19 +15,22 @@ import { getActivePaymentAccounts, type PaymentAccount, type PaymentMethod } fro
 
 type PageTab = "deposit" | "withdraw";
 
-const METHODS: { id: PaymentMethod; name: string; accent: string }[] = [
-  { id: "bkash", name: "Bkash", accent: "#E2136E" },
-  { id: "nagad", name: "Nagad", accent: "#F2631F" },
-  { id: "rocket", name: "Rocket", accent: "#8C3494" },
-  { id: "upay", name: "Upay", accent: "#F04E37" },
-  { id: "crypto", name: "Crypto", accent: "#F7931A" },
-  { id: "bank", name: "Bank", accent: "#22c55e" },
+// Each icon file lives at /public/<id>.png — named to match the method id
+// exactly, so the image src is just derived from the id below.
+const METHODS: { id: PaymentMethod; name: string; nameBn: string; accent: string }[] = [
+  { id: "bkash", name: "Bkash", nameBn: "বিকাশ", accent: "#e2136e" },
+  { id: "nagad", name: "Nagad", nameBn: "নগদ", accent: "#f7941d" },
+  { id: "rocket", name: "Rocket", nameBn: "রকেট", accent: "#8c3494" },
+  { id: "upay", name: "Upay", nameBn: "উপায়", accent: "#3730a3" },
+  { id: "surecash", name: "SureCash", nameBn: "সিওরক্যাশ", accent: "#1d4ed8" },
+  { id: "bank", name: "Bank", nameBn: "ব্যাংক", accent: "#0f4c5c" },
+  { id: "crypto", name: "Crypto", nameBn: "ক্রিপ্টো", accent: "#f7931a" },
 ];
 
 const QUICK_AMOUNTS = [100, 200, 500, 1000, 2000, 5000];
 
-const CARD = { background: "linear-gradient(145deg,rgba(27,8,56,.65),rgba(10,6,18,.85))", border: "1px solid rgba(255,255,255,.07)", boxShadow: "0 8px 32px rgba(0,0,0,.4)" };
-const INNER = { background: "rgba(255,255,255,.03)", border: "1px solid rgba(255,255,255,.06)" };
+const CARD = { background: "#ffffff", border: "1px solid #E5E7EB", boxShadow: "0 4px 20px rgba(17,17,17,.06)" };
+const INNER = { background: "#F9FAFB", border: "1px solid #E5E7EB" };
 
 function Tick({ size = 10, className = "" }: { size?: number; className?: string }) {
   return (
@@ -37,19 +40,30 @@ function Tick({ size = 10, className = "" }: { size?: number; className?: string
   );
 }
 
-function MethodGrid({ method, onSelect }: { method: PaymentMethod; onSelect: (id: PaymentMethod) => void }) {
+function MethodGrid({
+  method,
+  onSelect,
+  lang,
+}: {
+  method: PaymentMethod;
+  onSelect: (id: PaymentMethod) => void;
+  lang: string;
+}) {
   return (
-    <div className="mb-6 grid grid-cols-3 gap-2 sm:grid-cols-6">
+    <div className="mb-6 grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-7">
       {METHODS.map((m) => (
         <button
           key={m.id}
           onClick={() => onSelect(m.id)}
-          className="rounded-xl py-3 text-xs font-bold transition-all"
+          className="flex flex-col items-center gap-1.5 rounded-xl py-3 text-xs font-bold transition-all"
           style={method === m.id
-            ? { background: `${m.accent}25`, border: `1px solid ${m.accent}70`, color: "#fff", boxShadow: `0 0 20px ${m.accent}25` }
-            : { background: "rgba(255,255,255,.03)", border: "1px solid rgba(255,255,255,.07)", color: "#9B8EC4" }}
+            ? { background: `${m.accent}0D`, border: `1.5px solid ${m.accent}`, color: m.accent }
+            : { background: "#F9FAFB", border: "1px solid #E5E7EB", color: "#4B5563" }}
         >
-          {m.name}
+          <span className="relative h-8 w-8 shrink-0">
+            <Image src={`/${m.id}.png`} alt={m.name} fill unoptimized sizes="32px" className="object-contain" />
+          </span>
+          {lang === "bn" ? m.nameBn : m.name}
         </button>
       ))}
     </div>
@@ -69,7 +83,7 @@ function AmountPicker({
 }) {
   return (
     <>
-      <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#7B5EA7]">{t.profileQuickAmount}</p>
+      <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-gray-400">{t.profileQuickAmount}</p>
       <div className="mb-4 grid grid-cols-3 gap-2 sm:grid-cols-6">
         {QUICK_AMOUNTS.map((amt) => (
           <button
@@ -77,23 +91,23 @@ function AmountPicker({
             onClick={() => onSelect(String(amt))}
             className="rounded-xl py-2.5 text-sm font-bold transition-all"
             style={amount === String(amt)
-              ? { background: "rgba(212,175,55,.15)", border: "1px solid rgba(212,175,55,.5)", color: "#F5C842" }
-              : { background: "rgba(255,255,255,.03)", border: "1px solid rgba(255,255,255,.07)", color: "#9B8EC4" }}
+              ? { background: "rgba(212,175,55,.12)", border: "1px solid #D4AF37", color: "#9A7B1F" }
+              : { background: "#F9FAFB", border: "1px solid #E5E7EB", color: "#4B5563" }}
           >
             ৳{amt.toLocaleString()}
           </button>
         ))}
       </div>
-      <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#7B5EA7]">{t.profileCustomAmount}</p>
+      <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-gray-400">{t.profileCustomAmount}</p>
       <div className="relative mb-6">
-        <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-[#9B8EC4]">৳</span>
+        <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-gray-400">৳</span>
         <input
           type="number"
           min="100"
           value={amount}
           onChange={(e) => onCustom(e.target.value)}
           placeholder={t.profileEnterAmountPlaceholder}
-          className="w-full rounded-xl border border-[#7B2FBE]/40 bg-white/4 py-3 pl-8 pr-4 text-sm text-white placeholder-[#8A7DB0] outline-none transition-all focus:border-[#D4AF37] focus:bg-white/[.07]"
+          className="w-full rounded-xl border border-gray-300 bg-white py-3 pl-8 pr-4 text-sm text-gray-900 placeholder-gray-400 outline-none transition-all focus:border-[#D4AF37]"
         />
       </div>
     </>
@@ -109,8 +123,8 @@ function SuccessPanel({ title, desc, onDone, t }: { title: string; desc: string;
       >
         <Tick size={20} />
       </div>
-      <h4 className="mb-1 text-lg font-extrabold text-white">{title}</h4>
-      <p className="mb-6 text-sm text-[#9B8EC4]">{desc}</p>
+      <h4 className="mb-1 text-lg font-extrabold text-gray-900">{title}</h4>
+      <p className="mb-6 text-sm text-gray-500">{desc}</p>
       <button
         onClick={onDone}
         className="w-full rounded-full py-3.5 text-sm font-bold text-[#0A0612] transition-all hover:scale-[1.02]"
@@ -124,7 +138,7 @@ function SuccessPanel({ title, desc, onDone, t }: { title: string; desc: string;
 
 export default function DepositWithdrawPage() {
   const { user, loading: authLoading } = useAuth();
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const router = useRouter();
 
   const [authMode, setAuthMode] = useState<"login" | "register" | null>(null);
@@ -205,24 +219,25 @@ export default function DepositWithdrawPage() {
   }
 
   const depositAccounts = accounts.filter((a) => a.method === depositMethod);
-  const depositMethodName = METHODS.find((m) => m.id === depositMethod)?.name ?? "";
-  const withdrawMethodName = METHODS.find((m) => m.id === withdrawMethod)?.name ?? "";
+  const depositMethodEntry = METHODS.find((m) => m.id === depositMethod);
+  const withdrawMethodEntry = METHODS.find((m) => m.id === withdrawMethod);
+  const depositMethodName = (lang === "bn" ? depositMethodEntry?.nameBn : depositMethodEntry?.name) ?? "";
+  const withdrawMethodName = (lang === "bn" ? withdrawMethodEntry?.nameBn : withdrawMethodEntry?.name) ?? "";
 
   const depositValid = depositAmt !== "" && Number(depositAmt) >= 100 && depositTrxId.trim() !== "" && depositAccounts.length > 0;
   const withdrawValid = withdrawAmt !== "" && Number(withdrawAmt) >= 100 && withdrawAccountNumber.trim() !== "";
 
   return (
     <>
-      <AmbientBackground />
       <Header onOpenAuth={(m) => setAuthMode(m)} />
       {authMode && <AuthModal mode={authMode} onClose={() => setAuthMode(null)} onSwitch={(m) => setAuthMode(m)} />}
 
-      <main className="relative z-10 min-h-screen px-4 pb-20 pt-24 sm:px-5 lg:pt-28">
+      <main className="relative z-10 min-h-screen bg-white px-4 pb-20 pt-24 sm:px-5 lg:pt-28">
         <div className="mx-auto max-w-2xl">
-          <div className="mb-5 flex items-center gap-2 text-xs text-[#9B8EC4]">
-            <Link href="/" className="transition-colors hover:text-[#F5C842]">{t.profileHome}</Link>
-            <span className="text-[#4A3870]">›</span>
-            <span className="text-[#C9B8E8]">{t.depositWithdrawTitle}</span>
+          <div className="mb-5 flex items-center gap-2 text-xs text-gray-400">
+            <Link href="/" className="transition-colors hover:text-[#B8892E]">{t.profileHome}</Link>
+            <span className="text-gray-300">›</span>
+            <span className="text-gray-600">{t.depositWithdrawTitle}</span>
           </div>
 
           <div className="mb-5 grid grid-cols-2 gap-2 rounded-2xl p-1.5" style={CARD}>
@@ -230,8 +245,8 @@ export default function DepositWithdrawPage() {
               onClick={() => setPageTab("deposit")}
               className="rounded-xl py-3 text-sm font-bold transition-all"
               style={pageTab === "deposit"
-                ? { background: "rgba(212,175,55,.12)", border: "1px solid rgba(212,175,55,.3)", color: "#F5C842" }
-                : { color: "#9B8EC4" }}
+                ? { background: "rgba(212,175,55,.12)", border: "1px solid #D4AF37", color: "#9A7B1F" }
+                : { color: "#6B7280" }}
             >
               {t.deposit}
             </button>
@@ -239,8 +254,8 @@ export default function DepositWithdrawPage() {
               onClick={() => setPageTab("withdraw")}
               className="rounded-xl py-3 text-sm font-bold transition-all"
               style={pageTab === "withdraw"
-                ? { background: "rgba(212,175,55,.12)", border: "1px solid rgba(212,175,55,.3)", color: "#F5C842" }
-                : { color: "#9B8EC4" }}
+                ? { background: "rgba(212,175,55,.12)", border: "1px solid #D4AF37", color: "#9A7B1F" }
+                : { color: "#6B7280" }}
             >
               {t.profileTabWithdraw}
             </button>
@@ -257,22 +272,22 @@ export default function DepositWithdrawPage() {
                 />
               ) : (
                 <>
-                  <h3 className="mb-5 text-lg font-extrabold text-white">{t.profileMakeDeposit}</h3>
-                  <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#7B5EA7]">{t.profilePaymentMethod}</p>
-                  <MethodGrid method={depositMethod} onSelect={setDepositMethod} />
+                  <h3 className="mb-5 text-lg font-extrabold text-gray-900">{t.profileMakeDeposit}</h3>
+                  <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-gray-400">{t.profilePaymentMethod}</p>
+                  <MethodGrid method={depositMethod} onSelect={setDepositMethod} lang={lang} />
 
-                  <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#7B5EA7]">{t.profileSendMoneyTo}</p>
+                  <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-gray-400">{t.profileSendMoneyTo}</p>
                   {accountsLoading ? (
                     <div className="mb-6 h-16 animate-pulse rounded-xl" style={INNER} />
                   ) : accountsError ? (
                     <div className="mb-6 flex items-center justify-between rounded-xl px-4 py-3" style={INNER}>
-                      <p className="text-xs text-red-300">{t.profileErrGeneric}</p>
-                      <button onClick={() => setAccountsRetryKey((k) => k + 1)} className="shrink-0 text-xs font-bold text-[#F5C842]">
+                      <p className="text-xs text-red-500">{t.profileErrGeneric}</p>
+                      <button onClick={() => setAccountsRetryKey((k) => k + 1)} className="shrink-0 text-xs font-bold text-[#B8892E]">
                         {t.profileTryAgain}
                       </button>
                     </div>
                   ) : depositAccounts.length === 0 ? (
-                    <p className="mb-6 rounded-xl px-4 py-3 text-xs text-[#9B8EC4]" style={INNER}>
+                    <p className="mb-6 rounded-xl px-4 py-3 text-xs text-gray-500" style={INNER}>
                       {fmt(t.noActiveAccountsForMethod, { method: depositMethodName })}
                     </p>
                   ) : (
@@ -280,10 +295,10 @@ export default function DepositWithdrawPage() {
                       {depositAccounts.map((a) => (
                         <div key={a.id} className="flex items-center gap-2 rounded-xl px-4 py-3" style={INNER}>
                           <div className="min-w-0 flex-1">
-                            <p className="truncate text-[11px] text-[#9B8EC4]">{a.label}</p>
-                            <p className="truncate font-mono text-lg font-bold text-[#F5C842]">{a.accountNumber}</p>
-                            {a.accountName && <p className="truncate text-[11px] text-[#9B8EC4]">{a.accountName}</p>}
-                            {a.details && <p className="truncate text-[11px] text-[#7B5EA7]">{a.details}</p>}
+                            <p className="truncate text-[11px] text-gray-500">{a.label}</p>
+                            <p className="truncate font-mono text-lg font-bold text-[#9A7B1F]">{a.accountNumber}</p>
+                            {a.accountName && <p className="truncate text-[11px] text-gray-500">{a.accountName}</p>}
+                            {a.details && <p className="truncate text-[11px] text-gray-400">{a.details}</p>}
                           </div>
                           <button
                             onClick={() => copyText(a.accountNumber, a.id)}
@@ -301,15 +316,15 @@ export default function DepositWithdrawPage() {
 
                   {depositAmt !== "" && Number(depositAmt) >= 100 && depositAccounts.length > 0 && (
                     <>
-                      <p className="mb-2 text-xs leading-relaxed text-[#9B8EC4]">
+                      <p className="mb-2 text-xs leading-relaxed text-gray-500">
                         {fmt(t.profileSendInstructions, { amount: Number(depositAmt).toLocaleString(), method: depositMethodName })}
                       </p>
-                      <label className="mb-1.5 block text-xs font-medium text-[#C9B8E8]">{t.profileTrxIdLabel}</label>
+                      <label className="mb-1.5 block text-xs font-medium text-gray-600">{t.profileTrxIdLabel}</label>
                       <input
                         value={depositTrxId}
                         onChange={(e) => setDepositTrxId(e.target.value)}
                         placeholder={t.profileTrxIdPlaceholder}
-                        className="mb-5 w-full rounded-xl border border-[#7B2FBE]/40 bg-white/4 px-4 py-3 text-sm text-white placeholder-[#8A7DB0] outline-none transition-all focus:border-[#D4AF37] focus:bg-white/[.07]"
+                        className="mb-5 w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 placeholder-gray-400 outline-none transition-all focus:border-[#D4AF37]"
                       />
                     </>
                   )}
@@ -322,7 +337,7 @@ export default function DepositWithdrawPage() {
                   >
                     {t.profileConfirmDeposit}
                   </button>
-                  <p className="mt-3 text-center text-[11px] text-[#7B5EA7]">{t.profileDepositFootnote}</p>
+                  <p className="mt-3 text-center text-[11px] text-gray-400">{t.profileDepositFootnote}</p>
                 </>
               )}
             </div>
@@ -339,20 +354,20 @@ export default function DepositWithdrawPage() {
                 />
               ) : (
                 <>
-                  <h3 className="mb-5 text-lg font-extrabold text-white">{t.profileWithdrawFunds}</h3>
-                  <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#7B5EA7]">{t.profileWithdrawMethod}</p>
-                  <MethodGrid method={withdrawMethod} onSelect={setWithdrawMethod} />
+                  <h3 className="mb-5 text-lg font-extrabold text-gray-900">{t.profileWithdrawFunds}</h3>
+                  <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-gray-400">{t.profileWithdrawMethod}</p>
+                  <MethodGrid method={withdrawMethod} onSelect={setWithdrawMethod} lang={lang} />
 
                   <AmountPicker amount={withdrawAmt} onSelect={setWithdrawAmt} onCustom={setWithdrawAmt} t={t} />
 
-                  <label className="mb-1.5 block text-xs font-medium text-[#C9B8E8]">
+                  <label className="mb-1.5 block text-xs font-medium text-gray-600">
                     {fmt(t.profileWithdrawAccountLabel, { method: withdrawMethodName })}
                   </label>
                   <input
                     value={withdrawAccountNumber}
                     onChange={(e) => setWithdrawAccountNumber(e.target.value)}
                     placeholder={t.profileWithdrawAccountPlaceholder}
-                    className="mb-6 w-full rounded-xl border border-[#7B2FBE]/40 bg-white/4 px-4 py-3 text-sm text-white placeholder-[#8A7DB0] outline-none transition-all focus:border-[#D4AF37] focus:bg-white/[.07]"
+                    className="mb-6 w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 placeholder-gray-400 outline-none transition-all focus:border-[#D4AF37]"
                   />
 
                   <button
@@ -363,7 +378,7 @@ export default function DepositWithdrawPage() {
                   >
                     {t.profileSubmitWithdrawal}
                   </button>
-                  <p className="mt-3 text-center text-[11px] text-[#7B5EA7]">{t.profileWithdrawFootnote}</p>
+                  <p className="mt-3 text-center text-[11px] text-gray-400">{t.profileWithdrawFootnote}</p>
                 </>
               )}
             </div>

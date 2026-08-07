@@ -1,6 +1,6 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
 
-export type PaymentMethod = "bkash" | "nagad" | "rocket" | "upay" | "crypto" | "bank";
+export type PaymentMethod = "bkash" | "nagad" | "rocket" | "upay" | "surecash" | "crypto" | "bank";
 
 export type PaymentAccount = {
   id: string;
