@@ -13,6 +13,7 @@ import { useAuth } from "@/lib/auth";
 import { useLang } from "@/lib/language";
 import { fmt } from "@/lib/format";
 import { getActivePaymentAccounts, type PaymentAccount, type PaymentMethod } from "@/lib/paymentAccounts";
+import { createCashIn, createCashOut } from "@/lib/cashTransactions";
 
 type PageTab = "deposit" | "withdraw";
 
@@ -264,6 +265,8 @@ function AccountStep({
   onBack,
   onConfirm,
   valid,
+  submitting,
+  submitError,
   lang,
   t,
   copied,
@@ -281,6 +284,8 @@ function AccountStep({
   onBack: () => void;
   onConfirm: () => void;
   valid: boolean;
+  submitting: boolean;
+  submitError: string | null;
   lang: string;
   t: ReturnType<typeof useLang>["t"];
   copied: boolean;
@@ -365,13 +370,15 @@ function AccountStep({
         className="mb-5 w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 placeholder-gray-400 outline-none transition-all focus:border-[#D4AF37]"
       />
 
+      {submitError && <p className="mb-3 text-center text-xs text-red-500">{submitError}</p>}
+
       <button
         onClick={onConfirm}
-        disabled={!valid}
+        disabled={!valid || submitting}
         className="w-full rounded-full py-4 text-base font-bold text-[#0A0612] transition-all hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:scale-100"
         style={{ background: "linear-gradient(to right,#D4AF37,#F5C842)", boxShadow: "0 0 32px rgba(212,175,55,.35)" }}
       >
-        {t.profileConfirmDeposit}
+        {submitting ? "..." : t.profileConfirmDeposit}
       </button>
       <p className="mt-3 text-center text-[11px] text-gray-400">{t.profileDepositFootnote}</p>
     </>
@@ -398,6 +405,8 @@ export default function DepositWithdrawPage() {
   const [depositPromo, setDepositPromo] = useState<string | null>(PROMOTIONS[0]?.id ?? null);
   const [depositTrxId, setDepositTrxId] = useState("");
   const [depositSubmitted, setDepositSubmitted] = useState(false);
+  const [depositSubmitting, setDepositSubmitting] = useState(false);
+  const [depositSubmitError, setDepositSubmitError] = useState<string | null>(null);
   const [copiedAccountId, setCopiedAccountId] = useState<string | null>(null);
 
   // withdraw
@@ -405,6 +414,8 @@ export default function DepositWithdrawPage() {
   const [withdrawAmt, setWithdrawAmt] = useState("");
   const [withdrawAccountNumber, setWithdrawAccountNumber] = useState("");
   const [withdrawSubmitted, setWithdrawSubmitted] = useState(false);
+  const [withdrawSubmitting, setWithdrawSubmitting] = useState(false);
+  const [withdrawSubmitError, setWithdrawSubmitError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) router.replace("/");
@@ -460,6 +471,36 @@ export default function DepositWithdrawPage() {
       setCopiedAccountId(id);
       setTimeout(() => setCopiedAccountId((cur) => (cur === id ? null : cur)), 2000);
     });
+  }
+
+  async function handleDepositConfirm() {
+    setDepositSubmitting(true);
+    setDepositSubmitError(null);
+    try {
+      await createCashIn({ method: depositMethod, amount: Number(depositAmt), reference: depositTrxId.trim() });
+      setDepositSubmitted(true);
+    } catch (err) {
+      setDepositSubmitError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+    } finally {
+      setDepositSubmitting(false);
+    }
+  }
+
+  async function handleWithdrawSubmit() {
+    setWithdrawSubmitting(true);
+    setWithdrawSubmitError(null);
+    try {
+      await createCashOut({
+        method: withdrawMethod,
+        amount: Number(withdrawAmt),
+        reference: withdrawAccountNumber.trim(),
+      });
+      setWithdrawSubmitted(true);
+    } catch (err) {
+      setWithdrawSubmitError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+    } finally {
+      setWithdrawSubmitting(false);
+    }
   }
 
   const depositAccounts = accounts.filter((a) => a.method === depositMethod);
@@ -519,6 +560,7 @@ export default function DepositWithdrawPage() {
                     setDepositSubmitted(false);
                     setDepositAmt("");
                     setDepositTrxId("");
+                    setDepositSubmitError(null);
                     setDepositPromo(PROMOTIONS[0]?.id ?? null);
                     setDepositStep(1);
                   }}
@@ -535,9 +577,14 @@ export default function DepositWithdrawPage() {
                   promoLabel={depositPromoLabel}
                   trxId={depositTrxId}
                   onTrxIdChange={setDepositTrxId}
-                  onBack={() => setDepositStep(1)}
-                  onConfirm={() => setDepositSubmitted(true)}
+                  onBack={() => {
+                    setDepositSubmitError(null);
+                    setDepositStep(1);
+                  }}
+                  onConfirm={handleDepositConfirm}
                   valid={depositValid}
+                  submitting={depositSubmitting}
+                  submitError={depositSubmitError}
                   lang={lang}
                   t={t}
                   copied={depositAccount ? copiedAccountId === depositAccount.id : false}
@@ -578,7 +625,12 @@ export default function DepositWithdrawPage() {
                 <SuccessPanel
                   title={t.profileWithdrawRequestSubmittedTitle}
                   desc={fmt(t.profileWithdrawRequestSubmittedDesc, { amount: Number(withdrawAmt || 0).toLocaleString() })}
-                  onDone={() => { setWithdrawSubmitted(false); setWithdrawAmt(""); setWithdrawAccountNumber(""); }}
+                  onDone={() => {
+                    setWithdrawSubmitted(false);
+                    setWithdrawAmt("");
+                    setWithdrawAccountNumber("");
+                    setWithdrawSubmitError(null);
+                  }}
                   t={t}
                 />
               ) : (
@@ -599,13 +651,15 @@ export default function DepositWithdrawPage() {
                     className="mb-6 w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 placeholder-gray-400 outline-none transition-all focus:border-[#D4AF37]"
                   />
 
+                  {withdrawSubmitError && <p className="mb-3 text-center text-xs text-red-500">{withdrawSubmitError}</p>}
+
                   <button
-                    onClick={() => setWithdrawSubmitted(true)}
-                    disabled={!withdrawValid}
+                    onClick={handleWithdrawSubmit}
+                    disabled={!withdrawValid || withdrawSubmitting}
                     className="w-full rounded-full py-4 text-base font-bold text-[#0A0612] transition-all hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:scale-100"
                     style={{ background: "linear-gradient(to right,#D4AF37,#F5C842)", boxShadow: "0 0 32px rgba(212,175,55,.35)" }}
                   >
-                    {t.profileSubmitWithdrawal}
+                    {withdrawSubmitting ? "..." : t.profileSubmitWithdrawal}
                   </button>
                   <p className="mt-3 text-center text-[11px] text-gray-400">{t.profileWithdrawFootnote}</p>
                 </>
