@@ -214,7 +214,8 @@ export default function ProfilePage() {
 
   if (!user) return null;
 
-  const accountId = "#2XL-" + user.phone.slice(-6).padStart(6, "0");
+  const accountId = `#${user.memberId}`;
+  const isKycVerified = kycStatus?.status === "verified";
   const kycStepIdx = ["phone","otp","docType","upload","selfie"].indexOf(kycStep);
 
   // ── helpers ──────────────────────────────────────────────
@@ -348,18 +349,27 @@ export default function ProfilePage() {
                 style={{ background:"linear-gradient(135deg,#D4AF37,#F5C842)", boxShadow:"0 0 20px #D4AF3740" }}>
                 {user.name[0].toUpperCase()}
               </div>
-              <div className="absolute bottom-0 right-0 flex h-5 w-5 items-center justify-center rounded-full text-white"
-                style={{ background:"#22c55e", border:"2px solid #0A0612" }}>
-                <Tick size={9} />
-              </div>
+              {isKycVerified && (
+                <div className="absolute bottom-0 right-0 flex h-5 w-5 items-center justify-center rounded-full text-white"
+                  style={{ background:"#22c55e", border:"2px solid #0A0612" }}>
+                  <Tick size={9} />
+                </div>
+              )}
             </div>
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
                 <h2 className="font-extrabold text-white">{user.name}</h2>
-                <span className="flex items-center gap-0.5 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase text-white"
-                  style={{ background:"#22c55e" }}>
-                  <Tick size={8} /> {t.profileVerified}
-                </span>
+                {isKycVerified ? (
+                  <span className="flex items-center gap-0.5 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase text-white"
+                    style={{ background:"#22c55e" }}>
+                    <Tick size={8} /> {t.profileVerified}
+                  </span>
+                ) : (
+                  <span className="rounded-full px-2 py-0.5 text-[10px] font-bold uppercase text-[#C9B8E8]"
+                    style={{ background:"rgba(255,255,255,.08)" }}>
+                    {t.profileUnverified}
+                  </span>
+                )}
               </div>
               <p className="text-xs text-[#9B8EC4]">+{user.phone}</p>
               <p className="font-mono text-[10px] text-[#7B5EA7]">{accountId}</p>
@@ -393,16 +403,25 @@ export default function ProfilePage() {
                       style={{ background:"linear-gradient(135deg,#D4AF37,#F5C842)", boxShadow:"0 0 32px #D4AF3740" }}>
                       {user.name[0].toUpperCase()}
                     </div>
-                    <div className="absolute bottom-0 right-0 flex h-6 w-6 items-center justify-center rounded-full text-white"
-                      style={{ background:"#22c55e", border:"2.5px solid #0A0612" }}>
-                      <Tick size={11} />
-                    </div>
+                    {isKycVerified && (
+                      <div className="absolute bottom-0 right-0 flex h-6 w-6 items-center justify-center rounded-full text-white"
+                        style={{ background:"#22c55e", border:"2.5px solid #0A0612" }}>
+                        <Tick size={11} />
+                      </div>
+                    )}
                   </div>
                   <h2 className="text-base font-extrabold text-white">{user.name}</h2>
-                  <span className="mt-1.5 flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white"
-                    style={{ background:"#22c55e" }}>
-                    <Tick size={8} /> {t.profileVerified}
-                  </span>
+                  {isKycVerified ? (
+                    <span className="mt-1.5 flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white"
+                      style={{ background:"#22c55e" }}>
+                      <Tick size={8} /> {t.profileVerified}
+                    </span>
+                  ) : (
+                    <span className="mt-1.5 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#C9B8E8]"
+                      style={{ background:"rgba(255,255,255,.08)" }}>
+                      {t.profileUnverified}
+                    </span>
+                  )}
                   <p className="mt-2 font-mono text-[11px] text-[#7B5EA7]">{accountId}</p>
                 </div>
                 <div className="mb-3 h-px" style={{ background:"rgba(255,255,255,.06)" }} />

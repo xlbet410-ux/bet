@@ -107,6 +107,7 @@ export type Translations = {
   // profile page
   profileHome: string;
   profileVerified: string;
+  profileUnverified: string;
   profileTabProfile: string;
   profileTabWallet: string;
   profileTabWithdraw: string;
@@ -366,6 +367,7 @@ const T: Record<Lang, Translations> = {
 
     profileHome: "Home",
     profileVerified: "Verified",
+    profileUnverified: "Unverified",
     profileTabProfile: "Profile",
     profileTabWallet: "Wallet",
     profileTabWithdraw: "Withdraw",
@@ -621,6 +623,7 @@ const T: Record<Lang, Translations> = {
 
     profileHome: "হোম",
     profileVerified: "ভেরিফাইড",
+    profileUnverified: "অযাচাইকৃত",
     profileTabProfile: "প্রোফাইল",
     profileTabWallet: "ওয়ালেট",
     profileTabWithdraw: "উত্তোলন",

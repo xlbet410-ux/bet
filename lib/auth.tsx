@@ -7,6 +7,7 @@ export type AuthUser = {
   name: string;
   phone: string;
   referralCode: string | null;
+  memberId: string;
   balance: string;
 };
 
