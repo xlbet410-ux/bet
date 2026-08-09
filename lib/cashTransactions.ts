@@ -41,3 +41,19 @@ export function createCashIn(input: CreateCashTransactionInput) {
 export function createCashOut(input: CreateCashTransactionInput) {
   return createCashTransaction("cash-out", input);
 }
+
+export type MyCashTransaction = {
+  id: string;
+  type: "cash_in" | "cash_out";
+  method: PaymentMethod;
+  reference: string | null;
+  amount: number;
+  status: "pending" | "completed" | "failed";
+  createdAt: string;
+};
+
+export async function getMyCashTransactions(): Promise<MyCashTransaction[]> {
+  const res = await fetch(`${API_URL}/transactions/mine`, { headers: authHeaders() });
+  if (!res.ok) throw new Error(await parseApiError(res));
+  return res.json();
+}

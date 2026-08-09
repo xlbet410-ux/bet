@@ -139,6 +139,14 @@ export type Translations = {
   profileRecentTransactions: string;
   profileStatusCompleted: string;
   profileStatusPending: string;
+  profileStatusFailed: string;
+  profileTxDeposit: string;
+  profileTxWithdraw: string;
+  profileTxFilterAll: string;
+  profileTxFilter24h: string;
+  profileTxFilterWeek: string;
+  profileTxFilterMonth: string;
+  profileTxEmpty: string;
   profileMakeDeposit: string;
   profilePaymentMethod: string;
   profileQuickAmount: string;
@@ -399,6 +407,14 @@ const T: Record<Lang, Translations> = {
     profileRecentTransactions: "Recent Transactions",
     profileStatusCompleted: "completed",
     profileStatusPending: "pending",
+    profileStatusFailed: "failed",
+    profileTxDeposit: "Deposit",
+    profileTxWithdraw: "Withdrawal",
+    profileTxFilterAll: "All",
+    profileTxFilter24h: "24 Hours",
+    profileTxFilterWeek: "1 Week",
+    profileTxFilterMonth: "1 Month",
+    profileTxEmpty: "No transactions in this period yet.",
     profileMakeDeposit: "Make a Deposit",
     profilePaymentMethod: "Payment Method",
     profileQuickAmount: "Quick Amount",
@@ -655,6 +671,14 @@ const T: Record<Lang, Translations> = {
     profileRecentTransactions: "সাম্প্রতিক লেনদেন",
     profileStatusCompleted: "সম্পন্ন",
     profileStatusPending: "অপেক্ষমান",
+    profileStatusFailed: "ব্যর্থ",
+    profileTxDeposit: "জমা",
+    profileTxWithdraw: "উত্তোলন",
+    profileTxFilterAll: "সব",
+    profileTxFilter24h: "২৪ ঘণ্টা",
+    profileTxFilterWeek: "১ সপ্তাহ",
+    profileTxFilterMonth: "১ মাস",
+    profileTxEmpty: "এই সময়ের মধ্যে কোনো লেনদেন নেই।",
     profileMakeDeposit: "ডিপোজিট করুন",
     profilePaymentMethod: "পেমেন্ট পদ্ধতি",
     profileQuickAmount: "দ্রুত পরিমাণ",

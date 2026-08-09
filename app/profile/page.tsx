@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Header from "@/components/site/Header";
 import Footer from "@/components/site/Footer";
@@ -10,21 +10,25 @@ import AmbientBackground from "@/components/site/AmbientBackground";
 import { useAuth } from "@/lib/auth";
 import { useLang } from "@/lib/language";
 import { getMyKyc, submitKyc, type KycStatus } from "@/lib/kyc";
+import { getMyCashTransactions, type MyCashTransaction } from "@/lib/cashTransactions";
 import { fmt } from "@/lib/format";
+
+const METHOD_LABELS: Record<string, string> = {
+  bkash: "Bkash",
+  nagad: "Nagad",
+  rocket: "Rocket",
+  upay: "Upay",
+  surecash: "SureCash",
+  bank: "Bank",
+  crypto: "Crypto",
+};
+
+type TxFilter = "all" | "24h" | "week" | "month";
 
 type Tab     = "profile" | "wallet" | "deposit" | "withdraw" | "settings" | "kyc";
 type KycStep = "idle" | "phone" | "otp" | "docType" | "upload" | "selfie" | "done";
 
 const TABS: Tab[] = ["profile", "wallet", "deposit", "withdraw", "settings", "kyc"];
-
-const TRANSACTIONS = [
-  { id:"TXN8821", type:"deposit",  label:"VISA Deposit",       amount:"+৳500",   date:"Jul 6, 2026",  status:"completed" },
-  { id:"TXN8820", type:"win",      label:"Sweet Bonanza Win",   amount:"+৳250",   date:"Jul 5, 2026",  status:"completed" },
-  { id:"TXN8819", type:"withdraw", label:"bKash Withdrawal",    amount:"-৳1,000", date:"Jul 3, 2026",  status:"pending"   },
-  { id:"TXN8818", type:"deposit",  label:"USDT Deposit",        amount:"+৳2,000", date:"Jul 1, 2026",  status:"completed" },
-  { id:"TXN8817", type:"win",      label:"Lightning Roulette",  amount:"+৳400",   date:"Jun 28, 2026", status:"completed" },
-  { id:"TXN8816", type:"deposit",  label:"Nagad Deposit",       amount:"+৳3,000", date:"Jun 25, 2026", status:"completed" },
-];
 
 function DocTypeIcon({ id, className = "" }: { id: string; className?: string }) {
   if (id === "passport") {
@@ -92,6 +96,16 @@ function EyeBtn({ visible, onToggle }: { visible: boolean; onToggle: () => void 
 
 const CARD  = { background:"linear-gradient(145deg,rgba(27,8,56,.65),rgba(10,6,18,.85))", border:"1px solid rgba(255,255,255,.07)", boxShadow:"0 8px 32px rgba(0,0,0,.4)" };
 const INNER = { background:"rgba(255,255,255,.03)", border:"1px solid rgba(255,255,255,.06)" };
+
+function formatTxDate(iso: string) {
+  return new Date(iso).toLocaleString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
 
 // Splits a translated string on a single {token} and renders the replacement
 // (usually a styled <span>) in place, e.g. a sentence with the document name
@@ -176,6 +190,13 @@ export default function ProfilePage() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream|null>(null);
 
+  // Wallet — deposit/withdraw history
+  const [transactions, setTransactions] = useState<MyCashTransaction[]>([]);
+  const [txLoading, setTxLoading] = useState(true);
+  const [txError, setTxError] = useState(false);
+  const [txRetryKey, setTxRetryKey] = useState(0);
+  const [txFilter, setTxFilter] = useState<TxFilter>("all");
+
   useEffect(() => { if (!authLoading && !user) router.replace("/"); }, [authLoading, user, router]);
 
   useEffect(() => {
@@ -185,6 +206,49 @@ export default function ProfilePage() {
       .catch(() => setKycStatus(null))
       .finally(() => setKycStatusLoading(false));
   }, [user]);
+
+  // Same retry-with-backoff pattern used for the game catalog and payment
+  // accounts elsewhere in this app, for a cold backend right after deploy.
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+
+    async function load() {
+      setTxLoading(true);
+      setTxError(false);
+      const maxAttempts = 3;
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        try {
+          const list = await getMyCashTransactions();
+          if (!cancelled) {
+            setTransactions(list);
+            setTxLoading(false);
+          }
+          return;
+        } catch {
+          if (attempt === maxAttempts) break;
+          await new Promise((r) => setTimeout(r, attempt * 700));
+        }
+      }
+      if (!cancelled) {
+        setTxError(true);
+        setTxLoading(false);
+      }
+    }
+
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [user, txRetryKey]);
+
+  const filteredTransactions = useMemo(() => {
+    if (txFilter === "all") return transactions;
+    const rangeMs =
+      txFilter === "24h" ? 24 * 60 * 60 * 1000 : txFilter === "week" ? 7 * 24 * 60 * 60 * 1000 : 30 * 24 * 60 * 60 * 1000;
+    const cutoff = Date.now() - rangeMs;
+    return transactions.filter((tx) => new Date(tx.createdAt).getTime() >= cutoff);
+  }, [transactions, txFilter]);
 
   // start/stop camera when entering a step that needs a live capture:
   // document front/back (upload step) or the selfie step
@@ -487,38 +551,92 @@ export default function ProfilePage() {
                     <p className="mt-1 text-sm text-purple-200/50">{t.profileAvailableToPlay}</p>
                   </div>
                   <div className="rounded-2xl p-5" style={CARD}>
-                    <h3 className="mb-4 font-extrabold text-white">{t.profileRecentTransactions}</h3>
-                    <div className="space-y-2">
-                      {TRANSACTIONS.map((tx) => {
-                        const isOut = tx.type === "withdraw";
-                        return (
-                          <div key={tx.id} className="flex items-center justify-between rounded-xl px-4 py-3 transition-colors hover:bg-white/3" style={INNER}>
-                            <div className="flex items-center gap-3">
-                              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
-                                style={{ background: isOut ? "rgba(239,68,68,.12)" : "rgba(34,197,94,.12)" }}>
-                                {isOut
-                                  ? <svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-red-400 stroke-2"><path d="M12 21V9m0 0 4 4m-4-4-4 4" strokeLinecap="round" strokeLinejoin="round"/><path d="M20 3H4" strokeLinecap="round"/></svg>
-                                  : <svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-green-400 stroke-2"><path d="M12 3v12m0 0-4-4m4 4 4-4" strokeLinecap="round" strokeLinejoin="round"/><path d="M20 21H4" strokeLinecap="round"/></svg>
-                                }
-                              </div>
-                              <div>
-                                <p className="text-sm font-semibold text-white">{tx.label}</p>
-                                <p className="text-[11px] text-[#9B8EC4]">{tx.id} · {tx.date}</p>
-                              </div>
-                            </div>
-                            <div className="text-right">
-                              <p className={`font-bold tabular-nums ${isOut ? "text-red-400" : "text-green-400"}`}>{tx.amount}</p>
-                              <span className="rounded-full px-2 py-0.5 text-[10px] font-semibold"
-                                style={tx.status === "completed"
-                                  ? { background:"rgba(34,197,94,.1)", color:"#4ade80" }
-                                  : { background:"rgba(234,179,8,.1)", color:"#facc15" }}>
-                                {tx.status === "completed" ? t.profileStatusCompleted : t.profileStatusPending}
-                              </span>
-                            </div>
-                          </div>
-                        );
-                      })}
+                    <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                      <h3 className="font-extrabold text-white">{t.profileRecentTransactions}</h3>
+                      <div className="flex flex-wrap gap-1.5">
+                        {(["all", "24h", "week", "month"] as TxFilter[]).map((f) => (
+                          <button
+                            key={f}
+                            onClick={() => setTxFilter(f)}
+                            className="rounded-full px-3 py-1.5 text-xs font-bold transition-all"
+                            style={
+                              txFilter === f
+                                ? { background: "rgba(212,175,55,.15)", border: "1px solid #D4AF37", color: "#F5C842" }
+                                : { background: "rgba(255,255,255,.03)", border: "1px solid rgba(255,255,255,.08)", color: "#9B8EC4" }
+                            }
+                          >
+                            {f === "all"
+                              ? t.profileTxFilterAll
+                              : f === "24h"
+                                ? t.profileTxFilter24h
+                                : f === "week"
+                                  ? t.profileTxFilterWeek
+                                  : t.profileTxFilterMonth}
+                          </button>
+                        ))}
+                      </div>
                     </div>
+
+                    {txLoading ? (
+                      <div className="space-y-2">
+                        {Array.from({ length: 3 }).map((_, i) => (
+                          <div key={i} className="h-16 animate-pulse rounded-xl" style={INNER} />
+                        ))}
+                      </div>
+                    ) : txError ? (
+                      <div className="flex items-center justify-between rounded-xl px-4 py-3" style={INNER}>
+                        <p className="text-xs text-red-400">{t.profileErrGeneric}</p>
+                        <button onClick={() => setTxRetryKey((k) => k + 1)} className="shrink-0 text-xs font-bold text-[#F5C842]">
+                          {t.profileTryAgain}
+                        </button>
+                      </div>
+                    ) : filteredTransactions.length === 0 ? (
+                      <p className="py-6 text-center text-sm text-[#7B5EA7]">{t.profileTxEmpty}</p>
+                    ) : (
+                      <div className="space-y-2">
+                        {filteredTransactions.map((tx) => {
+                          const isOut = tx.type === "cash_out";
+                          const methodLabel = METHOD_LABELS[tx.method] ?? tx.method;
+                          const statusStyle =
+                            tx.status === "completed"
+                              ? { background: "rgba(34,197,94,.1)", color: "#4ade80" }
+                              : tx.status === "failed"
+                                ? { background: "rgba(239,68,68,.1)", color: "#f87171" }
+                                : { background: "rgba(234,179,8,.1)", color: "#facc15" };
+                          const statusLabel =
+                            tx.status === "completed" ? t.profileStatusCompleted : tx.status === "failed" ? t.profileStatusFailed : t.profileStatusPending;
+                          return (
+                            <div key={tx.id} className="flex items-center justify-between rounded-xl px-4 py-3 transition-colors hover:bg-white/3" style={INNER}>
+                              <div className="flex items-center gap-3">
+                                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
+                                  style={{ background: isOut ? "rgba(239,68,68,.12)" : "rgba(34,197,94,.12)" }}>
+                                  {isOut
+                                    ? <svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-red-400 stroke-2"><path d="M12 21V9m0 0 4 4m-4-4-4 4" strokeLinecap="round" strokeLinejoin="round"/><path d="M20 3H4" strokeLinecap="round"/></svg>
+                                    : <svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-green-400 stroke-2"><path d="M12 3v12m0 0-4-4m4 4 4-4" strokeLinecap="round" strokeLinejoin="round"/><path d="M20 21H4" strokeLinecap="round"/></svg>
+                                  }
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="text-sm font-semibold text-white">
+                                    {methodLabel} {isOut ? t.profileTxWithdraw : t.profileTxDeposit}
+                                  </p>
+                                  <p className="truncate text-[11px] text-[#9B8EC4]">
+                                    {tx.reference ?? tx.id} · {formatTxDate(tx.createdAt)}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="shrink-0 text-right">
+                                <p className={`font-bold tabular-nums ${isOut ? "text-red-400" : "text-green-400"}`}>
+                                  {isOut ? "-" : "+"}৳{tx.amount.toLocaleString()}
+                                </p>
+                                <span className="rounded-full px-2 py-0.5 text-[10px] font-semibold" style={statusStyle}>
+                                  {statusLabel}
+                                </span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
