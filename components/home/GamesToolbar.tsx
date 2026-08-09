@@ -4,8 +4,27 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
 import { FaTableCells, FaFire, FaHeart, FaMagnifyingGlass } from "react-icons/fa6";
-import { searchCatalog, type CatalogGame } from "@/lib/games";
+import { searchCatalog, resolveSportsCardImage, GENERIC_CARD_IMAGE, type CatalogGame } from "@/lib/games";
 import { useLang } from "@/lib/language";
+
+// Same broken-thumbnail fallback as GameCard — search results hit the same
+// Oracle thumbnails (consistently broken for sportsbook aggregators), but
+// this list previously had no onError handling at all.
+function SearchResultThumb({ game }: { game: CatalogGame }) {
+  const initialSrc = resolveSportsCardImage(game.providerCode, game.name) ?? (game.thumbnail || game.original);
+  const [src, setSrc] = useState(initialSrc);
+  return (
+    <Image
+      src={src}
+      alt={game.name}
+      fill
+      unoptimized
+      sizes="40px"
+      className="object-cover"
+      onError={() => setSrc(GENERIC_CARD_IMAGE)}
+    />
+  );
+}
 
 export default function GamesToolbar({
   hasFeatured,
@@ -33,6 +52,7 @@ export default function GamesToolbar({
   const [searching, setSearching] = useState(false);
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const [coords, setCoords] = useState<{ top: number; right: number; minWidth: number } | null>(null);
 
   // The dropdown is portaled straight to <body> and fixed-positioned from
@@ -94,7 +114,14 @@ export default function GamesToolbar({
 
   useEffect(() => {
     function onClickOutside(e: MouseEvent) {
-      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) setOpen(false);
+      const target = e.target as Node;
+      // The dropdown itself lives in a <body> portal, so it's never a DOM
+      // descendant of wrapperRef even while open — without this check, a
+      // mousedown on a result closed the dropdown (unmounting it) before
+      // its own onClick ever had a chance to fire, so nothing happened.
+      if (wrapperRef.current?.contains(target)) return;
+      if (dropdownRef.current?.contains(target)) return;
+      setOpen(false);
     }
     document.addEventListener("mousedown", onClickOutside);
     return () => document.removeEventListener("mousedown", onClickOutside);
@@ -188,6 +215,7 @@ export default function GamesToolbar({
           createPortal(
             results.length > 0 ? (
               <div
+                ref={dropdownRef}
                 style={{ position: "fixed", top: coords.top, right: coords.right, minWidth: coords.minWidth, zIndex: 9999 }}
                 className="max-h-96 overflow-y-auto rounded-xl border border-white/10 bg-[#160A2E] shadow-2xl"
               >
@@ -198,14 +226,7 @@ export default function GamesToolbar({
                     className="flex w-full items-center gap-3 px-3 py-2 text-left transition-colors hover:bg-white/5"
                   >
                     <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg">
-                      <Image
-                        src={g.thumbnail || g.original}
-                        alt={g.name}
-                        fill
-                        unoptimized
-                        sizes="40px"
-                        className="object-cover"
-                      />
+                      <SearchResultThumb game={g} />
                     </div>
                     <div className="min-w-0">
                       <p className="truncate text-sm font-semibold text-white">{g.name}</p>
@@ -216,6 +237,7 @@ export default function GamesToolbar({
               </div>
             ) : !searching && query.trim().length >= 2 ? (
               <div
+                ref={dropdownRef}
                 style={{ position: "fixed", top: coords.top, right: coords.right, minWidth: coords.minWidth, zIndex: 9999 }}
                 className="rounded-xl border border-white/10 bg-[#160A2E] px-4 py-3 text-center text-sm text-[#7B5EA7] shadow-2xl"
               >

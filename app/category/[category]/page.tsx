@@ -58,7 +58,11 @@ export default function CategoryPage({ params }: { params: Promise<{ category: s
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState(false);
-  const [sort, setSort] = useState<ProviderSort>("name_asc");
+  // "default" means no sort param at all, so the backend applies the same
+  // curated/pinned order the homepage sections use — that's what makes the
+  // games you already saw on the homepage show up first here too. Explicit
+  // A-Z/featured sorting is an opt-in override, not the initial state.
+  const [sort, setSort] = useState<ProviderSort | "default">("default");
   const [query, setQuery] = useState("");
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [favorites, setFavorites] = useState<Map<string, GameItem>>(new Map());
@@ -103,7 +107,7 @@ export default function CategoryPage({ params }: { params: Promise<{ category: s
             PAGE_SIZE,
             undefined,
             activeProvider ?? undefined,
-            sort
+            sort === "default" ? undefined : sort
           );
           if (!cancelled) {
             setGames(list.map(toGameItem));
@@ -141,7 +145,7 @@ export default function CategoryPage({ params }: { params: Promise<{ category: s
         PAGE_SIZE,
         undefined,
         activeProvider ?? undefined,
-        sort
+        sort === "default" ? undefined : sort
       );
       setGames((prev) => [...prev, ...list.map(toGameItem)]);
       setPage(nextPage);
@@ -287,9 +291,10 @@ export default function CategoryPage({ params }: { params: Promise<{ category: s
 
                 <select
                   value={sort}
-                  onChange={(e) => setSort(e.target.value as ProviderSort)}
+                  onChange={(e) => setSort(e.target.value as ProviderSort | "default")}
                   className="shrink-0 rounded-xl border border-white/10 bg-[#160A2E] px-3 py-2.5 text-sm text-white outline-none transition-colors focus:border-[#D4AF37]/60"
                 >
+                  <option value="default">{lang === "bn" ? "ডিফল্ট ক্রম" : "Default order"}</option>
                   <option value="name_asc">{lang === "bn" ? "নাম A-Z" : "Name A-Z"}</option>
                   <option value="name_desc">{lang === "bn" ? "নাম Z-A" : "Name Z-A"}</option>
                   <option value="featured">{lang === "bn" ? "ফিচার্ড আগে" : "Featured first"}</option>
