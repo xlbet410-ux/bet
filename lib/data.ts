@@ -12,7 +12,7 @@ import {
 export const NAV_LINKS = ["Home", "Live Casino", "Slots", "Sports", "Promotions", "Leaderboard"];
 
 /** Nav index → target href. "#" entries have no dedicated page yet. */
-export const NAV_HREFS = ["/", "#", "#", "#", "#", "/leaderboard"];
+export const NAV_HREFS = ["/", "#", "#", "#", "/promotions", "/leaderboard"];
 
 export const PROVIDERS = [
   "Evolution Gaming",

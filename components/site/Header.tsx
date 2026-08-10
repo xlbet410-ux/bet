@@ -87,7 +87,7 @@ export default function Header({
             <Link href="/" className="whitespace-nowrap transition-colors hover:text-[#F5C842]">
               {t.nav[0]}
             </Link>
-            <Link href="#" className="whitespace-nowrap transition-colors hover:text-[#F5C842]">
+            <Link href="/promotions" className="whitespace-nowrap transition-colors hover:text-[#F5C842]">
               {t.nav[4]}
             </Link>
             <Link href="/leaderboard" className="whitespace-nowrap transition-colors hover:text-[#F5C842]">
@@ -274,7 +274,7 @@ export default function Header({
                 {t.nav[0]}
               </Link>
               <Link
-                href="#"
+                href="/promotions"
                 onClick={() => setMobileOpen(false)}
                 className="rounded-xl px-3 py-3 transition-colors hover:bg-white/5 hover:text-[#F5C842]"
               >
