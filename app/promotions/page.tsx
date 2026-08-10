@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
-import { FaChevronDown, FaGift, FaCircleCheck } from "react-icons/fa6";
+import { FaChevronRight, FaGift, FaCircleCheck } from "react-icons/fa6";
 import Header from "@/components/site/Header";
 import Footer from "@/components/site/Footer";
 import MobileBottomNav from "@/components/site/MobileBottomNav";
@@ -19,6 +19,18 @@ const CARD = {
   border: "1px solid rgba(255,255,255,.07)",
   boxShadow: "0 8px 32px rgba(0,0,0,.4)",
 };
+
+// Same category set as the CRM's offer form (OffersManager.tsx) — "all" is
+// a page-local pseudo-category, not a real offer.category value.
+const CATEGORIES: { id: string; en: string; bn: string }[] = [
+  { id: "all", en: "All", bn: "সব" },
+  { id: "deposit", en: "Deposit", bn: "ডিপোজিট" },
+  { id: "referral", en: "Referral", bn: "রেফারেল" },
+  { id: "level", en: "VIP / Level", bn: "ভিআইপি / লেভেল" },
+  { id: "daily", en: "Daily", bn: "দৈনিক" },
+  { id: "cashback", en: "Cashback", bn: "ক্যাশব্যাক" },
+  { id: "special", en: "Special", bn: "স্পেশাল" },
+];
 
 function rewardLabel(o: PublicOffer, lang: string): string {
   if (o.rewardType === "no_reward" || !o.rewardAmount) return "";
@@ -120,24 +132,29 @@ function PromotionCard({
       </div>
 
       <div className="p-4">
-        <div className="mb-1 flex items-center justify-between gap-2">
-          <h3 className="font-extrabold text-white">{title}</h3>
-        </div>
-        {description && !expanded && (
-          <p className="mb-3 line-clamp-2 text-xs text-[#9B8EC4]">{description}</p>
-        )}
-
-        <div className="flex items-center justify-between gap-2">
-          <button
-            onClick={onToggle}
-            className="flex items-center gap-1.5 text-xs font-bold text-[#F5C842]"
+        <button
+          onClick={onToggle}
+          aria-expanded={expanded}
+          aria-label={expanded ? strings.hide : strings.view}
+          className="mb-1 flex w-full items-start justify-between gap-2 text-left"
+        >
+          <div className="min-w-0">
+            <h3 className="font-extrabold text-white">{title}</h3>
+            {description && !expanded && (
+              <p className="mt-1 line-clamp-2 text-xs text-[#9B8EC4]">{description}</p>
+            )}
+          </div>
+          <span
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[#F5C842] transition-transform"
+            style={{ background: "rgba(212,175,55,.1)", transform: expanded ? "rotate(90deg)" : "none" }}
           >
-            {expanded ? strings.hide : strings.view}
-            <FaChevronDown className={`text-[10px] transition-transform ${expanded ? "rotate-180" : ""}`} />
-          </button>
+            <FaChevronRight className="text-xs" />
+          </span>
+        </button>
 
-          {offer.triggerType === "manual_claim" &&
-            (claimed ? (
+        {offer.triggerType === "manual_claim" && (
+          <div className="mt-2 flex items-center">
+            {claimed ? (
               <span className="flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-bold text-[#4ade80]" style={{ background: "rgba(34,197,94,.15)" }}>
                 <FaCircleCheck /> {strings.claimed}
               </span>
@@ -150,8 +167,9 @@ function PromotionCard({
               >
                 {claiming ? strings.claiming : strings.claim}
               </button>
-            ))}
-        </div>
+            )}
+          </div>
+        )}
 
         {claimError && <p className="mt-2 text-xs text-red-400">{claimError}</p>}
         {offer.triggerType === "manual_claim" && !offer.eligible && !claimed && (
@@ -195,6 +213,7 @@ export default function PromotionsPage() {
   const [error, setError] = useState(false);
   const [retryKey, setRetryKey] = useState(0);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [activeCategory, setActiveCategory] = useState("all");
 
   const t =
     lang === "bn"
@@ -235,6 +254,11 @@ export default function PromotionsPage() {
     };
   }, [retryKey]);
 
+  const visibleOffers = useMemo(
+    () => (activeCategory === "all" ? offers : offers.filter((o) => o.category === activeCategory)),
+    [offers, activeCategory]
+  );
+
   return (
     <>
       <AmbientBackground />
@@ -243,9 +267,31 @@ export default function PromotionsPage() {
 
       <main className="relative z-10 min-h-screen px-4 pb-20 pt-24 sm:px-5 lg:pt-28">
         <div className="mx-auto max-w-6xl">
-          <h1 className="mb-5 flex items-center gap-2 text-lg font-extrabold text-white">
+          <h1 className="mb-4 flex items-center gap-2 text-lg font-extrabold text-white">
             <FaGift className="text-[#D4AF37]" /> {t.title}
           </h1>
+
+          {!loading && !error && offers.length > 0 && (
+            <div
+              className="mb-5 flex gap-2 overflow-x-auto pb-1"
+              style={{ scrollbarWidth: "none" }}
+            >
+              {CATEGORIES.map((c) => (
+                <button
+                  key={c.id}
+                  onClick={() => setActiveCategory(c.id)}
+                  className="shrink-0 whitespace-nowrap rounded-full border px-4 py-2 text-xs font-bold transition-colors"
+                  style={
+                    activeCategory === c.id
+                      ? { borderColor: "#D4AF37", background: "rgba(212,175,55,.12)", color: "#F5C842" }
+                      : { borderColor: "rgba(255,255,255,.1)", color: "#9B8EC4" }
+                  }
+                >
+                  {lang === "bn" ? c.bn : c.en}
+                </button>
+              ))}
+            </div>
+          )}
 
           {loading ? (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -263,13 +309,13 @@ export default function PromotionsPage() {
                 {t.tryAgain}
               </button>
             </div>
-          ) : offers.length === 0 ? (
+          ) : visibleOffers.length === 0 ? (
             <div className="rounded-2xl p-10 text-center text-sm text-[#7B5EA7]" style={CARD}>
               {t.empty}
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {offers.map((o) => (
+              {visibleOffers.map((o) => (
                 <PromotionCard
                   key={o.id}
                   offer={o}
