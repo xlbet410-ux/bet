@@ -331,10 +331,7 @@ function AccountStep({
       ) : (
         <div className="mb-5 flex items-center gap-2 rounded-xl px-4 py-3" style={{ background: `${accent}0A`, border: `1px solid ${accent}40` }}>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-[11px] text-gray-500">{account.label}</p>
             <p className="truncate font-mono text-xl font-black" style={{ color: accent }}>{account.accountNumber}</p>
-            {account.accountName && <p className="truncate text-[11px] text-gray-500">{account.accountName}</p>}
-            {account.details && <p className="truncate text-[11px] text-gray-400">{account.details}</p>}
           </div>
           <button
             onClick={onCopy}
@@ -408,6 +405,7 @@ export default function DepositWithdrawPage() {
   const [depositSubmitting, setDepositSubmitting] = useState(false);
   const [depositSubmitError, setDepositSubmitError] = useState<string | null>(null);
   const [copiedAccountId, setCopiedAccountId] = useState<string | null>(null);
+  const [depositAccountIndex, setDepositAccountIndex] = useState(0);
 
   // withdraw
   const [withdrawMethod, setWithdrawMethod] = useState<PaymentMethod>("bkash");
@@ -464,6 +462,20 @@ export default function DepositWithdrawPage() {
     };
   }, [accountsRetryKey]);
 
+  // Picks a random account among the active ones for the selected method,
+  // rather than always the same one — spreads deposit volume across agents
+  // instead of concentrating it on whichever account happens to be first.
+  // Re-rolls only when the method or the account list itself changes, so it
+  // stays put (matching what's already been copied/submitted) while the
+  // player is mid-transaction on this step.
+  useEffect(() => {
+    const matches = accounts.filter((a) => a.method === depositMethod);
+    if (matches.length > 0) {
+      const index = Math.floor(Math.random() * matches.length);
+      Promise.resolve().then(() => setDepositAccountIndex(index));
+    }
+  }, [accounts, depositMethod]);
+
   if (!user) return null;
 
   function copyText(value: string, id: string) {
@@ -509,7 +521,7 @@ export default function DepositWithdrawPage() {
   }
 
   const depositAccounts = accounts.filter((a) => a.method === depositMethod);
-  const depositAccount = depositAccounts[0];
+  const depositAccount = depositAccounts[depositAccountIndex];
   const depositMethodEntry = METHODS.find((m) => m.id === depositMethod);
   const withdrawMethodEntry = METHODS.find((m) => m.id === withdrawMethod);
   const depositMethodName = (lang === "bn" ? depositMethodEntry?.nameBn : depositMethodEntry?.name) ?? "";
