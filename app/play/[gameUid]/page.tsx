@@ -59,7 +59,12 @@ export default function PlayPage({ params }: { params: Promise<{ gameUid: string
         <AuthModal mode={authMode} onClose={() => setAuthMode(null)} onSwitch={(m) => setAuthMode(m)} />
       )}
 
-      <main className="relative z-10 flex h-screen flex-col pt-16 sm:pt-20">
+      {/* h-dvh (not h-screen/100vh) — on mobile browsers 100vh is measured
+          against the viewport with the address/toolbar chrome hidden, so the
+          page renders taller than what's actually visible and the game's own
+          bottom controls end up hidden behind the browser's bottom bar. The
+          dynamic viewport unit tracks the chrome's real, current height. */}
+      <main className="relative z-10 flex h-dvh flex-col pt-16 sm:pt-20">
         <div className="flex items-center gap-3 border-b border-white/5 bg-[#0A0612] px-4 py-2.5 sm:px-5">
           <button
             onClick={() => router.back()}

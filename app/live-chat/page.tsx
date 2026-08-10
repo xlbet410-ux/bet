@@ -111,7 +111,9 @@ export default function LiveChatPage() {
         <AuthModal mode={authMode} onClose={() => setAuthMode(null)} onSwitch={(m) => setAuthMode(m)} />
       )}
 
-      <main className="relative z-10 flex h-screen flex-col pt-16 sm:pt-20">
+      {/* h-dvh, not h-screen — see the play page for why 100vh clips content
+          on mobile (message input included) behind the browser's chrome. */}
+      <main className="relative z-10 flex h-dvh flex-col pt-16 sm:pt-20">
         <div className="flex items-center gap-3 border-b border-white/5 bg-[#0A0612] px-4 py-2.5 sm:px-5">
           <button
             onClick={() => router.back()}
