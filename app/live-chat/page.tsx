@@ -113,8 +113,8 @@ export default function LiveChatPage() {
 
       {/* h-dvh, not h-screen — see the play page for why 100vh clips content
           on mobile (message input included) behind the browser's chrome. */}
-      <main className="relative z-10 flex h-dvh flex-col pt-16 sm:pt-20">
-        <div className="flex items-center gap-3 border-b border-white/5 bg-[#0A0612] px-4 py-2.5 sm:px-5">
+      <main className="relative z-10 flex h-dvh flex-col pt-[62px] sm:pt-20">
+        <div className="flex items-center gap-3 border-b border-white/5 bg-[#0A0612] px-0 py-2.5 sm:px-5">
           <button
             onClick={() => router.back()}
             className="flex shrink-0 items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-xs font-semibold text-[#C9B8E8] transition-colors hover:border-[#D4AF37]/40 hover:text-white sm:px-4 sm:py-2 sm:text-sm"

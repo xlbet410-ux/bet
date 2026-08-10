@@ -54,7 +54,6 @@ export type Translations = {
   lbPlace3: string;
   // footer
   footerDesc: string;
-  footerGroups: { heading: string; links: string[] }[];
   footerResponsibilityTitle: string;
   footerResponsibilityDesc: string;
   footerAge: string;
@@ -319,10 +318,6 @@ const T: Record<Lang, Translations> = {
 
     footerDesc:
       "2xlbet is a premium online casino and sportsbook platform. Offering live casino games, slots, and sports betting with fast and secure payouts.",
-    footerGroups: [
-      { heading: "Casino", links: ["Slots", "Live Casino", "Jackpots", "Promotions"] },
-      { heading: "Support", links: ["Help Center", "Contact Us", "FAQ", "Live Chat"] },
-    ],
     footerResponsibilityTitle: "Responsibility",
     footerResponsibilityDesc:
       "This site offers games with risks involved. To become a user of our website, you must be at least 18 years of age. We are not responsible for violations of local online gaming laws. Play responsibly and have fun at 2xlbet online casino to win real money online casino games.",
@@ -584,10 +579,6 @@ const T: Record<Lang, Translations> = {
 
     footerDesc:
       "2xlbet হলো একটি প্রিমিয়াম অনলাইন ক্যাসিনো এবং স্পোর্টসবুক প্ল্যাটফর্ম। লাইভ ক্যাসিনো গেমস, স্লট এবং স্পোর্টস বেটিং অফার করে দ্রুত ও নিরাপদ পেআউট সহ।",
-    footerGroups: [
-      { heading: "ক্যাসিনো", links: ["স্লট", "লাইভ ক্যাসিনো", "জ্যাকপট", "প্রমোশন"] },
-      { heading: "সাপোর্ট", links: ["হেল্প সেন্টার", "যোগাযোগ করুন", "FAQ", "লাইভ চ্যাট"] },
-    ],
     footerResponsibilityTitle: "দায়িত্ব",
     footerResponsibilityDesc:
       "এই সাইটে ঝুঁকিপূর্ণ গেমস অফার করা হয়। আমাদের ওয়েবসাইটের ব্যবহারকারী হতে হলে আপনার বয়স কমপক্ষে ১৮ বছর হতে হবে। স্থানীয় অনলাইন গেমিং আইন লঙ্ঘনের জন্য আমরা দায়ী নই। দায়িত্বের সাথে খেলুন এবং রিয়েল মানি জেতার জন্য 2xlbet অনলাইন ক্যাসিনোতে মজা করুন।",

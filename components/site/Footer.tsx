@@ -11,7 +11,7 @@ export default function Footer() {
   return (
     <footer className="relative z-10 border-t border-[#D4AF37]/15 bg-[#080410] px-3 pt-14 sm:px-5">
       <div className="mx-auto max-w-6xl">
-        <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
+        <div className="grid grid-cols-1 gap-10 sm:grid-cols-2">
           {/* brand */}
           <div>
             <Image src={logo} alt="2XLbet Casino" width={120} height={120} className="h-12 w-auto" />
@@ -30,20 +30,7 @@ export default function Footer() {
             </div>
           </div>
 
-          {t.footerGroups.map(({ heading, links }) => (
-            <div key={heading}>
-              <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-white">{heading}</h3>
-              <ul className="flex flex-col gap-2.5 text-sm text-[#9B8EC4]">
-                {links.map((l) => (
-                  <li key={l}>
-                    <a href="#" className="transition-colors hover:text-[#F5C842]">{l}</a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-
-          {/* responsibility — badge + disclaimer, in place of a Legal links column */}
+          {/* responsibility — badge + disclaimer */}
           <div>
             <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-white">
               {t.footerResponsibilityTitle}
