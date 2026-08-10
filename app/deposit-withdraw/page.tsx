@@ -14,6 +14,7 @@ import { useLang } from "@/lib/language";
 import { fmt } from "@/lib/format";
 import { getActivePaymentAccounts, type PaymentAccount, type PaymentMethod } from "@/lib/paymentAccounts";
 import { createCashIn, createCashOut } from "@/lib/cashTransactions";
+import { getApplicableDepositOffers, type DepositOffer } from "@/lib/offers";
 
 type PageTab = "deposit" | "withdraw";
 
@@ -30,34 +31,6 @@ const METHODS: { id: PaymentMethod; name: string; nameBn: string; accent: string
 ];
 
 const QUICK_AMOUNTS = [100, 200, 500, 1000, 2000, 5000];
-
-// "No promotion" is represented as promo id null, so it isn't part of this
-// list — the picker always renders it as a final, permanent option.
-type Promotion = {
-  id: string;
-  title: string;
-  titleBn: string;
-  minAmount: number;
-  turnover?: string;
-  example?: { deposit: number; bonus: number };
-};
-
-const PROMOTIONS: Promotion[] = [
-  {
-    id: "daily-first",
-    title: "8% Bonus For Daily 1st Deposit",
-    titleBn: "প্রতিদিন প্রথম জমার জন্য ৮% বোনাস",
-    minAmount: 100,
-    turnover: "2x",
-    example: { deposit: 100, bonus: 8 },
-  },
-  {
-    id: "first-deposit-50",
-    title: "First Deposit 50% Bonus",
-    titleBn: "প্রথম জমায় ৫০% বোনাস",
-    minAmount: 100,
-  },
-];
 
 const CARD = { background: "#ffffff", border: "1px solid #E5E7EB", boxShadow: "0 4px 20px rgba(17,17,17,.06)" };
 const INNER = { background: "#F9FAFB", border: "1px solid #E5E7EB" };
@@ -144,18 +117,25 @@ function AmountPicker({
   );
 }
 
-function PromotionsPicker({
-  promo,
+function OfferPicker({
+  offers,
+  loading,
+  selectedId,
   onSelect,
   lang,
 }: {
-  promo: string | null;
+  offers: DepositOffer[];
+  loading: boolean;
+  selectedId: string | null;
   onSelect: (id: string | null) => void;
   lang: string;
 }) {
-  const strings = lang === "bn"
-    ? { heading: "প্রমোশন", noneLabel: "কোনো প্রমোশনে অংশগ্রহণ করবেন না", eg: "যেমন", deposit: "জমা", bonus: "বোনাস", turnover: "টার্নওভার" }
-    : { heading: "Promotions", noneLabel: "Do not participate in any promotions", eg: "eg", deposit: "DEPOSIT", bonus: "BONUS", turnover: "TURNOVER" };
+  const strings =
+    lang === "bn"
+      ? { heading: "প্রমোশন", noneLabel: "কোনো প্রমোশনে অংশগ্রহণ করবেন না", turnover: "টার্নওভার", validity: "মেয়াদ", days: "দিন" }
+      : { heading: "Promotions", noneLabel: "Do not participate in any promotions", turnover: "TURNOVER", validity: "VALID", days: "days" };
+
+  if (loading || offers.length === 0) return null;
 
   return (
     <div className="mb-6">
@@ -165,17 +145,20 @@ function PromotionsPicker({
       </div>
 
       <div className="flex flex-col gap-2">
-        {PROMOTIONS.map((p) => {
-          const selected = promo === p.id;
+        {offers.map((o) => {
+          const selected = selectedId === o.id;
+          const title = (lang === "bn" ? o.titleBn : o.titleEn) || o.titleBn;
           return (
             <button
-              key={p.id}
+              key={o.id}
               type="button"
-              onClick={() => onSelect(p.id)}
+              onClick={() => onSelect(o.id)}
               className="w-full rounded-xl px-4 py-3 text-left transition-all"
-              style={selected
-                ? { background: "rgba(212,175,55,.08)", border: "1px solid #D4AF37" }
-                : { background: "#F9FAFB", border: "1px solid #E5E7EB" }}
+              style={
+                selected
+                  ? { background: "rgba(212,175,55,.08)", border: "1px solid #D4AF37" }
+                  : { background: "#F9FAFB", border: "1px solid #E5E7EB" }
+              }
             >
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2.5">
@@ -185,21 +168,17 @@ function PromotionsPicker({
                   >
                     {selected && <span className="h-2 w-2 rounded-full bg-[#D4AF37]" />}
                   </span>
-                  <span className={`text-sm font-bold ${selected ? "text-[#9A7B1F]" : "text-gray-700"}`}>
-                    {lang === "bn" ? p.titleBn : p.title}
-                  </span>
+                  <span className={`text-sm font-bold ${selected ? "text-[#9A7B1F]" : "text-gray-700"}`}>{title}</span>
                 </div>
-                <span className="shrink-0 text-xs font-semibold text-gray-400">≥ ৳{p.minAmount.toLocaleString()}</span>
+                <span className="shrink-0 text-xs font-black text-[#D4AF37]">+৳{Number(o.potentialReward).toLocaleString()}</span>
               </div>
 
-              {selected && (p.turnover || p.example) && (
+              {selected && (
                 <div className="mt-2.5 border-t border-[#D4AF37]/20 pt-2.5 text-xs text-gray-500">
-                  {p.turnover && <p className="mb-1">{strings.turnover}: {p.turnover}</p>}
-                  {p.example && (
-                    <p>
-                      {strings.eg}: {strings.deposit} {p.example.deposit} · {strings.bonus} {p.example.bonus} · {strings.turnover} {p.example.deposit + p.example.bonus}
-                    </p>
-                  )}
+                  <p>
+                    {strings.turnover}: {o.turnoverMultiplier}x
+                    {o.bonusValidityDays ? ` · ${strings.validity}: ${o.bonusValidityDays} ${strings.days}` : ""}
+                  </p>
                 </div>
               )}
             </button>
@@ -210,18 +189,20 @@ function PromotionsPicker({
           type="button"
           onClick={() => onSelect(null)}
           className="flex w-full items-center justify-between gap-2 rounded-xl px-4 py-3 text-left transition-all"
-          style={promo === null
-            ? { background: "rgba(212,175,55,.08)", border: "1px solid #D4AF37" }
-            : { background: "#F9FAFB", border: "1px solid #E5E7EB" }}
+          style={
+            selectedId === null
+              ? { background: "rgba(212,175,55,.08)", border: "1px solid #D4AF37" }
+              : { background: "#F9FAFB", border: "1px solid #E5E7EB" }
+          }
         >
           <div className="flex items-center gap-2.5">
             <span
               className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2"
-              style={promo === null ? { borderColor: "#D4AF37" } : { borderColor: "#D1D5DB" }}
+              style={selectedId === null ? { borderColor: "#D4AF37" } : { borderColor: "#D1D5DB" }}
             >
-              {promo === null && <span className="h-2 w-2 rounded-full bg-[#D4AF37]" />}
+              {selectedId === null && <span className="h-2 w-2 rounded-full bg-[#D4AF37]" />}
             </span>
-            <span className={`text-sm font-bold ${promo === null ? "text-[#9A7B1F]" : "text-gray-700"}`}>{strings.noneLabel}</span>
+            <span className={`text-sm font-bold ${selectedId === null ? "text-[#9A7B1F]" : "text-gray-700"}`}>{strings.noneLabel}</span>
           </div>
           <FaTrophy className="shrink-0 text-base text-[#D4AF37]/60" />
         </button>
@@ -399,7 +380,9 @@ export default function DepositWithdrawPage() {
   const [depositStep, setDepositStep] = useState<1 | 2>(1);
   const [depositMethod, setDepositMethod] = useState<PaymentMethod>("bkash");
   const [depositAmt, setDepositAmt] = useState("");
-  const [depositPromo, setDepositPromo] = useState<string | null>(PROMOTIONS[0]?.id ?? null);
+  const [depositOffers, setDepositOffers] = useState<DepositOffer[]>([]);
+  const [depositOffersLoading, setDepositOffersLoading] = useState(false);
+  const [selectedOfferId, setSelectedOfferId] = useState<string | null>(null);
   const [depositTrxId, setDepositTrxId] = useState("");
   const [depositSubmitted, setDepositSubmitted] = useState(false);
   const [depositSubmitting, setDepositSubmitting] = useState(false);
@@ -476,6 +459,38 @@ export default function DepositWithdrawPage() {
     }
   }, [accounts, depositMethod]);
 
+  // Fetches the offers this player could pick for the entered amount —
+  // re-fetches whenever it crosses the ৳100 minimum or changes to a new
+  // valid value; clears out below that so nothing stale lingers.
+  useEffect(() => {
+    const amount = Number(depositAmt);
+    if (!depositAmt || Number.isNaN(amount) || amount < 100) {
+      Promise.resolve().then(() => {
+        setDepositOffers([]);
+        setSelectedOfferId(null);
+      });
+      return;
+    }
+
+    let cancelled = false;
+    Promise.resolve().then(() => setDepositOffersLoading(true));
+    getApplicableDepositOffers(amount)
+      .then((offers) => {
+        if (cancelled) return;
+        setDepositOffers(offers);
+        setDepositOffersLoading(false);
+        setSelectedOfferId((prev) => (prev && offers.some((o) => o.id === prev) ? prev : null));
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setDepositOffers([]);
+        setDepositOffersLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [depositAmt]);
+
   if (!user) return null;
 
   function copyText(value: string, id: string) {
@@ -494,6 +509,7 @@ export default function DepositWithdrawPage() {
         amount: Number(depositAmt),
         reference: depositTrxId.trim(),
         paymentAccountId: depositAccount?.id,
+        offerId: selectedOfferId ?? undefined,
       });
       setDepositSubmitted(true);
     } catch (err) {
@@ -526,8 +542,10 @@ export default function DepositWithdrawPage() {
   const withdrawMethodEntry = METHODS.find((m) => m.id === withdrawMethod);
   const depositMethodName = (lang === "bn" ? depositMethodEntry?.nameBn : depositMethodEntry?.name) ?? "";
   const withdrawMethodName = (lang === "bn" ? withdrawMethodEntry?.nameBn : withdrawMethodEntry?.name) ?? "";
-  const depositPromoEntry = PROMOTIONS.find((p) => p.id === depositPromo);
-  const depositPromoLabel = depositPromoEntry ? (lang === "bn" ? depositPromoEntry.titleBn : depositPromoEntry.title) : "";
+  const selectedOffer = depositOffers.find((o) => o.id === selectedOfferId);
+  const depositPromoLabel = selectedOffer
+    ? (lang === "bn" ? selectedOffer.titleBn : selectedOffer.titleEn) || selectedOffer.titleBn
+    : "";
 
   const depositStep1Valid = depositAmt !== "" && Number(depositAmt) >= 100 && !accountsLoading && !accountsError && depositAccounts.length > 0;
   const depositValid = depositStep1Valid && depositTrxId.trim() !== "";
@@ -578,7 +596,7 @@ export default function DepositWithdrawPage() {
                     setDepositAmt("");
                     setDepositTrxId("");
                     setDepositSubmitError(null);
-                    setDepositPromo(PROMOTIONS[0]?.id ?? null);
+                    setSelectedOfferId(null);
                     setDepositStep(1);
                   }}
                   t={t}
@@ -615,7 +633,13 @@ export default function DepositWithdrawPage() {
 
                   <AmountPicker amount={depositAmt} onSelect={setDepositAmt} onCustom={setDepositAmt} t={t} />
 
-                  <PromotionsPicker promo={depositPromo} onSelect={setDepositPromo} lang={lang} />
+                  <OfferPicker
+                    offers={depositOffers}
+                    loading={depositOffersLoading}
+                    selectedId={selectedOfferId}
+                    onSelect={setSelectedOfferId}
+                    lang={lang}
+                  />
 
                   {!accountsLoading && !accountsError && depositAccounts.length === 0 && (
                     <p className="mb-5 rounded-xl px-4 py-3 text-xs text-gray-500" style={INNER}>
@@ -668,7 +692,19 @@ export default function DepositWithdrawPage() {
                     className="mb-6 w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 placeholder-gray-400 outline-none transition-all focus:border-[#D4AF37]"
                   />
 
-                  {withdrawSubmitError && <p className="mb-3 text-center text-xs text-red-500">{withdrawSubmitError}</p>}
+                  {withdrawSubmitError && (
+                    <p className="mb-3 text-center text-xs text-red-500">
+                      {withdrawSubmitError}
+                      {withdrawSubmitError.toLowerCase().includes("bonus") && (
+                        <>
+                          {" "}
+                          <Link href="/my-bonuses" className="font-bold underline underline-offset-2">
+                            {lang === "bn" ? "বোনাস দেখুন" : "View bonuses"}
+                          </Link>
+                        </>
+                      )}
+                    </p>
+                  )}
 
                   <button
                     onClick={handleWithdrawSubmit}

@@ -27,6 +27,9 @@ type CreateCashTransactionInput = {
   // re-guessing it later. Cash-out has no account for the player to see,
   // so it's never passed there.
   paymentAccountId?: string;
+  // The bonus offer the player picked on the deposit step, if any — cash-in
+  // only, same reasoning as paymentAccountId.
+  offerId?: string;
 };
 
 async function createCashTransaction(kind: "cash-in" | "cash-out", input: CreateCashTransactionInput) {
