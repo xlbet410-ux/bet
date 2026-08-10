@@ -107,6 +107,30 @@ function formatTxDate(iso: string) {
   });
 }
 
+// VIP tiers, keyed by lifetime completed-deposit total (৳). Matches the
+// tier table given by the business — thresholds are inclusive on both ends
+// except the final tier, which has no ceiling.
+type VipTier = { level: number; nameBn: string; nameEn: string; min: number; max: number | null; from: string; to: string };
+
+const VIP_TIERS: VipTier[] = [
+  { level: 1, nameBn: "ব্রোঞ্জ",   nameEn: "Bronze",   min: 0,         max: 4_999,      from: "#8C5A2B", to: "#C98A4B" },
+  { level: 2, nameBn: "সিলভার",   nameEn: "Silver",   min: 5_000,     max: 24_999,     from: "#9CA3AF", to: "#E5E7EB" },
+  { level: 3, nameBn: "গোল্ড",    nameEn: "Gold",     min: 25_000,    max: 99_999,     from: "#D4AF37", to: "#F5C842" },
+  { level: 4, nameBn: "প্লাটিনাম", nameEn: "Platinum", min: 100_000,   max: 499_999,    from: "#7DD3E8", to: "#CFF3FA" },
+  { level: 5, nameBn: "ডায়মন্ড",  nameEn: "Diamond",  min: 500_000,   max: 1_999_999,  from: "#22D3EE", to: "#67E8F9" },
+  { level: 6, nameBn: "রয়্যাল",  nameEn: "Royal",    min: 2_000_000, max: null,       from: "#9B30FF", to: "#F5C842" },
+];
+
+// Auto-derives the player's level purely from their real completed-deposit
+// total — there's nothing to manually set anywhere for this to advance;
+// crossing a threshold changes the level on the next render.
+function getVipProgress(totalDeposit: number) {
+  const tier = VIP_TIERS.find((tr) => totalDeposit >= tr.min && (tr.max === null || totalDeposit <= tr.max)) ?? VIP_TIERS[0];
+  const next = VIP_TIERS[tier.level] ?? null; // tier.level is 1-indexed, so this is the next array entry
+  const percent = tier.max === null ? 100 : Math.min(100, ((totalDeposit - tier.min) / (tier.max - tier.min + 1)) * 100);
+  return { tier, next, percent };
+}
+
 // Splits a translated string on a single {token} and renders the replacement
 // (usually a styled <span>) in place, e.g. a sentence with the document name
 // highlighted in white in the middle of it.
@@ -123,9 +147,96 @@ function TemplatedText({ template, token, replacement }: { template: string; tok
   );
 }
 
+function VipLevelCard({
+  vip,
+  totalDeposit,
+  lang,
+}: {
+  vip: ReturnType<typeof getVipProgress>;
+  totalDeposit: number;
+  lang: string;
+}) {
+  const strings =
+    lang === "bn"
+      ? { heading: "আপনার লেভেল", next: "পরবর্তী লেভেল", maxed: "সর্বোচ্চ লেভেলে পৌঁছেছেন", progress: "মোট জমা" }
+      : { heading: "Your Level", next: "Next level", maxed: "You've reached the highest level", progress: "Total deposit" };
+
+  const { tier, next, percent } = vip;
+  const tierName = lang === "bn" ? tier.nameBn : tier.nameEn;
+  const nextName = next ? (lang === "bn" ? next.nameBn : next.nameEn) : null;
+
+  return (
+    <div
+      className="rounded-2xl p-6"
+      style={{
+        background: `linear-gradient(135deg, ${tier.from}1f, rgba(27,8,56,.65))`,
+        border: `1px solid ${tier.from}55`,
+        boxShadow: "0 8px 32px rgba(0,0,0,.4)",
+      }}
+    >
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div
+            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-lg font-black text-[#0A0612]"
+            style={{ background: `linear-gradient(135deg, ${tier.from}, ${tier.to})`, boxShadow: `0 0 24px ${tier.from}55` }}
+          >
+            {tier.level}
+          </div>
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-[#7B5EA7]">{strings.heading}</p>
+            <p className="text-base font-extrabold text-white">
+              VIP {tier.level} · {tierName}
+            </p>
+          </div>
+        </div>
+
+        {next ? (
+          <div className="text-right">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-[#7B5EA7]">{strings.next}</p>
+            <p className="text-sm font-bold text-[#C9B8E8]">
+              VIP {next.level} · {nextName}
+            </p>
+          </div>
+        ) : (
+          <span
+            className="rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-[#0A0612]"
+            style={{ background: `linear-gradient(135deg, ${tier.from}, ${tier.to})` }}
+          >
+            {strings.maxed}
+          </span>
+        )}
+      </div>
+
+      <div className="mb-1.5 flex items-center justify-between text-[11px] text-[#9B8EC4]">
+        <span>
+          {strings.progress}: ৳{totalDeposit.toLocaleString()}
+          {next ? ` / ৳${next.min.toLocaleString()}` : ""}
+        </span>
+        <span className="font-bold" style={{ color: tier.from }}>
+          {percent.toFixed(1)}%
+        </span>
+      </div>
+      <div className="h-2.5 w-full overflow-hidden rounded-full bg-white/10">
+        <div
+          className="h-2.5 rounded-full transition-all duration-500"
+          style={{ width: `${percent}%`, background: `linear-gradient(to right, ${tier.from}, ${tier.to})` }}
+        />
+      </div>
+
+      {next && (
+        <p className="mt-2.5 text-[11px] text-[#7B5EA7]">
+          {lang === "bn"
+            ? `পরবর্তী লেভেলে যেতে আর ৳${(next.min - totalDeposit).toLocaleString()} জমা করুন`
+            : `Deposit ৳${(next.min - totalDeposit).toLocaleString()} more to reach VIP ${next.level}`}
+        </p>
+      )}
+    </div>
+  );
+}
+
 export default function ProfilePage() {
   const { user, loading: authLoading, changePassword } = useAuth();
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const router = useRouter();
 
   const docTypes = [
@@ -196,6 +307,12 @@ export default function ProfilePage() {
   const [txError, setTxError] = useState(false);
   const [txRetryKey, setTxRetryKey] = useState(0);
   const [txFilter, setTxFilter] = useState<TxFilter>("all");
+
+  const totalDeposit = useMemo(
+    () => transactions.filter((tx) => tx.type === "cash_in" && tx.status === "completed").reduce((sum, tx) => sum + tx.amount, 0),
+    [transactions]
+  );
+  const vip = useMemo(() => getVipProgress(totalDeposit), [totalDeposit]);
 
   useEffect(() => { if (!authLoading && !user) router.replace("/"); }, [authLoading, user, router]);
 
@@ -508,35 +625,39 @@ export default function ProfilePage() {
 
               {/* ════ PROFILE ════ */}
               {tab === "profile" && (
-                <div className="rounded-2xl p-6" style={CARD}>
-                  <h3 className="mb-5 text-lg font-extrabold text-white">{t.profileAccountDetails}</h3>
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    {[
-                      { label:t.profileLabelFullName,    value:user.name,                    extra:null       },
-                      { label:t.profileLabelPhone,        value:`+${user.phone}`,             extra:"verified" },
-                      { label:t.profileLabelAccountId,    value:accountId,                    extra:null       },
-                      { label:t.profileLabelMemberSince,  value:"July 2026",                  extra:null       },
-                      { label:t.profileLabelAccountLevel, value:t.profileValueStandardPlayer, extra:null       },
-                      { label:t.profileLabelStatus,       value:t.profileActive,              extra:"active"   },
-                    ].map(({ label, value, extra }) => (
-                      <div key={label} className="rounded-xl p-4" style={INNER}>
-                        <p className="mb-1 text-[10px] font-semibold uppercase tracking-widest text-[#7B5EA7]">{label}</p>
-                        <div className="flex items-center gap-2">
-                          <p className="font-semibold text-white">{value}</p>
-                          {extra === "verified" && (
-                            <span className="flex h-4 w-4 items-center justify-center rounded-full text-white" style={{ background:"#22c55e" }}>
-                              <Tick size={8} />
-                            </span>
-                          )}
-                          {extra === "active" && (
-                            <span className="rounded-full px-2 py-0.5 text-[10px] font-bold"
-                              style={{ background:"rgba(34,197,94,.15)", color:"#4ade80", border:"1px solid rgba(34,197,94,.25)" }}>
-                              {t.profileActive}
-                            </span>
-                          )}
+                <div className="flex flex-col gap-4">
+                  <VipLevelCard vip={vip} totalDeposit={totalDeposit} lang={lang} />
+
+                  <div className="rounded-2xl p-6" style={CARD}>
+                    <h3 className="mb-5 text-lg font-extrabold text-white">{t.profileAccountDetails}</h3>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      {[
+                        { label:t.profileLabelFullName,    value:user.name,                    extra:null       },
+                        { label:t.profileLabelPhone,        value:`+${user.phone}`,             extra:"verified" },
+                        { label:t.profileLabelAccountId,    value:accountId,                    extra:null       },
+                        { label:t.profileLabelMemberSince,  value:"July 2026",                  extra:null       },
+                        { label:t.profileLabelAccountLevel, value:`VIP ${vip.tier.level} · ${lang === "bn" ? vip.tier.nameBn : vip.tier.nameEn}`, extra:null },
+                        { label:t.profileLabelStatus,       value:t.profileActive,              extra:"active"   },
+                      ].map(({ label, value, extra }) => (
+                        <div key={label} className="rounded-xl p-4" style={INNER}>
+                          <p className="mb-1 text-[10px] font-semibold uppercase tracking-widest text-[#7B5EA7]">{label}</p>
+                          <div className="flex items-center gap-2">
+                            <p className="font-semibold text-white">{value}</p>
+                            {extra === "verified" && (
+                              <span className="flex h-4 w-4 items-center justify-center rounded-full text-white" style={{ background:"#22c55e" }}>
+                                <Tick size={8} />
+                              </span>
+                            )}
+                            {extra === "active" && (
+                              <span className="rounded-full px-2 py-0.5 text-[10px] font-bold"
+                                style={{ background:"rgba(34,197,94,.15)", color:"#4ade80", border:"1px solid rgba(34,197,94,.25)" }}>
+                                {t.profileActive}
+                              </span>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
                 </div>
               )}
