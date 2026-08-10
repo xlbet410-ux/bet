@@ -2,7 +2,6 @@
 
 import { use, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { FaArrowLeft } from "react-icons/fa6";
 import Header from "@/components/site/Header";
 import AuthModal from "@/components/site/AuthModal";
 import AmbientBackground from "@/components/site/AmbientBackground";
@@ -65,16 +64,6 @@ export default function PlayPage({ params }: { params: Promise<{ gameUid: string
           bottom controls end up hidden behind the browser's bottom bar. The
           dynamic viewport unit tracks the chrome's real, current height. */}
       <main className="relative z-10 flex h-dvh flex-col pt-[62px] sm:pt-20">
-        <div className="flex items-center gap-3 border-b border-white/5 bg-[#0A0612] px-0 py-2.5 sm:px-5">
-          <button
-            onClick={() => router.back()}
-            className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-xs font-semibold text-[#C9B8E8] transition-colors hover:border-[#D4AF37]/40 hover:text-white sm:px-4 sm:py-2 sm:text-sm"
-          >
-            <FaArrowLeft className="h-3 w-3" />
-            {lang === "bn" ? "ফিরে যান" : "Back"}
-          </button>
-        </div>
-
         <div className="relative min-h-0 flex-1 bg-black">
           {!user ? (
             <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
