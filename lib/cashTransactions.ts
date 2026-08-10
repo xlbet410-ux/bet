@@ -22,6 +22,11 @@ type CreateCashTransactionInput = {
   method: PaymentMethod;
   amount: number;
   reference: string;
+  // The exact agent account shown on the deposit step — lets the backend
+  // record precisely which account the player was told to pay, instead of
+  // re-guessing it later. Cash-out has no account for the player to see,
+  // so it's never passed there.
+  paymentAccountId?: string;
 };
 
 async function createCashTransaction(kind: "cash-in" | "cash-out", input: CreateCashTransactionInput) {
@@ -50,6 +55,8 @@ export type MyCashTransaction = {
   amount: number;
   status: "pending" | "completed" | "failed";
   createdAt: string;
+  agentLabel: string | null;
+  agentAccountNumber: string | null;
 };
 
 export async function getMyCashTransactions(): Promise<MyCashTransaction[]> {

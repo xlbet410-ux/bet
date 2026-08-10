@@ -477,7 +477,12 @@ export default function DepositWithdrawPage() {
     setDepositSubmitting(true);
     setDepositSubmitError(null);
     try {
-      await createCashIn({ method: depositMethod, amount: Number(depositAmt), reference: depositTrxId.trim() });
+      await createCashIn({
+        method: depositMethod,
+        amount: Number(depositAmt),
+        reference: depositTrxId.trim(),
+        paymentAccountId: depositAccount?.id,
+      });
       setDepositSubmitted(true);
     } catch (err) {
       setDepositSubmitError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
