@@ -83,9 +83,9 @@ function PodiumCard({
         </div>
         <p className="mt-3 max-w-[120px] truncate text-sm font-bold text-white">{entry.name}</p>
         <p className={`text-[10px] font-bold uppercase tracking-widest ${tier.text}`}>{label}</p>
-        <p className={`mt-2 text-xl font-black tabular-nums ${tier.text}`}>${entry.winnings.toLocaleString()}</p>
+        <p className={`mt-2 text-xl font-black tabular-nums ${tier.text}`}>৳{entry.winnings.toLocaleString()}</p>
         <p className="mt-1 text-[11px] text-[#9B8EC4]">
-          {entry.games} {gamesLabel} · ${entry.wagered.toLocaleString()} {wageredLabel}
+          {entry.games} {gamesLabel} · ৳{entry.wagered.toLocaleString()} {wageredLabel}
         </p>
       </div>
     </div>
@@ -123,11 +123,11 @@ function LeaderRow({ entry, gamesLabel, wageredLabel }: { entry: LeaderboardEntr
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-semibold text-white">{entry.name}</p>
         <p className="text-[11px] text-[#9B8EC4]">
-          {entry.games} {gamesLabel} · ${entry.wagered.toLocaleString()} {wageredLabel}
+          {entry.games} {gamesLabel} · ৳{entry.wagered.toLocaleString()} {wageredLabel}
         </p>
       </div>
       <p className={`font-extrabold tabular-nums ${isTop3 ? tier!.text : "text-[#F5C842]"}`}>
-        ${entry.winnings.toLocaleString()}
+        ৳{entry.winnings.toLocaleString()}
       </p>
     </div>
   );
