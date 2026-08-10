@@ -1,7 +1,9 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { FaCrown, FaTrophy, FaMedal } from "react-icons/fa6";
 import { useLang } from "@/lib/language";
+import { getLiveWins, type LiveWin } from "@/lib/liveWins";
 
 function tierOf(value: number) {
   if (value >= 5000)
@@ -31,6 +33,23 @@ function tierOf(value: number) {
 
 export default function LiveWinsTicker() {
   const { t } = useLang();
+  const [realWins, setRealWins] = useState<LiveWin[] | null>(null);
+
+  // Real wins replace the placeholders once they arrive; on any failure or
+  // an empty result (not enough real play yet), the placeholders stay put.
+  useEffect(() => {
+    let cancelled = false;
+    getLiveWins()
+      .then((wins) => {
+        if (!cancelled && wins.length > 0) setRealWins(wins);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const wins = realWins ?? t.wins;
 
   return (
     <section className="relative z-10 mt-8 overflow-hidden border-y border-[#D4AF37]/15 bg-gradient-to-r from-[#120920] via-[#1B0838]/60 to-[#120920] py-4 sm:mt-12">
@@ -53,7 +72,7 @@ export default function LiveWinsTicker() {
           <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-10 bg-gradient-to-l from-[#120920] to-transparent" />
 
           <div className="flex w-max animate-[marquee_32s_linear_infinite] gap-3 whitespace-nowrap hover:[animation-play-state:paused]">
-            {[...t.wins, ...t.wins].map((w, i) => {
+            {[...wins, ...wins].map((w, i) => {
               const tier = tierOf(w.value);
               const Icon = tier.icon;
               return (
