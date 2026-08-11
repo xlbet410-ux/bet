@@ -80,6 +80,7 @@ function PromotionCard({
 
   const title = (lang === "bn" ? offer.titleBn : offer.titleEn) || offer.titleBn;
   const description = (lang === "bn" ? offer.descriptionBn : offer.descriptionEn) || offer.descriptionBn;
+  const terms = (lang === "bn" ? offer.termsBn : offer.termsEn) || offer.termsBn;
   const reward = rewardLabel(offer, lang);
 
   async function handleClaim() {
@@ -182,10 +183,10 @@ function PromotionCard({
                 </span>
               )}
             </div>
-            {offer.termsBn && lang === "bn" && (
+            {terms && (
               <div>
                 <p className="mb-1 font-semibold text-white">{strings.terms}</p>
-                <p className="leading-relaxed text-[#9B8EC4]">{offer.termsBn}</p>
+                <p className="leading-relaxed text-[#9B8EC4]">{terms}</p>
               </div>
             )}
           </div>

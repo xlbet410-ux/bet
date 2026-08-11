@@ -26,6 +26,7 @@ export type PublicOffer = {
   imageUrl: string | null;
   bannerUrl: string | null;
   termsBn: string | null;
+  termsEn: string | null;
   category: string;
   triggerType: string;
   rewardType: "fixed" | "percentage" | "no_reward";
@@ -57,6 +58,8 @@ export type PopupOffer = {
   descriptionEn: string | null;
   bannerUrl: string | null;
   imageUrl: string | null;
+  termsBn: string | null;
+  termsEn: string | null;
   rewardType: "fixed" | "percentage" | "no_reward";
   rewardAmount: string | null;
   rewardCap: string | null;

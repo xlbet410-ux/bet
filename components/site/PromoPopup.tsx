@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { FaChevronLeft, FaChevronRight, FaXmark, FaCrown, FaGift, FaWandMagicSparkles } from "react-icons/fa6";
+import { FaChevronLeft, FaChevronRight, FaChevronDown, FaXmark, FaCrown, FaGift, FaWandMagicSparkles } from "react-icons/fa6";
 import { useLang } from "@/lib/language";
 import { getPopupOffers, rewardLabel, type PopupOffer } from "@/lib/offers";
 
@@ -14,12 +14,19 @@ export default function PromoPopup({ trigger }: { trigger: boolean }) {
   const [offers, setOffers] = useState<PopupOffer[]>([]);
   const [offersLoaded, setOffersLoaded] = useState(false);
   const [active, setActive] = useState(0);
+  const [termsOpen, setTermsOpen] = useState(false);
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const strings =
     lang === "bn"
-      ? { badge: "স্পেশাল অফার" }
-      : { badge: "Special Offer" };
+      ? { badge: "স্পেশাল অফার", terms: "শর্তাবলী" }
+      : { badge: "Special Offer", terms: "Terms & Conditions" };
+
+  // Switching slides (nav or auto-advance) collapses any open terms panel
+  // instead of carrying it over to a different offer's terms.
+  useEffect(() => {
+    setTermsOpen(false);
+  }, [active]);
 
   // No dismiss-tracking on purpose — this refetches and reopens on every
   // homepage mount (i.e. every time the player lands on "/"), not just once
@@ -98,6 +105,7 @@ export default function PromoPopup({ trigger }: { trigger: boolean }) {
   const ctaText = lang === "bn" ? offer.popupCtaTextBn : offer.popupCtaTextEn;
   const bannerSrc = offer.bannerUrl || offer.imageUrl;
   const reward = rewardLabel(offer, lang);
+  const terms = (lang === "bn" ? offer.termsBn : offer.termsEn) || offer.termsBn;
 
   return (
     <div className="fixed inset-0 z-[105] flex items-center justify-center p-4" onClick={close}>
@@ -201,6 +209,22 @@ export default function PromoPopup({ trigger }: { trigger: boolean }) {
                   />
                 </span>
               </Link>
+            )}
+
+            {terms && (
+              <div className="mt-4">
+                <button
+                  type="button"
+                  onClick={() => setTermsOpen((v) => !v)}
+                  className="mx-auto flex items-center gap-1 text-[11px] font-semibold text-[#9B8EC4] transition-colors hover:text-[#F5C842]"
+                >
+                  {strings.terms}
+                  <FaChevronDown className={`text-[9px] transition-transform ${termsOpen ? "rotate-180" : ""}`} />
+                </button>
+                {termsOpen && (
+                  <p className="mt-2 text-left text-[11px] leading-relaxed text-[#8A7DB0]">{terms}</p>
+                )}
+              </div>
             )}
           </div>
         </div>
