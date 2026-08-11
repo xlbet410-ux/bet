@@ -57,10 +57,27 @@ export type PopupOffer = {
   descriptionEn: string | null;
   bannerUrl: string | null;
   imageUrl: string | null;
+  rewardType: "fixed" | "percentage" | "no_reward";
+  rewardAmount: string | null;
+  rewardCap: string | null;
   popupCtaTextBn: string | null;
   popupCtaTextEn: string | null;
   popupCtaLink: string | null;
 };
+
+// Shared between the Promotions page and the homepage popup — both render
+// the same "+X%" / "+৳X" reward badge from the same offer shape.
+export function rewardLabel(
+  o: { rewardType: "fixed" | "percentage" | "no_reward"; rewardAmount: string | null; rewardCap: string | null },
+  lang: string
+): string {
+  if (o.rewardType === "no_reward" || !o.rewardAmount) return "";
+  if (o.rewardType === "fixed") return `৳${Number(o.rewardAmount).toLocaleString()}`;
+  const cap = o.rewardCap
+    ? ` (${lang === "bn" ? "সর্বোচ্চ" : "up to"} ৳${Number(o.rewardCap).toLocaleString()})`
+    : "";
+  return `${o.rewardAmount}%${cap}`;
+}
 
 // Public — no auth required, since the popup shows to guests too.
 export async function getPopupOffers(): Promise<PopupOffer[]> {

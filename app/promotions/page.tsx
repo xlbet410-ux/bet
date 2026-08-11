@@ -10,7 +10,7 @@ import AuthModal from "@/components/site/AuthModal";
 import AmbientBackground from "@/components/site/AmbientBackground";
 import { useAuth } from "@/lib/auth";
 import { useLang } from "@/lib/language";
-import { getOffers, claimOffer, type PublicOffer } from "@/lib/offers";
+import { getOffers, claimOffer, rewardLabel, type PublicOffer } from "@/lib/offers";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
 
@@ -31,15 +31,6 @@ const CATEGORIES: { id: string; en: string; bn: string }[] = [
   { id: "cashback", en: "Cashback", bn: "ক্যাশব্যাক" },
   { id: "special", en: "Special", bn: "স্পেশাল" },
 ];
-
-function rewardLabel(o: PublicOffer, lang: string): string {
-  if (o.rewardType === "no_reward" || !o.rewardAmount) return "";
-  if (o.rewardType === "fixed") return `৳${Number(o.rewardAmount).toLocaleString()}`;
-  const cap = o.rewardCap
-    ? ` (${lang === "bn" ? "সর্বোচ্চ" : "up to"} ৳${Number(o.rewardCap).toLocaleString()})`
-    : "";
-  return `${o.rewardAmount}%${cap}`;
-}
 
 function PromotionCard({
   offer,

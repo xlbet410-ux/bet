@@ -2,9 +2,9 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { FaChevronLeft, FaChevronRight, FaXmark, FaCrown, FaGift } from "react-icons/fa6";
+import { FaChevronLeft, FaChevronRight, FaXmark, FaCrown, FaGift, FaWandMagicSparkles } from "react-icons/fa6";
 import { useLang } from "@/lib/language";
-import { getPopupOffers, type PopupOffer } from "@/lib/offers";
+import { getPopupOffers, rewardLabel, type PopupOffer } from "@/lib/offers";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
 
@@ -18,8 +18,8 @@ export default function PromoPopup({ trigger }: { trigger: boolean }) {
 
   const strings =
     lang === "bn"
-      ? { announcement: "ঘোষণা" }
-      : { announcement: "Announcement" };
+      ? { badge: "স্পেশাল অফার" }
+      : { badge: "Special Offer" };
 
   // No dismiss-tracking on purpose — this refetches and reopens on every
   // homepage mount (i.e. every time the player lands on "/"), not just once
@@ -97,28 +97,30 @@ export default function PromoPopup({ trigger }: { trigger: boolean }) {
   const description = (lang === "bn" ? offer.descriptionBn : offer.descriptionEn) || offer.descriptionBn;
   const ctaText = lang === "bn" ? offer.popupCtaTextBn : offer.popupCtaTextEn;
   const bannerSrc = offer.bannerUrl || offer.imageUrl;
+  const reward = rewardLabel(offer, lang);
 
   return (
     <div className="fixed inset-0 z-[105] flex items-center justify-center p-4" onClick={close}>
-      <div className="absolute inset-0 bg-black/75 backdrop-blur-sm animate-[fadeIn_0.3s_ease]" />
+      <div className="absolute inset-0 bg-black/80 backdrop-blur-md animate-[fadeIn_0.3s_ease]" />
+
+      {/* ambient glow behind the card, matching the site's hero/auth-modal treatment */}
+      <div
+        className="pointer-events-none absolute h-[420px] w-[420px] rounded-full bg-[#9B30FF]/25 blur-[100px] animate-[pulseGlow_4s_ease-in-out_infinite]"
+        aria-hidden="true"
+      />
+      <div
+        className="pointer-events-none absolute h-[280px] w-[280px] translate-x-24 translate-y-16 rounded-full bg-[#D4AF37]/20 blur-[90px]"
+        aria-hidden="true"
+      />
 
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative flex w-full max-w-md max-h-[90vh] flex-col animate-[popIn_0.35s_ease] overflow-hidden rounded-3xl border border-[#D4AF37]/30 bg-[#1B0838] shadow-[0_0_70px_#7B2FBE55]"
+        className="relative flex w-full max-w-md max-h-[90vh] flex-col animate-[popIn_0.35s_ease] overflow-hidden rounded-[28px] bg-[#150A2E] shadow-[0_0_0_1px_rgba(212,175,55,.35),0_20px_80px_rgba(0,0,0,.6),0_0_60px_rgba(155,48,255,.25)]"
       >
-        {/* header bar */}
-        <div
-          className="relative flex shrink-0 items-center justify-center gap-2 py-4"
-          style={{ background: "linear-gradient(135deg,#7B2FBE,#4A0E8F)" }}
-        >
-          <FaCrown className="text-lg text-[#F5C842]" />
-          <h2 className="text-base font-extrabold text-white">{strings.announcement}</h2>
-        </div>
-
         <button
           onClick={close}
           aria-label="Close"
-          className="absolute right-3 top-3 z-20 flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-black/50 text-base text-white backdrop-blur-sm transition-all hover:bg-black/70"
+          className="absolute right-3 top-3 z-30 flex h-9 w-9 items-center justify-center rounded-full border border-[#D4AF37]/50 bg-black/60 text-sm text-[#F5C842] backdrop-blur-sm transition-all hover:scale-110 hover:bg-black/80"
         >
           <FaXmark />
         </button>
@@ -133,6 +135,27 @@ export default function PromoPopup({ trigger }: { trigger: boolean }) {
                 <FaGift className="text-4xl text-[#D4AF37]/50" />
               </div>
             )}
+
+            {/* floating badge over the banner, replacing the old flat header bar */}
+            <div className="absolute left-3 top-3 z-10 flex flex-col items-start gap-1.5">
+              <span
+                className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-black uppercase tracking-wide text-[#0A0612] shadow-[0_4px_16px_rgba(212,175,55,.5)]"
+                style={{ background: "linear-gradient(135deg,#F5C842,#D4AF37)" }}
+              >
+                <FaCrown className="text-[11px]" /> {strings.badge}
+              </span>
+              {reward && (
+                <span
+                  className="flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-black text-white shadow-[0_4px_16px_rgba(123,47,190,.5)]"
+                  style={{ background: "linear-gradient(135deg,#9B30FF,#4A0E8F)" }}
+                >
+                  <FaWandMagicSparkles className="text-[10px]" /> +{reward}
+                </span>
+              )}
+            </div>
+
+            {/* scrim blending the image straight into the content below it */}
+            <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#150A2E] to-transparent" />
 
             {offerCount > 1 && (
               <>
@@ -154,51 +177,46 @@ export default function PromoPopup({ trigger }: { trigger: boolean }) {
             )}
           </div>
 
-          <div className="p-5 text-center">
-            <h3 className="mb-1.5 text-lg font-extrabold text-white">{title}</h3>
-            {description && <p className="mb-4 text-sm leading-relaxed text-[#C9B8E8]">{description}</p>}
+          <div className="px-5 pb-5 pt-1 text-center">
+            <h3 className="mb-1.5 bg-gradient-to-r from-[#F5C842] to-[#D4AF37] bg-clip-text text-xl font-black text-transparent">
+              {title}
+            </h3>
+            {description && <p className="mb-5 text-sm leading-relaxed text-[#C9B8E8]">{description}</p>}
 
             {ctaText && offer.popupCtaLink && (
-              <Link
-                href={offer.popupCtaLink}
-                onClick={close}
-                className="inline-block rounded-full px-6 py-3 text-sm font-bold text-[#0A0612] transition-all hover:scale-[1.02]"
-                style={{ background: "linear-gradient(to right,#D4AF37,#F5C842)" }}
-              >
-                {ctaText}
+              <Link href={offer.popupCtaLink} onClick={close} className="group relative inline-block">
+                <span
+                  className="absolute inset-0 rounded-full blur-md transition-opacity animate-[pulseGlow_2.4s_ease-in-out_infinite] group-hover:opacity-100"
+                  style={{ background: "linear-gradient(to right,#D4AF37,#F5C842)" }}
+                  aria-hidden="true"
+                />
+                <span
+                  className="relative flex items-center gap-2 overflow-hidden rounded-full px-7 py-3 text-sm font-black text-[#0A0612] transition-transform group-hover:scale-[1.03]"
+                  style={{ background: "linear-gradient(to right,#D4AF37,#F5C842)" }}
+                >
+                  {ctaText}
+                  <span
+                    className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/40 to-transparent opacity-0 group-hover:opacity-100 group-hover:animate-[shimmer_0.9s_ease]"
+                    aria-hidden="true"
+                  />
+                </span>
               </Link>
             )}
           </div>
         </div>
 
         {offerCount > 1 && (
-          <div className="flex shrink-0 items-center justify-between gap-2 border-t border-white/10 p-3">
-            <button
-              onClick={() => handleNav(active - 1)}
-              className="flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold text-[#0A0612] transition-all"
-              style={{ background: "linear-gradient(to right,#D4AF37,#F5C842)" }}
-            >
-              <FaChevronLeft className="text-[10px]" /> {lang === "bn" ? "পূর্ববর্তী" : "Previous"}
-            </button>
-            <div className="flex gap-1.5">
-              {offers.map((o, i) => (
-                <button
-                  key={o.id}
-                  onClick={() => handleNav(i)}
-                  aria-label={`Slide ${i + 1}`}
-                  className={`h-1.5 rounded-full transition-all duration-300 ${
-                    i === active ? "w-6 bg-gradient-to-r from-[#D4AF37] to-[#F5C842]" : "w-1.5 bg-white/30 hover:bg-white/60"
-                  }`}
-                />
-              ))}
-            </div>
-            <button
-              onClick={() => handleNav(active + 1)}
-              className="flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold text-[#0A0612] transition-all"
-              style={{ background: "linear-gradient(to right,#D4AF37,#F5C842)" }}
-            >
-              {lang === "bn" ? "পরবর্তী" : "Next"} <FaChevronRight className="text-[10px]" />
-            </button>
+          <div className="flex shrink-0 items-center justify-center gap-2 border-t border-white/10 bg-black/20 p-3">
+            {offers.map((o, i) => (
+              <button
+                key={o.id}
+                onClick={() => handleNav(i)}
+                aria-label={`Slide ${i + 1}`}
+                className={`h-1.5 rounded-full transition-all duration-300 ${
+                  i === active ? "w-7 bg-gradient-to-r from-[#D4AF37] to-[#F5C842]" : "w-1.5 bg-white/25 hover:bg-white/50"
+                }`}
+              />
+            ))}
           </div>
         )}
       </div>
