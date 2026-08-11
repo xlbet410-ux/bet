@@ -48,6 +48,27 @@ export async function getOffers(category?: string): Promise<PublicOffer[]> {
   return res.json();
 }
 
+export type PopupOffer = {
+  id: string;
+  slug: string;
+  titleBn: string;
+  titleEn: string | null;
+  descriptionBn: string | null;
+  descriptionEn: string | null;
+  bannerUrl: string | null;
+  imageUrl: string | null;
+  popupCtaTextBn: string | null;
+  popupCtaTextEn: string | null;
+  popupCtaLink: string | null;
+};
+
+// Public — no auth required, since the popup shows to guests too.
+export async function getPopupOffers(): Promise<PopupOffer[]> {
+  const res = await fetch(`${API_URL}/offers/popup`, { cache: "no-store" });
+  if (!res.ok) throw new Error(`Failed to load popup offers (${res.status})`);
+  return res.json();
+}
+
 export type DepositOffer = {
   id: string;
   slug: string;
