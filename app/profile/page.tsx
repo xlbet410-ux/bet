@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import Header from "@/components/site/Header";
 import Footer from "@/components/site/Footer";
 import MobileBottomNav from "@/components/site/MobileBottomNav";
@@ -11,6 +12,7 @@ import { useAuth } from "@/lib/auth";
 import { useLang } from "@/lib/language";
 import { getMyKyc, submitKyc, type KycStatus } from "@/lib/kyc";
 import { getMyCashTransactions, type MyCashTransaction } from "@/lib/cashTransactions";
+import { getMyVipStatus, type VipStatus } from "@/lib/vip";
 import { fmt } from "@/lib/format";
 
 const METHOD_LABELS: Record<string, string> = {
@@ -107,29 +109,17 @@ function formatTxDate(iso: string) {
   });
 }
 
-// VIP tiers, keyed by lifetime completed-deposit total (৳). Matches the
-// tier table given by the business — thresholds are inclusive on both ends
-// except the final tier, which has no ceiling.
-type VipTier = { level: number; nameBn: string; nameEn: string; min: number; max: number | null; from: string; to: string };
-
-const VIP_TIERS: VipTier[] = [
-  { level: 1, nameBn: "ব্রোঞ্জ",   nameEn: "Bronze",   min: 0,         max: 4_999,      from: "#8C5A2B", to: "#C98A4B" },
-  { level: 2, nameBn: "সিলভার",   nameEn: "Silver",   min: 5_000,     max: 24_999,     from: "#9CA3AF", to: "#E5E7EB" },
-  { level: 3, nameBn: "গোল্ড",    nameEn: "Gold",     min: 25_000,    max: 99_999,     from: "#D4AF37", to: "#F5C842" },
-  { level: 4, nameBn: "প্লাটিনাম", nameEn: "Platinum", min: 100_000,   max: 499_999,    from: "#7DD3E8", to: "#CFF3FA" },
-  { level: 5, nameBn: "ডায়মন্ড",  nameEn: "Diamond",  min: 500_000,   max: 1_999_999,  from: "#22D3EE", to: "#67E8F9" },
-  { level: 6, nameBn: "রয়্যাল",  nameEn: "Royal",    min: 2_000_000, max: null,       from: "#9B30FF", to: "#F5C842" },
-];
-
-// Auto-derives the player's level purely from their real completed-deposit
-// total — there's nothing to manually set anywhere for this to advance;
-// crossing a threshold changes the level on the next render.
-function getVipProgress(totalDeposit: number) {
-  const tier = VIP_TIERS.find((tr) => totalDeposit >= tr.min && (tr.max === null || totalDeposit <= tr.max)) ?? VIP_TIERS[0];
-  const next = VIP_TIERS[tier.level] ?? null; // tier.level is 1-indexed, so this is the next array entry
-  const percent = tier.max === null ? 100 : Math.min(100, ((totalDeposit - tier.min) / (tier.max - tier.min + 1)) * 100);
-  return { tier, next, percent };
-}
+// Gradient per VIP group — the backend only stores level/group data, not
+// colors, so the visual treatment per group lives here (site's purple/gold
+// palette, extended per group tier).
+const GROUP_COLORS: Record<string, { from: string; to: string }> = {
+  Newcomer: { from: "#6B5B95", to: "#9B8EC4" },
+  Bronze: { from: "#8C5A2B", to: "#C98A4B" },
+  Silver: { from: "#9CA3AF", to: "#E5E7EB" },
+  Gold: { from: "#D4AF37", to: "#F5C842" },
+  Platinum: { from: "#7DD3E8", to: "#CFF3FA" },
+  Diamond: { from: "#9B30FF", to: "#F5C842" },
+};
 
 // Splits a translated string on a single {token} and renders the replacement
 // (usually a styled <span>) in place, e.g. a sentence with the document name
@@ -147,30 +137,46 @@ function TemplatedText({ template, token, replacement }: { template: string; tok
   );
 }
 
-function VipLevelCard({
-  vip,
-  totalDeposit,
-  lang,
-}: {
-  vip: ReturnType<typeof getVipProgress>;
-  totalDeposit: number;
-  lang: string;
-}) {
+function ProgressRow({ label, current, target, percent, color }: { label: string; current: string; target: string; percent: number; color: string }) {
+  return (
+    <div className="mb-3 last:mb-0">
+      <div className="mb-1.5 flex items-center justify-between text-[11px] text-[#9B8EC4]">
+        <span>
+          {label}: ৳{current} / ৳{target}
+        </span>
+        <span className="font-bold" style={{ color }}>
+          {percent.toFixed(1)}%
+        </span>
+      </div>
+      <div className="h-2.5 w-full overflow-hidden rounded-full bg-white/10">
+        <div
+          className="h-2.5 rounded-full transition-all duration-500"
+          style={{ width: `${percent}%`, background: color }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function VipLevelCard({ status, lang }: { status: VipStatus; lang: string }) {
   const strings =
     lang === "bn"
-      ? { heading: "আপনার লেভেল", next: "পরবর্তী লেভেল", maxed: "সর্বোচ্চ লেভেলে পৌঁছেছেন", progress: "মোট জমা" }
-      : { heading: "Your Level", next: "Next level", maxed: "You've reached the highest level", progress: "Total deposit" };
+      ? { heading: "আপনার লেভেল", next: "পরবর্তী লেভেল", maxed: "সর্বোচ্চ লেভেলে পৌঁছেছেন", deposit: "জমা", bet: "বাজি", need: "পরবর্তী লেভেলে যেতে প্রয়োজন" }
+      : { heading: "Your Level", next: "Next level", maxed: "You've reached the highest level", deposit: "Deposit", bet: "Wagered", need: "Needed for next level" };
 
-  const { tier, next, percent } = vip;
-  const tierName = lang === "bn" ? tier.nameBn : tier.nameEn;
+  const { current, next, depositProgressPercent, betProgressPercent } = status;
+  const colors = GROUP_COLORS[current.groupName] ?? GROUP_COLORS.Bronze;
+  const tierName = lang === "bn" ? current.nameBn : current.nameEn;
   const nextName = next ? (lang === "bn" ? next.nameBn : next.nameEn) : null;
+  const nextColors = next ? GROUP_COLORS[next.groupName] ?? colors : colors;
+  const fmtNum = (v: string) => Math.round(Number(v)).toLocaleString();
 
   return (
     <div
       className="rounded-2xl p-6"
       style={{
-        background: `linear-gradient(135deg, ${tier.from}1f, rgba(27,8,56,.65))`,
-        border: `1px solid ${tier.from}55`,
+        background: `linear-gradient(135deg, ${colors.from}1f, rgba(27,8,56,.65))`,
+        border: `1px solid ${colors.from}55`,
         boxShadow: "0 8px 32px rgba(0,0,0,.4)",
       }}
     >
@@ -178,14 +184,14 @@ function VipLevelCard({
         <div className="flex items-center gap-3">
           <div
             className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-lg font-black text-[#0A0612]"
-            style={{ background: `linear-gradient(135deg, ${tier.from}, ${tier.to})`, boxShadow: `0 0 24px ${tier.from}55` }}
+            style={{ background: `linear-gradient(135deg, ${colors.from}, ${colors.to})`, boxShadow: `0 0 24px ${colors.from}55` }}
           >
-            {tier.level}
+            {current.level}
           </div>
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-widest text-[#7B5EA7]">{strings.heading}</p>
             <p className="text-base font-extrabold text-white">
-              VIP {tier.level} · {tierName}
+              VIP {current.level} · {tierName}
             </p>
           </div>
         </div>
@@ -200,36 +206,35 @@ function VipLevelCard({
         ) : (
           <span
             className="rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-[#0A0612]"
-            style={{ background: `linear-gradient(135deg, ${tier.from}, ${tier.to})` }}
+            style={{ background: `linear-gradient(135deg, ${colors.from}, ${colors.to})` }}
           >
             {strings.maxed}
           </span>
         )}
       </div>
 
-      <div className="mb-1.5 flex items-center justify-between text-[11px] text-[#9B8EC4]">
-        <span>
-          {strings.progress}: ৳{totalDeposit.toLocaleString()}
-          {next ? ` / ৳${next.min.toLocaleString()}` : ""}
-        </span>
-        <span className="font-bold" style={{ color: tier.from }}>
-          {percent.toFixed(1)}%
-        </span>
-      </div>
-      <div className="h-2.5 w-full overflow-hidden rounded-full bg-white/10">
-        <div
-          className="h-2.5 rounded-full transition-all duration-500"
-          style={{ width: `${percent}%`, background: `linear-gradient(to right, ${tier.from}, ${tier.to})` }}
-        />
-      </div>
-
       {next && (
-        <p className="mt-2.5 text-[11px] text-[#7B5EA7]">
-          {lang === "bn"
-            ? `পরবর্তী লেভেলে যেতে আর ৳${(next.min - totalDeposit).toLocaleString()} জমা করুন`
-            : `Deposit ৳${(next.min - totalDeposit).toLocaleString()} more to reach VIP ${next.level}`}
-        </p>
+        <>
+          <ProgressRow
+            label={strings.deposit}
+            current={fmtNum(status.lifetimeDepositAmount)}
+            target={fmtNum(next.requiredDeposit)}
+            percent={depositProgressPercent}
+            color={nextColors.from}
+          />
+          <ProgressRow
+            label={strings.bet}
+            current={fmtNum(status.lifetimeBetAmount)}
+            target={fmtNum(next.requiredBet)}
+            percent={betProgressPercent}
+            color={nextColors.to}
+          />
+        </>
       )}
+
+      <Link href="/vip" className="mt-3 inline-block text-[11px] font-semibold text-[#F5C842] transition-colors hover:text-[#D4AF37]">
+        {lang === "bn" ? "সব লেভেল দেখুন →" : "View all levels →"}
+      </Link>
     </div>
   );
 }
@@ -308,13 +313,35 @@ export default function ProfilePage() {
   const [txRetryKey, setTxRetryKey] = useState(0);
   const [txFilter, setTxFilter] = useState<TxFilter>("all");
 
-  const totalDeposit = useMemo(
-    () => transactions.filter((tx) => tx.type === "cash_in" && tx.status === "completed").reduce((sum, tx) => sum + tx.amount, 0),
-    [transactions]
-  );
-  const vip = useMemo(() => getVipProgress(totalDeposit), [totalDeposit]);
+  // VIP — real, backend-computed level/progress (auto-upgrades on deposit/bet)
+  const [vipStatus, setVipStatus] = useState<VipStatus | null>(null);
 
   useEffect(() => { if (!authLoading && !user) router.replace("/"); }, [authLoading, user, router]);
+
+  // Same retry-with-backoff pattern used for wallet transactions/KYC on this page.
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+
+    async function load() {
+      const maxAttempts = 3;
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        try {
+          const status = await getMyVipStatus();
+          if (!cancelled) setVipStatus(status);
+          return;
+        } catch {
+          if (attempt === maxAttempts) break;
+          await new Promise((r) => setTimeout(r, attempt * 700));
+        }
+      }
+    }
+
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
 
   useEffect(() => {
     if (!user) return;
@@ -626,7 +653,7 @@ export default function ProfilePage() {
               {/* ════ PROFILE ════ */}
               {tab === "profile" && (
                 <div className="flex flex-col gap-4">
-                  <VipLevelCard vip={vip} totalDeposit={totalDeposit} lang={lang} />
+                  {vipStatus && <VipLevelCard status={vipStatus} lang={lang} />}
 
                   <div className="rounded-2xl p-6" style={CARD}>
                     <h3 className="mb-5 text-lg font-extrabold text-white">{t.profileAccountDetails}</h3>
@@ -636,7 +663,7 @@ export default function ProfilePage() {
                         { label:t.profileLabelPhone,        value:`+${user.phone}`,             extra:"verified" },
                         { label:t.profileLabelAccountId,    value:accountId,                    extra:null       },
                         { label:t.profileLabelMemberSince,  value:"July 2026",                  extra:null       },
-                        { label:t.profileLabelAccountLevel, value:`VIP ${vip.tier.level} · ${lang === "bn" ? vip.tier.nameBn : vip.tier.nameEn}`, extra:null },
+                        { label:t.profileLabelAccountLevel, value: vipStatus ? `VIP ${vipStatus.current.level} · ${lang === "bn" ? vipStatus.current.nameBn : vipStatus.current.nameEn}` : "—", extra:null },
                         { label:t.profileLabelStatus,       value:t.profileActive,              extra:"active"   },
                       ].map(({ label, value, extra }) => (
                         <div key={label} className="rounded-xl p-4" style={INNER}>
