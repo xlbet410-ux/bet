@@ -14,6 +14,7 @@ import { getMyKyc, submitKyc, type KycStatus } from "@/lib/kyc";
 import { getMyCashTransactions, type MyCashTransaction } from "@/lib/cashTransactions";
 import { getMyVipStatus, type VipStatus } from "@/lib/vip";
 import { getStreakInfo, type StreakInfo } from "@/lib/loginStreak";
+import { getMyGameHistory, type MyGameHistoryEntry } from "@/lib/gameHistory";
 import { fmt } from "@/lib/format";
 
 const METHOD_LABELS: Record<string, string> = {
@@ -28,10 +29,10 @@ const METHOD_LABELS: Record<string, string> = {
 
 type TxFilter = "all" | "24h" | "week" | "month";
 
-type Tab     = "profile" | "wallet" | "deposit" | "withdraw" | "settings" | "kyc";
+type Tab     = "profile" | "wallet" | "deposit" | "withdraw" | "history" | "settings" | "kyc";
 type KycStep = "idle" | "phone" | "otp" | "docType" | "upload" | "selfie" | "done";
 
-const TABS: Tab[] = ["profile", "wallet", "deposit", "withdraw", "settings", "kyc"];
+const TABS: Tab[] = ["profile", "wallet", "deposit", "withdraw", "history", "settings", "kyc"];
 
 function DocTypeIcon({ id, className = "" }: { id: string; className?: string }) {
   if (id === "passport") {
@@ -343,6 +344,16 @@ export default function ProfilePage() {
   const [vipStatus, setVipStatus] = useState<VipStatus | null>(null);
   const [streakInfo, setStreakInfo] = useState<StreakInfo | null>(null);
 
+  // Game history — bet-by-bet, profile "Game History" tab
+  const [gameHistory, setGameHistory] = useState<MyGameHistoryEntry[]>([]);
+  const [gameHistoryTotal, setGameHistoryTotal] = useState(0);
+  const [gameHistoryPage, setGameHistoryPage] = useState(1);
+  const [gameHistoryLoading, setGameHistoryLoading] = useState(true);
+  const [gameHistoryLoadingMore, setGameHistoryLoadingMore] = useState(false);
+  const [gameHistoryError, setGameHistoryError] = useState(false);
+  const [gameHistoryRetryKey, setGameHistoryRetryKey] = useState(0);
+  const GAME_HISTORY_PAGE_SIZE = 30;
+
   useEffect(() => { if (!authLoading && !user) router.replace("/"); }, [authLoading, user, router]);
 
   // Same retry-with-backoff pattern used for wallet transactions/KYC on this page.
@@ -419,6 +430,58 @@ export default function ProfilePage() {
       cancelled = true;
     };
   }, [user, txRetryKey]);
+
+  // Same retry-with-backoff pattern used elsewhere on this page — only
+  // fetches once the player actually opens the tab, not on every profile visit.
+  useEffect(() => {
+    if (!user || tab !== "history") return;
+    let cancelled = false;
+
+    async function load() {
+      setGameHistoryLoading(true);
+      setGameHistoryError(false);
+      const maxAttempts = 3;
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        try {
+          const result = await getMyGameHistory(1, GAME_HISTORY_PAGE_SIZE);
+          if (!cancelled) {
+            setGameHistory(result.games);
+            setGameHistoryTotal(result.total);
+            setGameHistoryPage(1);
+            setGameHistoryLoading(false);
+          }
+          return;
+        } catch {
+          if (attempt === maxAttempts) break;
+          await new Promise((r) => setTimeout(r, attempt * 700));
+        }
+      }
+      if (!cancelled) {
+        setGameHistoryError(true);
+        setGameHistoryLoading(false);
+      }
+    }
+
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [user, tab, gameHistoryRetryKey]);
+
+  async function loadMoreGameHistory() {
+    setGameHistoryLoadingMore(true);
+    try {
+      const nextPage = gameHistoryPage + 1;
+      const result = await getMyGameHistory(nextPage, GAME_HISTORY_PAGE_SIZE);
+      setGameHistory((prev) => [...prev, ...result.games]);
+      setGameHistoryTotal(result.total);
+      setGameHistoryPage(nextPage);
+    } catch {
+      // Load More failure is non-critical — the list already shown stays intact.
+    } finally {
+      setGameHistoryLoadingMore(false);
+    }
+  }
 
   const filteredTransactions = useMemo(() => {
     if (txFilter === "all") return transactions;
@@ -554,6 +617,7 @@ export default function ProfilePage() {
     { id:"wallet",  label:t.profileTabWallet,  icon:<svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 3H8a2 2 0 0 0-2 4h12a2 2 0 0 0-2-4z"/><circle cx="16" cy="14" r="1.5" className="fill-current stroke-none"/></svg> },
     { id:"deposit", label:t.deposit, icon:<svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-2"><path d="M12 3v12m0 0-4-4m4 4 4-4" strokeLinecap="round" strokeLinejoin="round"/><path d="M20 21H4" strokeLinecap="round"/></svg> },
     { id:"withdraw",label:t.profileTabWithdraw,icon:<svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-2"><path d="M12 21V9m0 0 4 4m-4-4-4 4" strokeLinecap="round" strokeLinejoin="round"/><path d="M20 3H4" strokeLinecap="round"/></svg> },
+    { id:"history", label:t.profileTabHistory, icon:<svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2" strokeLinecap="round" strokeLinejoin="round"/></svg> },
     { id:"settings",label:t.profileTabSettings,icon:<svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> },
     { id:"kyc",     label:t.profileTabKyc,     icon:<svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9,12 11,14 15,10" strokeLinecap="round" strokeLinejoin="round"/></svg> },
   ];
@@ -821,6 +885,64 @@ export default function ProfilePage() {
                       </div>
                     )}
                   </div>
+                </div>
+              )}
+
+              {/* ════ GAME HISTORY ════ */}
+              {tab === "history" && (
+                <div className="rounded-2xl p-5" style={CARD}>
+                  <h3 className="mb-4 font-extrabold text-white">{t.profileGameHistoryTitle}</h3>
+
+                  {gameHistoryLoading ? (
+                    <div className="space-y-2">
+                      {Array.from({ length: 4 }).map((_, i) => (
+                        <div key={i} className="h-16 animate-pulse rounded-xl" style={INNER} />
+                      ))}
+                    </div>
+                  ) : gameHistoryError ? (
+                    <div className="flex items-center justify-between rounded-xl px-4 py-3" style={INNER}>
+                      <p className="text-xs text-red-400">{t.profileErrGeneric}</p>
+                      <button onClick={() => setGameHistoryRetryKey((k) => k + 1)} className="shrink-0 text-xs font-bold text-[#F5C842]">
+                        {t.profileTryAgain}
+                      </button>
+                    </div>
+                  ) : gameHistory.length === 0 ? (
+                    <p className="py-6 text-center text-sm text-[#7B5EA7]">{t.profileGameHistoryEmpty}</p>
+                  ) : (
+                    <>
+                      <div className="space-y-2">
+                        {gameHistory.map((g) => {
+                          const net = Number(g.net);
+                          return (
+                            <div key={g.id} className="flex items-center justify-between rounded-xl px-4 py-3" style={INNER}>
+                              <div className="min-w-0">
+                                <p className="truncate text-sm font-semibold text-white">{g.gameName}</p>
+                                <p className="text-[11px] text-[#9B8EC4]">{formatTxDate(g.createdAt)}</p>
+                              </div>
+                              <div className="shrink-0 text-right">
+                                <p className="text-[11px] text-[#9B8EC4]">
+                                  {t.profileGameHistoryBet} ৳{Number(g.betAmount).toLocaleString()} · {t.profileGameHistoryWin} ৳{Number(g.winAmount).toLocaleString()}
+                                </p>
+                                <p className={`font-bold tabular-nums ${net >= 0 ? "text-green-400" : "text-red-400"}`}>
+                                  {t.profileGameHistoryNet} {net >= 0 ? "+" : ""}৳{net.toLocaleString()}
+                                </p>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {gameHistory.length < gameHistoryTotal && (
+                        <button
+                          onClick={loadMoreGameHistory}
+                          disabled={gameHistoryLoadingMore}
+                          className="mt-4 w-full rounded-xl border border-[#7B2FBE]/40 bg-white/4 py-2.5 text-xs font-bold text-[#C9B8E8] transition-all hover:bg-white/[.07] disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          {gameHistoryLoadingMore ? "…" : t.profileGameHistoryLoadMore}
+                        </button>
+                      )}
+                    </>
+                  )}
                 </div>
               )}
 

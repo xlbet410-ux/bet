@@ -4,9 +4,10 @@ import { useEffect, useRef, useState } from "react";
 import { FaCommentDots, FaXmark, FaPaperPlane, FaHeadset } from "react-icons/fa6";
 import { useLang } from "@/lib/language";
 import { useAuth } from "@/lib/auth";
-import { createConversation, getMessages, sendMessage, getStreamTicket, CHAT_API_URL, type ChatMessage } from "@/lib/chat";
+import { createConversation, getMessages, sendMessage, getStreamTicket, getChatUnreadCount, CHAT_API_URL, type ChatMessage } from "@/lib/chat";
 
 const fmt = (iso: string) => new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+const CHAT_UNREAD_POLL_MS = 30_000;
 
 export default function ChatSupport({ onOpenAuth }: { onOpenAuth: (mode: "login" | "register") => void }) {
   const { t } = useLang();
@@ -17,6 +18,7 @@ export default function ChatSupport({ onOpenAuth }: { onOpenAuth: (mode: "login"
   const [connecting, setConnecting] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
+  const [unread, setUnread] = useState(0);
   const conversationIdRef = useRef<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const esRef = useRef<EventSource | null>(null);
@@ -79,6 +81,29 @@ export default function ChatSupport({ onOpenAuth }: { onOpenAuth: (mode: "login"
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [msgs]);
 
+  // Poll the unread badge while the panel is closed; opening the panel
+  // fetches messages via getMessages(), which marks them read server-side.
+  useEffect(() => {
+    if (!user || open) return;
+    let cancelled = false;
+    async function poll() {
+      try {
+        const { count } = await getChatUnreadCount();
+        if (!cancelled) setUnread(count);
+      } catch {}
+    }
+    poll();
+    const id = setInterval(poll, CHAT_UNREAD_POLL_MS);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, [user, open]);
+
+  useEffect(() => {
+    if (open) setUnread(0);
+  }, [open]);
+
   const send = async () => {
     const text = input.trim();
     const conversationId = conversationIdRef.current;
@@ -107,12 +132,16 @@ export default function ChatSupport({ onOpenAuth }: { onOpenAuth: (mode: "login"
         className="fixed bottom-20 right-5 z-[95] hidden h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#9B30FF] to-[#4A0E8F] text-xl text-white shadow-[0_0_28px_#7B2FBE80] transition-all hover:scale-110 lg:flex"
       >
         {open ? <FaXmark /> : <FaCommentDots />}
-        {!open && (
+        {!open && unread > 0 ? (
+          <span className="absolute -right-1 -top-1 flex h-4.5 min-w-[18px] items-center justify-center rounded-full bg-gradient-to-br from-[#ef4444] to-[#b91c1c] px-1 text-[10px] font-bold text-white">
+            {unread > 9 ? "9+" : unread}
+          </span>
+        ) : !open ? (
           <span className="absolute -right-0.5 -top-0.5 flex h-3.5 w-3.5 items-center justify-center">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-60" />
             <span className="relative h-2.5 w-2.5 rounded-full border-2 border-[#0A0612] bg-green-400" />
           </span>
-        )}
+        ) : null}
       </button>
 
       {/* chat panel — only ever opens from the desktop-only trigger above */}

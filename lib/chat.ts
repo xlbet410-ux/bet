@@ -41,6 +41,12 @@ export async function sendMessage(conversationId: string, body: string): Promise
   return res.json();
 }
 
+export async function getChatUnreadCount(): Promise<{ count: number }> {
+  const res = await fetch(`${CHAT_API_URL}/conversations/unread-count`, { headers: authHeaders() });
+  if (!res.ok) throw new Error("Couldn't load chat unread count.");
+  return res.json();
+}
+
 export async function getStreamTicket(conversationId: string): Promise<string> {
   const res = await fetch(`${CHAT_API_URL}/conversations/${conversationId}/stream-ticket`, {
     method: "POST",

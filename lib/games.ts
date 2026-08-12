@@ -142,7 +142,13 @@ export async function getCatalogPage(
   if (tag) params.set("tag", tag);
   if (providerCode) params.set("providerCode", providerCode);
   if (sort) params.set("sort", sort);
-  const res = await fetch(`${API_URL}/games/catalog?${params}`, { cache: "no-store" });
+  // Public route — but sending the token when we have one (logged-in
+  // player) lets the backend personalize the Featured category to that
+  // player's own recently-played games. Guests get the plain platform-wide
+  // list, same as before.
+  const token = typeof window !== "undefined" ? localStorage.getItem(TOKEN_KEY) : null;
+  const headers: HeadersInit | undefined = token ? { Authorization: `Bearer ${token}` } : undefined;
+  const res = await fetch(`${API_URL}/games/catalog?${params}`, { cache: "no-store", headers });
   if (!res.ok) throw new Error(`Failed to load games (${res.status})`);
   return res.json();
 }

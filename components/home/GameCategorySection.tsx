@@ -9,6 +9,7 @@ import GameRow from "./GameRow";
 import GamesToolbar from "./GamesToolbar";
 import type { GameItem } from "@/lib/data";
 import { useLang } from "@/lib/language";
+import { useAuth } from "@/lib/auth";
 import {
   getCatalogPage,
   getSubTagCounts,
@@ -86,6 +87,10 @@ export default function GameCategorySection({
   };
 }) {
   const { t } = useLang();
+  // Only used so the Featured row re-fetches (and re-personalizes) right
+  // when the player logs in or out, instead of staying stuck with whichever
+  // list loaded first.
+  const { user } = useAuth();
 
   const [games, setGames] = useState<GameItem[]>([]);
   const [total, setTotal] = useState(0);
@@ -153,7 +158,7 @@ export default function GameCategorySection({
     return () => {
       cancelled = true;
     };
-  }, [category, activeTag, retryKey, pageSize]);
+  }, [category, activeTag, retryKey, pageSize, user?.id]);
 
   // Nothing in this category and nothing to recover from — don't show an empty section.
   if (!loading && !error && games.length === 0 && !activeTag) return null;

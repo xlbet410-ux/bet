@@ -112,6 +112,13 @@ export type Translations = {
   profileTabWithdraw: string;
   profileTabSettings: string;
   profileTabKyc: string;
+  profileTabHistory: string;
+  profileGameHistoryTitle: string;
+  profileGameHistoryEmpty: string;
+  profileGameHistoryBet: string;
+  profileGameHistoryWin: string;
+  profileGameHistoryNet: string;
+  profileGameHistoryLoadMore: string;
   profileDepositModalTitle: string;
   profileSendMoneyTo: string;
   profileCopy: string;
@@ -376,6 +383,13 @@ const T: Record<Lang, Translations> = {
     profileTabWithdraw: "Withdraw",
     profileTabSettings: "Settings",
     profileTabKyc: "KYC",
+    profileTabHistory: "Game History",
+    profileGameHistoryTitle: "Game History",
+    profileGameHistoryEmpty: "No games played yet.",
+    profileGameHistoryBet: "Bet",
+    profileGameHistoryWin: "Win",
+    profileGameHistoryNet: "Net",
+    profileGameHistoryLoadMore: "Load More",
     profileDepositModalTitle: "Complete Your Deposit",
     profileSendMoneyTo: "Send Money To",
     profileCopy: "Copy",
@@ -636,6 +650,13 @@ const T: Record<Lang, Translations> = {
     profileTabWithdraw: "উত্তোলন",
     profileTabSettings: "সেটিংস",
     profileTabKyc: "কেওয়াইসি",
+    profileTabHistory: "গেম হিস্টোরি",
+    profileGameHistoryTitle: "গেম হিস্টোরি",
+    profileGameHistoryEmpty: "এখনো কোনো গেম খেলা হয়নি।",
+    profileGameHistoryBet: "বাজি",
+    profileGameHistoryWin: "জয়",
+    profileGameHistoryNet: "নেট",
+    profileGameHistoryLoadMore: "আরও দেখুন",
     profileDepositModalTitle: "আপনার ডিপোজিট সম্পন্ন করুন",
     profileSendMoneyTo: "টাকা পাঠান এখানে",
     profileCopy: "কপি",

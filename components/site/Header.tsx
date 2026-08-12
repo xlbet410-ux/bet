@@ -7,6 +7,7 @@ import { FaBars, FaXmark, FaChevronDown } from "react-icons/fa6";
 import { useLang } from "@/lib/language";
 import { useAuth } from "@/lib/auth";
 import { useScrolled } from "@/lib/hooks";
+import NotificationBell from "@/components/site/NotificationBell";
 import logo from "@/assets/logo.png";
 
 function LangPill() {
@@ -98,6 +99,7 @@ export default function Header({
           {/* right controls */}
           <div className="flex items-center gap-1 sm:gap-2">
             <LangPill />
+            <NotificationBell />
 
             {user ? (
               /* ── logged-in profile widget — one combined pill, balance
