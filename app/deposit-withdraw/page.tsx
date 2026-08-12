@@ -15,6 +15,7 @@ import { fmt } from "@/lib/format";
 import { getActivePaymentAccounts, type PaymentAccount, type PaymentMethod } from "@/lib/paymentAccounts";
 import { createCashIn, createCashOut } from "@/lib/cashTransactions";
 import { getApplicableDepositOffers, type DepositOffer } from "@/lib/offers";
+import { getWithdrawable, type WithdrawableInfo } from "@/lib/wallet";
 
 type PageTab = "deposit" | "withdraw";
 
@@ -397,10 +398,20 @@ export default function DepositWithdrawPage() {
   const [withdrawSubmitted, setWithdrawSubmitted] = useState(false);
   const [withdrawSubmitting, setWithdrawSubmitting] = useState(false);
   const [withdrawSubmitError, setWithdrawSubmitError] = useState<string | null>(null);
+  const [withdrawable, setWithdrawable] = useState<WithdrawableInfo | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) router.replace("/");
   }, [authLoading, user, router]);
+
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    getWithdrawable()
+      .then((w) => { if (!cancelled) setWithdrawable(w); })
+      .catch(() => {}); // Non-critical — the form still works without this info box.
+    return () => { cancelled = true; };
+  }, [user, withdrawSubmitted]);
 
   useEffect(() => {
     function applyTabFromUrl() {
@@ -677,6 +688,25 @@ export default function DepositWithdrawPage() {
               ) : (
                 <>
                   <h3 className="mb-5 text-lg font-extrabold text-gray-900">{t.profileWithdrawFunds}</h3>
+
+                  {withdrawable && withdrawable.pendingBonuses.length > 0 && (
+                    <div className="mb-5 rounded-xl p-4" style={{ background: "#FFFBEB", border: "1px solid #FDE68A" }}>
+                      <p className="mb-1 text-xs font-bold text-[#92400E]">
+                        {lang === "bn"
+                          ? `৳${Number(withdrawable.maxWithdrawable).toLocaleString()} এখন উত্তোলনযোগ্য`
+                          : `৳${Number(withdrawable.maxWithdrawable).toLocaleString()} available to withdraw now`}
+                      </p>
+                      <p className="text-[11px] leading-relaxed text-[#B45309]">
+                        {lang === "bn"
+                          ? "সক্রিয় বোনাসের বাকি টার্নওভার সম্পন্ন না হওয়া পর্যন্ত বাকি অংশ আটকে থাকবে।"
+                          : "The rest is locked until your active bonus finishes its turnover requirement."}
+                      </p>
+                      <Link href="/my-bonuses" className="mt-1.5 inline-block text-[11px] font-bold text-[#B8892E] underline underline-offset-2">
+                        {lang === "bn" ? "বোনাস দেখুন" : "View bonuses"}
+                      </Link>
+                    </div>
+                  )}
+
                   <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-gray-400">{t.profileWithdrawMethod}</p>
                   <MethodGrid method={withdrawMethod} onSelect={setWithdrawMethod} lang={lang} />
 

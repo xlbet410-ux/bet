@@ -13,6 +13,7 @@ import { useLang } from "@/lib/language";
 import { getMyKyc, submitKyc, type KycStatus } from "@/lib/kyc";
 import { getMyCashTransactions, type MyCashTransaction } from "@/lib/cashTransactions";
 import { getMyVipStatus, type VipStatus } from "@/lib/vip";
+import { getStreakInfo, type StreakInfo } from "@/lib/loginStreak";
 import { fmt } from "@/lib/format";
 
 const METHOD_LABELS: Record<string, string> = {
@@ -239,6 +240,31 @@ function VipLevelCard({ status, lang }: { status: VipStatus; lang: string }) {
   );
 }
 
+function StreakCard({ streak, lang }: { streak: StreakInfo; lang: string }) {
+  const strings = lang === "bn"
+    ? { heading: "লগইন স্ট্রিক", days: "দিন", longest: "সর্বোচ্চ", next: "পরবর্তী মাইলস্টোন" }
+    : { heading: "Login Streak", days: "days", longest: "Longest", next: "Next milestone" };
+
+  return (
+    <div className="rounded-2xl p-6" style={{ background: "linear-gradient(135deg,rgba(212,175,55,.12),rgba(27,8,56,.65))", border: "1px solid rgba(212,175,55,.35)", boxShadow: "0 8px 32px rgba(0,0,0,.4)" }}>
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#7B5EA7]">{strings.heading}</p>
+          <p className="text-2xl font-black text-[#F5C842]">
+            🔥 {streak.currentStreak} <span className="text-sm font-bold text-white">{strings.days}</span>
+          </p>
+        </div>
+        <div className="text-right text-xs text-[#9B8EC4]">
+          <p>{strings.longest}: <span className="font-bold text-white">{streak.longestStreak}</span></p>
+          {streak.nextMilestone && (
+            <p className="mt-1">{strings.next}: <span className="font-bold text-white">{streak.nextMilestone}</span></p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function ProfilePage() {
   const { user, loading: authLoading, changePassword } = useAuth();
   const { t, lang } = useLang();
@@ -315,6 +341,7 @@ export default function ProfilePage() {
 
   // VIP — real, backend-computed level/progress (auto-upgrades on deposit/bet)
   const [vipStatus, setVipStatus] = useState<VipStatus | null>(null);
+  const [streakInfo, setStreakInfo] = useState<StreakInfo | null>(null);
 
   useEffect(() => { if (!authLoading && !user) router.replace("/"); }, [authLoading, user, router]);
 
@@ -349,6 +376,13 @@ export default function ProfilePage() {
       .then((s) => setKycStatus(s))
       .catch(() => setKycStatus(null))
       .finally(() => setKycStatusLoading(false));
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+    getStreakInfo()
+      .then((s) => setStreakInfo(s))
+      .catch(() => {}); // Non-critical — just a small display card.
   }, [user]);
 
   // Same retry-with-backoff pattern used for the game catalog and payment
@@ -654,6 +688,7 @@ export default function ProfilePage() {
               {tab === "profile" && (
                 <div className="flex flex-col gap-4">
                   {vipStatus && <VipLevelCard status={vipStatus} lang={lang} />}
+                  {streakInfo && <StreakCard streak={streakInfo} lang={lang} />}
 
                   <div className="rounded-2xl p-6" style={CARD}>
                     <h3 className="mb-5 text-lg font-extrabold text-white">{t.profileAccountDetails}</h3>
@@ -872,6 +907,10 @@ export default function ProfilePage() {
                         {linkCopied ? t.profileCopied : t.profileCopyLink}
                       </button>
                     </div>
+
+                    <Link href="/referral" className="mt-4 inline-block text-[11px] font-semibold text-[#F5C842] transition-colors hover:text-[#D4AF37]">
+                      {lang === "bn" ? "আপনার রেফারেল ও আয় দেখুন →" : "View your referrals & earnings →"}
+                    </Link>
                   </div>
 
                 </div>
