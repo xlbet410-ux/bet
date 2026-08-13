@@ -115,6 +115,8 @@ export type Translations = {
   profileTabHistory: string;
   profileGameHistoryTitle: string;
   profileGameHistoryEmpty: string;
+  profileGameHistoryEmptyMonth: string;
+  profileGameHistoryAllMonths: string;
   profileGameHistoryBet: string;
   profileGameHistoryWin: string;
   profileGameHistoryNet: string;
@@ -386,6 +388,8 @@ const T: Record<Lang, Translations> = {
     profileTabHistory: "Game History",
     profileGameHistoryTitle: "Game History",
     profileGameHistoryEmpty: "No games played yet.",
+    profileGameHistoryEmptyMonth: "No games played in this month.",
+    profileGameHistoryAllMonths: "All months",
     profileGameHistoryBet: "Bet",
     profileGameHistoryWin: "Win",
     profileGameHistoryNet: "Net",
@@ -653,6 +657,8 @@ const T: Record<Lang, Translations> = {
     profileTabHistory: "গেম হিস্টোরি",
     profileGameHistoryTitle: "গেম হিস্টোরি",
     profileGameHistoryEmpty: "এখনো কোনো গেম খেলা হয়নি।",
+    profileGameHistoryEmptyMonth: "এই মাসে কোনো গেম খেলা হয়নি।",
+    profileGameHistoryAllMonths: "সব মাস",
     profileGameHistoryBet: "বাজি",
     profileGameHistoryWin: "জয়",
     profileGameHistoryNet: "নেট",

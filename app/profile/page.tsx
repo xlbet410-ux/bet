@@ -111,6 +111,17 @@ function formatTxDate(iso: string) {
   });
 }
 
+// "YYYY-MM" in the local timezone — populates the Game History month filter
+// from whatever's currently loaded (it grows as the player hits Load More).
+function monthKey(iso: string): string {
+  const d = new Date(iso);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+}
+function monthLabel(key: string): string {
+  const [year, month] = key.split("-").map(Number);
+  return new Date(year, month - 1, 1).toLocaleDateString(undefined, { year: "numeric", month: "long" });
+}
+
 // Gradient per VIP group — the backend only stores level/group data, not
 // colors, so the visual treatment per group lives here (site's purple/gold
 // palette, extended per group tier).
@@ -352,6 +363,7 @@ export default function ProfilePage() {
   const [gameHistoryLoadingMore, setGameHistoryLoadingMore] = useState(false);
   const [gameHistoryError, setGameHistoryError] = useState(false);
   const [gameHistoryRetryKey, setGameHistoryRetryKey] = useState(0);
+  const [gameHistoryMonth, setGameHistoryMonth] = useState<string>("all");
   const GAME_HISTORY_PAGE_SIZE = 30;
 
   useEffect(() => { if (!authLoading && !user) router.replace("/"); }, [authLoading, user, router]);
@@ -482,6 +494,16 @@ export default function ProfilePage() {
       setGameHistoryLoadingMore(false);
     }
   }
+
+  const gameHistoryMonths = useMemo(() => {
+    const keys = new Set(gameHistory.map((g) => monthKey(g.createdAt)));
+    return [...keys].sort().reverse();
+  }, [gameHistory]);
+
+  const filteredGameHistory = useMemo(() => {
+    if (gameHistoryMonth === "all") return gameHistory;
+    return gameHistory.filter((g) => monthKey(g.createdAt) === gameHistoryMonth);
+  }, [gameHistory, gameHistoryMonth]);
 
   const filteredTransactions = useMemo(() => {
     if (txFilter === "all") return transactions;
@@ -891,12 +913,28 @@ export default function ProfilePage() {
               {/* ════ GAME HISTORY ════ */}
               {tab === "history" && (
                 <div className="rounded-2xl p-5" style={CARD}>
-                  <h3 className="mb-4 font-extrabold text-white">{t.profileGameHistoryTitle}</h3>
+                  <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                    <h3 className="font-extrabold text-white">{t.profileGameHistoryTitle}</h3>
+                    {gameHistoryMonths.length > 1 && (
+                      <select
+                        value={gameHistoryMonth}
+                        onChange={(e) => setGameHistoryMonth(e.target.value)}
+                        className="rounded-xl border border-[#7B2FBE]/40 bg-white/4 px-3 py-1.5 text-xs font-semibold text-[#C9B8E8] outline-none transition-colors focus:border-[#D4AF37]"
+                      >
+                        <option value="all" className="bg-[#1B0838]">{t.profileGameHistoryAllMonths}</option>
+                        {gameHistoryMonths.map((m) => (
+                          <option key={m} value={m} className="bg-[#1B0838]">
+                            {monthLabel(m)}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                  </div>
 
                   {gameHistoryLoading ? (
-                    <div className="space-y-2">
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                       {Array.from({ length: 4 }).map((_, i) => (
-                        <div key={i} className="h-16 animate-pulse rounded-xl" style={INNER} />
+                        <div key={i} className="h-24 animate-pulse rounded-xl" style={INNER} />
                       ))}
                     </div>
                   ) : gameHistoryError ? (
@@ -908,24 +946,50 @@ export default function ProfilePage() {
                     </div>
                   ) : gameHistory.length === 0 ? (
                     <p className="py-6 text-center text-sm text-[#7B5EA7]">{t.profileGameHistoryEmpty}</p>
+                  ) : filteredGameHistory.length === 0 ? (
+                    <p className="py-6 text-center text-sm text-[#7B5EA7]">{t.profileGameHistoryEmptyMonth}</p>
                   ) : (
                     <>
-                      <div className="space-y-2">
-                        {gameHistory.map((g) => {
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        {filteredGameHistory.map((g) => {
                           const net = Number(g.net);
+                          const isWin = net > 0;
                           return (
-                            <div key={g.id} className="flex items-center justify-between rounded-xl px-4 py-3" style={INNER}>
-                              <div className="min-w-0">
-                                <p className="truncate text-sm font-semibold text-white">{g.gameName}</p>
-                                <p className="text-[11px] text-[#9B8EC4]">{formatTxDate(g.createdAt)}</p>
+                            <div
+                              key={g.id}
+                              className="rounded-xl p-3.5 transition-all hover:scale-[1.01]"
+                              style={{ ...INNER, boxShadow: isWin ? "0 0 0 1px rgba(34,197,94,.15)" : undefined }}
+                            >
+                              <div className="mb-3 flex items-center gap-2.5">
+                                <div
+                                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-lg"
+                                  style={{ background: "linear-gradient(135deg,#7B2FBE55,#D4AF3755)", boxShadow: "0 0 16px #7B2FBE30" }}
+                                >
+                                  🎮
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <p className="truncate text-sm font-bold text-white" title={g.gameName}>
+                                    {g.gameName}
+                                  </p>
+                                  <p className="text-[10px] text-[#7B5EA7]">{formatTxDate(g.createdAt)}</p>
+                                </div>
                               </div>
-                              <div className="shrink-0 text-right">
-                                <p className="text-[11px] text-[#9B8EC4]">
-                                  {t.profileGameHistoryBet} ৳{Number(g.betAmount).toLocaleString()} · {t.profileGameHistoryWin} ৳{Number(g.winAmount).toLocaleString()}
-                                </p>
-                                <p className={`font-bold tabular-nums ${net >= 0 ? "text-green-400" : "text-red-400"}`}>
-                                  {t.profileGameHistoryNet} {net >= 0 ? "+" : ""}৳{net.toLocaleString()}
-                                </p>
+
+                              <div className="grid grid-cols-3 gap-1.5 text-center">
+                                <div className="rounded-lg bg-black/20 py-1.5">
+                                  <p className="text-[9px] font-semibold uppercase tracking-wide text-[#7B5EA7]">{t.profileGameHistoryBet}</p>
+                                  <p className="tabular-nums text-xs font-bold text-white">৳{Number(g.betAmount).toLocaleString()}</p>
+                                </div>
+                                <div className="rounded-lg bg-black/20 py-1.5">
+                                  <p className="text-[9px] font-semibold uppercase tracking-wide text-[#7B5EA7]">{t.profileGameHistoryWin}</p>
+                                  <p className="tabular-nums text-xs font-bold text-white">৳{Number(g.winAmount).toLocaleString()}</p>
+                                </div>
+                                <div className={`rounded-lg py-1.5 ${isWin ? "bg-green-500/15" : "bg-red-500/10"}`}>
+                                  <p className="text-[9px] font-semibold uppercase tracking-wide text-[#7B5EA7]">{t.profileGameHistoryNet}</p>
+                                  <p className={`tabular-nums text-xs font-bold ${isWin ? "text-green-400" : "text-red-400"}`}>
+                                    {net >= 0 ? "+" : ""}৳{net.toLocaleString()}
+                                  </p>
+                                </div>
                               </div>
                             </div>
                           );
