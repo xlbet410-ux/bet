@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { FaChevronRight, FaGift, FaCircleCheck } from "react-icons/fa6";
+import { FaChevronRight, FaGift, FaCircleCheck, FaLayerGroup } from "react-icons/fa6";
 import Header from "@/components/site/Header";
 import Footer from "@/components/site/Footer";
 import MobileBottomNav from "@/components/site/MobileBottomNav";
@@ -40,6 +41,8 @@ function PromotionCard({
   onToggle,
   loggedIn,
   onRequireLogin,
+  groupBadge,
+  onToggleGroup,
 }: {
   offer: PublicOffer;
   lang: string;
@@ -47,6 +50,8 @@ function PromotionCard({
   onToggle: () => void;
   loggedIn: boolean;
   onRequireLogin: () => void;
+  groupBadge?: number;
+  onToggleGroup?: () => void;
 }) {
   const [claiming, setClaiming] = useState(false);
   const [claimError, setClaimError] = useState<string | null>(null);
@@ -101,10 +106,33 @@ function PromotionCard({
     }
   }
 
+  const groupPill = groupBadge !== undefined && groupBadge > 0 && (
+    <button
+      type="button"
+      onClick={(e) => {
+        e.stopPropagation();
+        onToggleGroup?.();
+      }}
+      className="flex items-center gap-1 rounded-full bg-black/60 px-2.5 py-1 text-[11px] font-bold text-white backdrop-blur-sm"
+    >
+      <FaLayerGroup className="text-[10px]" /> +{groupBadge}
+    </button>
+  );
+  const rewardPill = reward && (
+    <span
+      className="rounded-full px-3 py-1 text-xs font-black text-[#0A0612]"
+      style={{ background: "linear-gradient(to right,#D4AF37,#F5C842)" }}
+    >
+      +{reward}
+    </span>
+  );
+
   return (
     <div className="overflow-hidden rounded-2xl" style={CARD}>
-      <div className="relative aspect-[16/8] w-full bg-[#1B0838]">
-        {offer.imageUrl ? (
+      {/* No image on this offer → skip the image area entirely (text-only
+          card) instead of showing a generic placeholder box. */}
+      {offer.imageUrl && (
+        <div className="relative aspect-[16/8] w-full bg-[#1B0838]">
           <Image
             src={`${API_URL}${offer.imageUrl}`}
             alt={title}
@@ -112,19 +140,18 @@ function PromotionCard({
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 400px"
             className="object-cover"
           />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#4A0E8F] to-[#1B0838]">
-            <FaGift className="text-4xl text-[#D4AF37]/50" />
-          </div>
-        )}
-        {reward && (
-          <span className="absolute right-3 top-3 rounded-full px-3 py-1 text-xs font-black text-[#0A0612]" style={{ background: "linear-gradient(to right,#D4AF37,#F5C842)" }}>
-            +{reward}
-          </span>
-        )}
-      </div>
+          {groupPill && <div className="absolute left-3 top-3">{groupPill}</div>}
+          {rewardPill && <div className="absolute right-3 top-3">{rewardPill}</div>}
+        </div>
+      )}
 
       <div className="p-4">
+        {!offer.imageUrl && (groupPill || rewardPill) && (
+          <div className="mb-2.5 flex flex-wrap items-center gap-2">
+            {groupPill}
+            {rewardPill}
+          </div>
+        )}
         <button
           onClick={onToggle}
           aria-expanded={expanded}
@@ -197,9 +224,107 @@ function PromotionCard({
   );
 }
 
+// For offers admin-flagged imageOnly — just the uploaded image, no title,
+// description, reward badge, or padding. If the offer is a manual_claim
+// type, tapping the image itself claims it (a small checkmark/spinner
+// overlay is the only feedback — no text, matching the "image only" intent).
+function ImageOnlyCard({
+  offer,
+  loggedIn,
+  onRequireLogin,
+  groupBadge,
+  onToggleGroup,
+}: {
+  offer: PublicOffer;
+  loggedIn: boolean;
+  onRequireLogin: () => void;
+  groupBadge?: number;
+  onToggleGroup?: () => void;
+}) {
+  const [claiming, setClaiming] = useState(false);
+  const [claimed, setClaimed] = useState(offer.alreadyClaimed);
+  const isClaimable = offer.triggerType === "manual_claim";
+
+  async function handleTap() {
+    if (!isClaimable || claimed || claiming) return;
+    if (!loggedIn) {
+      onRequireLogin();
+      return;
+    }
+    if (!offer.eligible) return;
+    setClaiming(true);
+    try {
+      await claimOffer(offer.slug);
+      setClaimed(true);
+    } catch {
+      // Image-only mode has no text area to show an error in — the tap
+      // simply doesn't complete; the player can try again.
+    } finally {
+      setClaiming(false);
+    }
+  }
+
+  const title = (offer.titleBn || offer.titleEn) ?? "";
+
+  const image = (
+    <div className="relative aspect-[16/9] w-full overflow-hidden rounded-2xl bg-[#1B0838]">
+      {offer.imageUrl ? (
+        <Image
+          src={`${API_URL}${offer.imageUrl}`}
+          alt={title}
+          fill
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 400px"
+          className="object-cover"
+        />
+      ) : (
+        <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#4A0E8F] to-[#1B0838]">
+          <FaGift className="text-4xl text-[#D4AF37]/50" />
+        </div>
+      )}
+      {isClaimable && claimed && (
+        <span className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-black/60 text-[#4ade80]">
+          <FaCircleCheck className="text-sm" />
+        </span>
+      )}
+      {isClaimable && claiming && (
+        <span className="absolute inset-0 flex items-center justify-center bg-black/40">
+          <span className="h-6 w-6 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+        </span>
+      )}
+      {groupBadge !== undefined && groupBadge > 0 && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleGroup?.();
+          }}
+          className="absolute left-2 top-2 flex items-center gap-1 rounded-full bg-black/60 px-2.5 py-1 text-[11px] font-bold text-white backdrop-blur-sm"
+        >
+          <FaLayerGroup className="text-[10px]" /> +{groupBadge}
+        </button>
+      )}
+    </div>
+  );
+
+  if (isClaimable) {
+    return (
+      <button
+        type="button"
+        onClick={handleTap}
+        disabled={claiming || claimed || (!offer.eligible && loggedIn)}
+        className="block w-full overflow-hidden rounded-2xl text-left disabled:cursor-default"
+      >
+        {image}
+      </button>
+    );
+  }
+  return <div className="overflow-hidden rounded-2xl">{image}</div>;
+}
+
 export default function PromotionsPage() {
   const { user } = useAuth();
   const { lang } = useLang();
+  const router = useRouter();
   const [authMode, setAuthMode] = useState<"login" | "register" | null>(null);
   const [offers, setOffers] = useState<PublicOffer[]>([]);
   const [loading, setLoading] = useState(true);
@@ -207,6 +332,29 @@ export default function PromotionsPage() {
   const [retryKey, setRetryKey] = useState(0);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [activeCategory, setActiveCategory] = useState("all");
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+
+  function toggleGroup(key: string) {
+    setExpandedGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }
+
+  // Reads ?category= on mount only — window isn't available during
+  // prerendering, and useSearchParams() would force a Suspense boundary
+  // around the whole page (same reasoning as the profile page's ?tab=).
+  useEffect(() => {
+    const fromUrl = new URLSearchParams(window.location.search).get("category");
+    if (fromUrl && CATEGORIES.some((c) => c.id === fromUrl)) setActiveCategory(fromUrl);
+  }, []);
+
+  function selectCategory(id: string) {
+    setActiveCategory(id);
+    router.replace(id === "all" ? "/promotions" : `/promotions?category=${id}`, { scroll: false });
+  }
 
   const t =
     lang === "bn"
@@ -252,6 +400,29 @@ export default function PromotionsPage() {
     [offers, activeCategory]
   );
 
+  // Offers sharing a groupKey collapse into one "cover" card (the
+  // highest-priority member — visibleOffers already arrives priority-sorted
+  // from the backend) with a "+N more" badge; the rest render right after
+  // it, inline in the same grid, only once that badge is tapped.
+  const renderList = useMemo(() => {
+    const seenGroups = new Set<string>();
+    const items: { offer: PublicOffer; groupBadge?: number; groupKey?: string }[] = [];
+    for (const o of visibleOffers) {
+      if (o.groupKey) {
+        if (seenGroups.has(o.groupKey)) continue;
+        seenGroups.add(o.groupKey);
+        const members = visibleOffers.filter((x) => x.groupKey === o.groupKey);
+        items.push({ offer: members[0], groupBadge: members.length - 1, groupKey: o.groupKey });
+        if (expandedGroups.has(o.groupKey)) {
+          for (const member of members.slice(1)) items.push({ offer: member });
+        }
+      } else {
+        items.push({ offer: o });
+      }
+    }
+    return items;
+  }, [visibleOffers, expandedGroups]);
+
   return (
     <>
       <AmbientBackground />
@@ -272,7 +443,7 @@ export default function PromotionsPage() {
               {CATEGORIES.map((c) => (
                 <button
                   key={c.id}
-                  onClick={() => setActiveCategory(c.id)}
+                  onClick={() => selectCategory(c.id)}
                   className="shrink-0 whitespace-nowrap rounded-full border px-4 py-2 text-xs font-bold transition-colors"
                   style={
                     activeCategory === c.id
@@ -308,7 +479,7 @@ export default function PromotionsPage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {visibleOffers.map((o) =>
+              {renderList.map(({ offer: o, groupBadge, groupKey }) =>
                 o.slug === "red-envelope-rain" ? (
                   <RedEnvelope
                     key={o.id}
@@ -316,6 +487,15 @@ export default function PromotionsPage() {
                     lang={lang}
                     loggedIn={!!user}
                     onRequireLogin={() => setAuthMode("login")}
+                  />
+                ) : o.imageOnly ? (
+                  <ImageOnlyCard
+                    key={o.id}
+                    offer={o}
+                    loggedIn={!!user}
+                    onRequireLogin={() => setAuthMode("login")}
+                    groupBadge={groupBadge}
+                    onToggleGroup={groupKey ? () => toggleGroup(groupKey) : undefined}
                   />
                 ) : (
                   <PromotionCard
@@ -326,6 +506,8 @@ export default function PromotionsPage() {
                     onToggle={() => setExpandedId((cur) => (cur === o.id ? null : o.id))}
                     loggedIn={!!user}
                     onRequireLogin={() => setAuthMode("login")}
+                    groupBadge={groupBadge}
+                    onToggleGroup={groupKey ? () => toggleGroup(groupKey) : undefined}
                   />
                 )
               )}

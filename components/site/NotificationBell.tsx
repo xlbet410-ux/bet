@@ -135,7 +135,11 @@ export default function NotificationBell() {
 
       {open && (
         <div
-          className="absolute right-0 top-full z-50 mt-3 w-80 max-w-[90vw] animate-[popIn_0.18s_ease] overflow-hidden rounded-2xl"
+          // Mobile: fixed + inset from both screen edges, so its width is
+          // whatever fits between them — can never overflow regardless of
+          // where the bell itself sits in the header row. From sm: up,
+          // reverts to the original button-anchored dropdown.
+          className="fixed left-2 right-2 top-[68px] z-50 animate-[popIn_0.18s_ease] overflow-hidden rounded-2xl sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-3 sm:w-80"
           style={{
             background: "linear-gradient(145deg, rgba(27,8,56,0.98) 0%, rgba(10,6,18,0.99) 100%)",
             border: "1px solid rgba(212,175,55,0.2)",

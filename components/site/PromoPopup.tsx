@@ -123,7 +123,9 @@ export default function PromoPopup({ trigger }: { trigger: boolean }) {
 
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative flex w-full max-w-md max-h-[90vh] flex-col animate-[popIn_0.35s_ease] overflow-hidden rounded-[28px] bg-[#150A2E] shadow-[0_0_0_1px_rgba(212,175,55,.35),0_20px_80px_rgba(0,0,0,.6),0_0_60px_rgba(155,48,255,.25)]"
+        className={`relative flex w-full max-h-[90vh] flex-col animate-[popIn_0.35s_ease] overflow-hidden rounded-[28px] bg-[#150A2E] shadow-[0_0_0_1px_rgba(212,175,55,.35),0_20px_80px_rgba(0,0,0,.6),0_0_60px_rgba(155,48,255,.25)] ${
+          offer.imageOnly ? "max-w-sm" : "max-w-md"
+        }`}
       >
         <button
           onClick={close}
@@ -133,7 +135,39 @@ export default function PromoPopup({ trigger }: { trigger: boolean }) {
           <FaXmark />
         </button>
 
+        {offer.imageOnly ? (
+          <div className="relative flex-1 overflow-y-auto">
+            {bannerSrc ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={`${API_URL}${bannerSrc}`} alt={title} className="block w-full" />
+            ) : (
+              <div className="flex aspect-square w-full items-center justify-center bg-gradient-to-br from-[#4A0E8F] to-[#1B0838]">
+                <FaGift className="text-4xl text-[#D4AF37]/50" />
+              </div>
+            )}
+
+            {offerCount > 1 && (
+              <>
+                <button
+                  onClick={() => handleNav(active - 1)}
+                  aria-label="Previous"
+                  className="absolute left-2 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/50 text-sm text-white backdrop-blur transition-all hover:bg-[#7B2FBE]/60"
+                >
+                  <FaChevronLeft />
+                </button>
+                <button
+                  onClick={() => handleNav(active + 1)}
+                  aria-label="Next"
+                  className="absolute right-2 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/50 text-sm text-white backdrop-blur transition-all hover:bg-[#7B2FBE]/60"
+                >
+                  <FaChevronRight />
+                </button>
+              </>
+            )}
+          </div>
+        ) : (
         <div className="flex-1 overflow-y-auto">
+
           <div className="relative w-full shrink-0 overflow-hidden bg-black" style={{ aspectRatio: "16/9" }}>
             {bannerSrc ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -228,6 +262,7 @@ export default function PromoPopup({ trigger }: { trigger: boolean }) {
             )}
           </div>
         </div>
+        )}
 
         {offerCount > 1 && (
           <div className="flex shrink-0 items-center justify-center gap-2 border-t border-white/10 bg-black/20 p-3">

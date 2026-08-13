@@ -72,12 +72,12 @@ function MethodGrid({
 
   return (
     <div className="mb-6">
-      <div className="mb-4 flex gap-1 border-b border-[#E5E7EB]">
+      <div className="mb-4 grid grid-cols-3 border-b border-[#E5E7EB]">
         {METHOD_CATEGORIES.map((c) => (
           <button
             key={c.id}
             onClick={() => setActiveCat(c.id)}
-            className="relative px-3 py-2.5 text-sm font-bold transition-colors sm:px-4"
+            className="relative truncate px-1 py-2.5 text-center text-[11px] font-bold transition-colors sm:text-sm"
             style={{ color: activeCat === c.id ? "#9A7B1F" : "#6B7280" }}
           >
             {lang === "bn" ? c.labelBn : c.labelEn}

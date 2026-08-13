@@ -27,6 +27,12 @@ export type PublicOffer = {
   bannerUrl: string | null;
   termsBn: string | null;
   termsEn: string | null;
+  // When true, render ONLY the image — no title/description/reward badge,
+  // no padding around it.
+  imageOnly: boolean;
+  // Offers sharing the same groupKey collapse into one card, with the rest
+  // revealed on click.
+  groupKey: string | null;
   category: string;
   triggerType: string;
   rewardType: "fixed" | "percentage" | "no_reward" | "random";
@@ -38,6 +44,7 @@ export type PublicOffer = {
   bonusValidityDays: number | null;
   alreadyClaimed: boolean;
   eligible: boolean;
+  priority: number;
 };
 
 // Every active offer for a category (referral/level/daily/...), regardless
@@ -62,6 +69,7 @@ export type PopupOffer = {
   imageUrl: string | null;
   termsBn: string | null;
   termsEn: string | null;
+  imageOnly: boolean;
   rewardType: "fixed" | "percentage" | "no_reward" | "random";
   rewardAmount: string | null;
   rewardCap: string | null;
