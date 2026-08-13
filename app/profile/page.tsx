@@ -11,6 +11,7 @@ import AmbientBackground from "@/components/site/AmbientBackground";
 import { useAuth } from "@/lib/auth";
 import { useLang } from "@/lib/language";
 import { getMyKyc, submitKyc, type KycStatus } from "@/lib/kyc";
+import { sendKycOtp, verifyKycOtp } from "@/lib/otp";
 import { getMyCashTransactions, type MyCashTransaction } from "@/lib/cashTransactions";
 import { getMyVipStatus, type VipStatus } from "@/lib/vip";
 import { getStreakInfo, type StreakInfo } from "@/lib/loginStreak";
@@ -331,6 +332,10 @@ export default function ProfilePage() {
   const [kycStep, setKycStep]         = useState<KycStep>("idle");
   const [kycPhone, setKycPhone]       = useState("");
   const [otpDigits, setOtpDigits]     = useState(["","","","","",""]);
+  const [otpSending, setOtpSending]   = useState(false);
+  const [otpVerifying, setOtpVerifying] = useState(false);
+  const [otpError, setOtpError]       = useState("");
+  const [otpResendCooldown, setOtpResendCooldown] = useState(0);
   const [docType, setDocType]         = useState("");
   const [docSide, setDocSide]         = useState<"front"|"back">("front");
   const [frontImg, setFrontImg]       = useState<string|null>(null);
@@ -608,10 +613,48 @@ export default function ProfilePage() {
   function resetKycFlow() {
     setKycStep("idle");
     setOtpDigits(["","","","","",""]);
+    setOtpError(""); setOtpSending(false); setOtpVerifying(false); setOtpResendCooldown(0);
     setDocSide("front");
     setDocReviewReady(false);
     setFrontImg(null); setBackImg(null); setSelfieImg(null);
     setDocType(""); setKycPhone("");
+  }
+
+  // Ticks the resend cooldown down to 0 once a second while it's active.
+  useEffect(() => {
+    if (otpResendCooldown <= 0) return;
+    const id = setInterval(() => setOtpResendCooldown((s) => Math.max(0, s - 1)), 1000);
+    return () => clearInterval(id);
+  }, [otpResendCooldown]);
+
+  async function handleSendOtp() {
+    if (kycPhone.length < 7 || otpSending) return;
+    setOtpError("");
+    setOtpSending(true);
+    try {
+      await sendKycOtp(kycPhone);
+      setOtpDigits(["","","","","",""]);
+      setOtpResendCooldown(60);
+      setKycStep("otp");
+    } catch (err) {
+      setOtpError(err instanceof Error ? err.message : t.profileErrGeneric);
+    } finally {
+      setOtpSending(false);
+    }
+  }
+
+  async function handleVerifyOtp() {
+    if (!otpDigits.every(Boolean) || otpVerifying) return;
+    setOtpError("");
+    setOtpVerifying(true);
+    try {
+      await verifyKycOtp(otpDigits.join(""));
+      setKycStep("docType");
+    } catch (err) {
+      setOtpError(err instanceof Error ? err.message : t.profileErrGeneric);
+    } finally {
+      setOtpVerifying(false);
+    }
   }
 
   async function handleChangePassword() {
@@ -1252,11 +1295,14 @@ export default function ProfilePage() {
                                 placeholder={t.profileKycPhonePlaceholder}
                                 className="w-full rounded-xl border border-[#7B2FBE]/40 bg-white/4 py-3 pl-8 pr-4 text-sm text-white placeholder-[#8A7DB0] outline-none transition-all focus:border-[#D4AF37]" />
                             </div>
-                            <button onClick={() => kycPhone.length >= 7 && setKycStep("otp")}
-                              disabled={kycPhone.length < 7}
+                            {otpError && (
+                              <p className="mb-3 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-300">{otpError}</p>
+                            )}
+                            <button onClick={handleSendOtp}
+                              disabled={kycPhone.length < 7 || otpSending}
                               className="w-full rounded-full py-3.5 text-sm font-bold text-[#0A0612] transition-all hover:scale-[1.02] disabled:opacity-40"
                               style={{ background:"linear-gradient(to right,#D4AF37,#F5C842)" }}>
-                              {t.profileSendOtp}
+                              {otpSending ? t.profileOtpSending : t.profileSendOtp}
                             </button>
                           </div>
                         </div>
@@ -1280,12 +1326,19 @@ export default function ProfilePage() {
                                   : { background:"rgba(255,255,255,.04)", border:"1px solid rgba(255,255,255,.1)" }} />
                             ))}
                           </div>
+                          {otpError && (
+                            <p className="mx-auto mb-4 max-w-xs rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-300">{otpError}</p>
+                          )}
                           <div className="mx-auto max-w-xs space-y-2">
-                            <button onClick={() => otpDigits.every(Boolean) && setKycStep("docType")}
-                              disabled={!otpDigits.every(Boolean)}
+                            <button onClick={handleVerifyOtp}
+                              disabled={!otpDigits.every(Boolean) || otpVerifying}
                               className="w-full rounded-full py-3.5 text-sm font-bold text-[#0A0612] transition-all hover:scale-[1.02] disabled:opacity-40"
                               style={{ background:"linear-gradient(to right,#D4AF37,#F5C842)" }}>
-                              {t.profileVerifyOtp}
+                              {otpVerifying ? t.profileOtpVerifying : t.profileVerifyOtp}
+                            </button>
+                            <button onClick={handleSendOtp} disabled={otpResendCooldown > 0 || otpSending}
+                              className="w-full text-xs text-[#7B5EA7] transition-colors hover:text-[#9B8EC4] disabled:opacity-50">
+                              {otpResendCooldown > 0 ? `${t.profileOtpResend} (${otpResendCooldown}s)` : t.profileOtpResend}
                             </button>
                             <button onClick={() => setKycStep("phone")} className="w-full text-xs text-[#7B5EA7] hover:text-[#9B8EC4] transition-colors">
                               {t.profileChangePhone}

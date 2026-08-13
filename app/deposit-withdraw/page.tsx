@@ -44,32 +44,77 @@ function Tick({ size = 10, className = "" }: { size?: number; className?: string
   );
 }
 
+type MethodCategoryId = "bank_transfer" | "mobile_banking" | "crypto";
+
+const METHOD_CATEGORIES: { id: MethodCategoryId; labelEn: string; labelBn: string; methods: PaymentMethod[] }[] = [
+  { id: "bank_transfer", labelEn: "Bank Transfer", labelBn: "ব্যাংক ট্রান্সফার", methods: ["bank"] },
+  { id: "mobile_banking", labelEn: "Mobile Banking", labelBn: "মোবাইল ব্যাংকিং", methods: ["bkash", "nagad", "rocket", "upay", "surecash"] },
+  { id: "crypto", labelEn: "Crypto", labelBn: "ক্রিপ্টো", methods: ["crypto"] },
+];
+
 function MethodGrid({
   method,
   onSelect,
   lang,
+  accounts,
 }: {
   method: PaymentMethod;
   onSelect: (id: PaymentMethod) => void;
   lang: string;
+  accounts: PaymentAccount[];
 }) {
+  const [activeCat, setActiveCat] = useState<MethodCategoryId>(
+    () => METHOD_CATEGORIES.find((c) => c.methods.includes(method))?.id ?? "mobile_banking"
+  );
+
+  const activeMethods = METHOD_CATEGORIES.find((c) => c.id === activeCat)?.methods ?? [];
+  const hasActiveAccount = (m: PaymentMethod) => accounts.some((a) => a.method === m);
+
   return (
-    <div className="mb-6 grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-7">
-      {METHODS.map((m) => (
-        <button
-          key={m.id}
-          onClick={() => onSelect(m.id)}
-          className="flex flex-col items-center gap-1.5 rounded-xl py-3 text-xs font-bold transition-all"
-          style={method === m.id
-            ? { background: `${m.accent}0D`, border: `1.5px solid ${m.accent}`, color: m.accent }
-            : { background: "#F9FAFB", border: "1px solid #E5E7EB", color: "#4B5563" }}
-        >
-          <span className="relative h-8 w-8 shrink-0">
-            <Image src={`/${m.id}.png`} alt={m.name} fill unoptimized sizes="32px" className="object-contain" />
-          </span>
-          {lang === "bn" ? m.nameBn : m.name}
-        </button>
-      ))}
+    <div className="mb-6">
+      <div className="mb-4 flex gap-1 border-b border-[#E5E7EB]">
+        {METHOD_CATEGORIES.map((c) => (
+          <button
+            key={c.id}
+            onClick={() => setActiveCat(c.id)}
+            className="relative px-3 py-2.5 text-sm font-bold transition-colors sm:px-4"
+            style={{ color: activeCat === c.id ? "#9A7B1F" : "#6B7280" }}
+          >
+            {lang === "bn" ? c.labelBn : c.labelEn}
+            {activeCat === c.id && (
+              <span className="absolute inset-x-0 -bottom-px h-0.5 rounded-full" style={{ background: "#D4AF37" }} />
+            )}
+          </button>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+        {activeMethods.map((mId) => {
+          const m = METHODS.find((x) => x.id === mId);
+          if (!m) return null;
+          const active = hasActiveAccount(mId);
+          return (
+            <button
+              key={m.id}
+              onClick={() => onSelect(m.id)}
+              className="relative flex flex-col items-center gap-1.5 rounded-xl py-3 text-xs font-bold transition-all"
+              style={method === m.id
+                ? { background: `${m.accent}0D`, border: `1.5px solid ${m.accent}`, color: m.accent }
+                : { background: "#F9FAFB", border: "1px solid #E5E7EB", color: "#4B5563" }}
+            >
+              {active && (
+                <span className="absolute -top-2 rounded-full border border-green-200 bg-green-50 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-green-700">
+                  {lang === "bn" ? "সক্রিয়" : "Active"}
+                </span>
+              )}
+              <span className="relative h-8 w-8 shrink-0">
+                <Image src={`/${m.id}.png`} alt={m.name} fill unoptimized sizes="32px" className="object-contain" />
+              </span>
+              {lang === "bn" ? m.nameBn : m.name}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -640,7 +685,7 @@ export default function DepositWithdrawPage() {
                 <>
                   <h3 className="mb-5 text-lg font-extrabold text-gray-900">{t.profileMakeDeposit}</h3>
                   <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-gray-400">{t.profilePaymentMethod}</p>
-                  <MethodGrid method={depositMethod} onSelect={setDepositMethod} lang={lang} />
+                  <MethodGrid method={depositMethod} onSelect={setDepositMethod} lang={lang} accounts={accounts} />
 
                   <AmountPicker amount={depositAmt} onSelect={setDepositAmt} onCustom={setDepositAmt} t={t} />
 
@@ -708,7 +753,7 @@ export default function DepositWithdrawPage() {
                   )}
 
                   <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-gray-400">{t.profileWithdrawMethod}</p>
-                  <MethodGrid method={withdrawMethod} onSelect={setWithdrawMethod} lang={lang} />
+                  <MethodGrid method={withdrawMethod} onSelect={setWithdrawMethod} lang={lang} accounts={accounts} />
 
                   <AmountPicker amount={withdrawAmt} onSelect={setWithdrawAmt} onCustom={setWithdrawAmt} t={t} />
 

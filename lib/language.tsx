@@ -217,6 +217,10 @@ export type Translations = {
   profileKycOtpDemo: string;
   profileVerifyOtp: string;
   profileChangePhone: string;
+  profileOtpSending: string;
+  profileOtpVerifying: string;
+  profileOtpResend: string;
+  profileOtpResendCooldown: string;
   profileKycDocTypeTitle: string;
   profileKycDocTypeDesc: string;
   profileDocTypeLabels: string[];
@@ -487,9 +491,13 @@ const T: Record<Lang, Translations> = {
     profileSendOtp: "Send OTP",
     profileKycOtpTitle: "Enter OTP",
     profileKycOtpSentTo: "A 6-digit code was sent to",
-    profileKycOtpDemo: "(Demo: any 6 digits accepted)",
+    profileKycOtpDemo: "The code expires in 5 minutes.",
     profileVerifyOtp: "Verify OTP",
     profileChangePhone: "← Change phone number",
+    profileOtpSending: "Sending…",
+    profileOtpVerifying: "Verifying…",
+    profileOtpResend: "Resend code",
+    profileOtpResendCooldown: "Resend available in a moment",
     profileKycDocTypeTitle: "Choose Document Type",
     profileKycDocTypeDesc: "Select the document you will upload for identity verification.",
     profileDocTypeLabels: ["National ID", "Passport", "Driver's License"],
@@ -756,9 +764,13 @@ const T: Record<Lang, Translations> = {
     profileSendOtp: "ওটিপি পাঠান",
     profileKycOtpTitle: "ওটিপি লিখুন",
     profileKycOtpSentTo: "৬ সংখ্যার কোড পাঠানো হয়েছে",
-    profileKycOtpDemo: "(ডেমো: যেকোনো ৬ সংখ্যা গ্রহণযোগ্য)",
+    profileKycOtpDemo: "কোডটি ৫ মিনিটের মধ্যে মেয়াদ শেষ হবে।",
     profileVerifyOtp: "ওটিপি যাচাই করুন",
     profileChangePhone: "← ফোন নম্বর পরিবর্তন করুন",
+    profileOtpSending: "পাঠানো হচ্ছে…",
+    profileOtpVerifying: "যাচাই হচ্ছে…",
+    profileOtpResend: "আবার কোড পাঠান",
+    profileOtpResendCooldown: "কিছুক্ষণ পর আবার পাঠানো যাবে",
     profileKycDocTypeTitle: "ডকুমেন্টের ধরন নির্বাচন করুন",
     profileKycDocTypeDesc: "পরিচয় যাচাইয়ের জন্য আপনি যে ডকুমেন্ট আপলোড করবেন তা নির্বাচন করুন।",
     profileDocTypeLabels: ["জাতীয় পরিচয়পত্র", "পাসপোর্ট", "ড্রাইভিং লাইসেন্স"],
