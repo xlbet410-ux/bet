@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
+import { createBalanceStreamTicket, formatBalance } from "./balance";
 
 export type AuthUser = {
   id: string;
@@ -80,6 +81,48 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .catch(() => localStorage.removeItem(TOKEN_KEY))
       .finally(() => setLoading(false));
   }, []);
+
+  // Live wallet — deposit/withdrawal approvals, bonus grants, and every
+  // settled game bet/win push a fresh balance the instant they happen,
+  // instead of the player only seeing it on their next page load. Oracle's
+  // game callback is server-to-server, so without this the browser would
+  // have no other way to learn a bet just settled.
+  const userId = user?.id;
+  useEffect(() => {
+    if (!userId) return;
+    let cancelled = false;
+    let stopped = false;
+    let es: EventSource | null = null;
+    let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+
+    async function connect() {
+      if (stopped) return;
+      try {
+        const ticket = await createBalanceStreamTicket();
+        if (stopped || cancelled) return;
+        es = new EventSource(`${API_URL}/balance/stream?ticket=${ticket}`);
+        es.onmessage = (event) => {
+          const payload = JSON.parse(event.data) as { balance: string };
+          setUser((prev) => (prev ? { ...prev, balance: formatBalance(payload.balance) } : prev));
+        };
+        es.onerror = () => {
+          es?.close();
+          if (!stopped) reconnectTimer = setTimeout(connect, 3000);
+        };
+      } catch {
+        if (!stopped) reconnectTimer = setTimeout(connect, 5000);
+      }
+    }
+
+    connect();
+
+    return () => {
+      cancelled = true;
+      stopped = true;
+      es?.close();
+      if (reconnectTimer) clearTimeout(reconnectTimer);
+    };
+  }, [userId]);
 
   async function register(input: RegisterInput) {
     const res = await fetch(`${API_URL}/auth/register`, {
