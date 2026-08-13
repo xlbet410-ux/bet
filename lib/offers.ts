@@ -29,9 +29,11 @@ export type PublicOffer = {
   termsEn: string | null;
   category: string;
   triggerType: string;
-  rewardType: "fixed" | "percentage" | "no_reward";
+  rewardType: "fixed" | "percentage" | "no_reward" | "random";
   rewardAmount: string | null;
   rewardCap: string | null;
+  rewardMin: string | null;
+  rewardMax: string | null;
   turnoverMultiplier: string;
   bonusValidityDays: number | null;
   alreadyClaimed: boolean;
@@ -60,21 +62,34 @@ export type PopupOffer = {
   imageUrl: string | null;
   termsBn: string | null;
   termsEn: string | null;
-  rewardType: "fixed" | "percentage" | "no_reward";
+  rewardType: "fixed" | "percentage" | "no_reward" | "random";
   rewardAmount: string | null;
   rewardCap: string | null;
+  rewardMin: string | null;
+  rewardMax: string | null;
   popupCtaTextBn: string | null;
   popupCtaTextEn: string | null;
   popupCtaLink: string | null;
 };
 
 // Shared between the Promotions page and the homepage popup — both render
-// the same "+X%" / "+৳X" reward badge from the same offer shape.
+// the same "+X%" / "+৳X" / "৳X-Y" reward badge from the same offer shape.
 export function rewardLabel(
-  o: { rewardType: "fixed" | "percentage" | "no_reward"; rewardAmount: string | null; rewardCap: string | null },
+  o: {
+    rewardType: "fixed" | "percentage" | "no_reward" | "random";
+    rewardAmount: string | null;
+    rewardCap: string | null;
+    rewardMin?: string | null;
+    rewardMax?: string | null;
+  },
   lang: string
 ): string {
-  if (o.rewardType === "no_reward" || !o.rewardAmount) return "";
+  if (o.rewardType === "no_reward") return "";
+  if (o.rewardType === "random") {
+    if (!o.rewardMin || !o.rewardMax) return "";
+    return `৳${Number(o.rewardMin).toLocaleString()} - ৳${Number(o.rewardMax).toLocaleString()}`;
+  }
+  if (!o.rewardAmount) return "";
   if (o.rewardType === "fixed") return `৳${Number(o.rewardAmount).toLocaleString()}`;
   const cap = o.rewardCap
     ? ` (${lang === "bn" ? "সর্বোচ্চ" : "up to"} ৳${Number(o.rewardCap).toLocaleString()})`
@@ -96,9 +111,11 @@ export type DepositOffer = {
   titleEn: string | null;
   descriptionBn: string | null;
   imageUrl: string | null;
-  rewardType: "fixed" | "percentage" | "no_reward";
+  rewardType: "fixed" | "percentage" | "no_reward" | "random";
   rewardAmount: string | null;
   rewardCap: string | null;
+  rewardMin: string | null;
+  rewardMax: string | null;
   potentialReward: string;
   turnoverMultiplier: string;
   turnoverBase: string;
@@ -153,10 +170,11 @@ export async function forfeitBonus(bonusId: string): Promise<void> {
   if (!res.ok) throw new Error(await parseApiError(res));
 }
 
-export async function claimOffer(slug: string): Promise<void> {
+export async function claimOffer(slug: string): Promise<{ rewardAmount: string | null }> {
   const res = await fetch(`${API_URL}/offers/${slug}/claim`, {
     method: "POST",
     headers: authHeaders(),
   });
   if (!res.ok) throw new Error(await parseApiError(res));
+  return res.json();
 }

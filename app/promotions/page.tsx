@@ -11,6 +11,7 @@ import AmbientBackground from "@/components/site/AmbientBackground";
 import { useAuth } from "@/lib/auth";
 import { useLang } from "@/lib/language";
 import { getOffers, claimOffer, rewardLabel, type PublicOffer } from "@/lib/offers";
+import { RedEnvelope } from "@/components/promotions/RedEnvelope";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
 
@@ -307,17 +308,27 @@ export default function PromotionsPage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {visibleOffers.map((o) => (
-                <PromotionCard
-                  key={o.id}
-                  offer={o}
-                  lang={lang}
-                  expanded={expandedId === o.id}
-                  onToggle={() => setExpandedId((cur) => (cur === o.id ? null : o.id))}
-                  loggedIn={!!user}
-                  onRequireLogin={() => setAuthMode("login")}
-                />
-              ))}
+              {visibleOffers.map((o) =>
+                o.slug === "red-envelope-rain" ? (
+                  <RedEnvelope
+                    key={o.id}
+                    offer={o}
+                    lang={lang}
+                    loggedIn={!!user}
+                    onRequireLogin={() => setAuthMode("login")}
+                  />
+                ) : (
+                  <PromotionCard
+                    key={o.id}
+                    offer={o}
+                    lang={lang}
+                    expanded={expandedId === o.id}
+                    onToggle={() => setExpandedId((cur) => (cur === o.id ? null : o.id))}
+                    loggedIn={!!user}
+                    onRequireLogin={() => setAuthMode("login")}
+                  />
+                )
+              )}
             </div>
           )}
         </div>
