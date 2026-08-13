@@ -25,7 +25,10 @@ export default function ChatSupport({ onOpenAuth }: { onOpenAuth: (mode: "login"
   const reconnectTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const stoppedRef = useRef(false);
 
-  // set up the conversation + live stream once the panel is open and the player is logged in
+  // set up the conversation + live stream once the panel is open and the player is logged in.
+  // Keyed on user?.id, not user itself — a live balance update creates a new
+  // user object on every bet/bonus event, and re-running this would tear
+  // down and reconnect the SSE stream mid-conversation for no reason.
   useEffect(() => {
     if (!open || !user) return;
     stoppedRef.current = false;
@@ -75,7 +78,7 @@ export default function ChatSupport({ onOpenAuth }: { onOpenAuth: (mode: "login"
       esRef.current?.close();
       if (reconnectTimer.current) clearTimeout(reconnectTimer.current);
     };
-  }, [open, user]);
+  }, [open, user?.id]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -98,7 +101,7 @@ export default function ChatSupport({ onOpenAuth }: { onOpenAuth: (mode: "login"
       cancelled = true;
       clearInterval(id);
     };
-  }, [user, open]);
+  }, [user?.id, open]);
 
   useEffect(() => {
     if (open) setUnread(0);

@@ -95,7 +95,7 @@ export default function NotificationBell() {
       cancelled = true;
       clearInterval(id);
     };
-  }, [user]);
+  }, [user?.id]);
 
   async function handleToggle() {
     const next = !open;

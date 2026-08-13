@@ -45,7 +45,7 @@ export default function ReferralPage() {
       .catch((err) => { if (!cancelled) setError(err instanceof Error ? err.message : "Something went wrong."); })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-  }, [user]);
+  }, [user?.id]);
 
   const t = lang === "bn"
     ? {

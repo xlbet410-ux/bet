@@ -48,7 +48,13 @@ export default function PlayPage({ params }: { params: Promise<{ gameUid: string
     return () => {
       cancelled = true;
     };
-  }, [gameUid, user]);
+    // Deliberately keyed on user?.id, not the user object itself — a live
+    // balance update (see lib/auth.tsx's SSE subscription) creates a new
+    // user object on every bet settlement, and re-launching the game here
+    // would reload the iframe mid-play. The game's own balance already
+    // updates live through its own provider session; this effect only
+    // needs to run once per game/login, not on every balance tick.
+  }, [gameUid, user?.id]);
 
   return (
     <>

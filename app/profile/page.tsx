@@ -391,7 +391,7 @@ export default function ProfilePage() {
     return () => {
       cancelled = true;
     };
-  }, [user]);
+  }, [user?.id]);
 
   useEffect(() => {
     if (!user) return;
@@ -399,14 +399,14 @@ export default function ProfilePage() {
       .then((s) => setKycStatus(s))
       .catch(() => setKycStatus(null))
       .finally(() => setKycStatusLoading(false));
-  }, [user]);
+  }, [user?.id]);
 
   useEffect(() => {
     if (!user) return;
     getStreakInfo()
       .then((s) => setStreakInfo(s))
       .catch(() => {}); // Non-critical — just a small display card.
-  }, [user]);
+  }, [user?.id]);
 
   // Same retry-with-backoff pattern used for the game catalog and payment
   // accounts elsewhere in this app, for a cold backend right after deploy.
@@ -441,7 +441,10 @@ export default function ProfilePage() {
     return () => {
       cancelled = true;
     };
-  }, [user, txRetryKey]);
+    // Keyed on user?.id, not user itself — a live balance update creates a
+    // new user object on every bet/bonus event, and re-running this would
+    // flash the transactions list back to its loading skeleton constantly.
+  }, [user?.id, txRetryKey]);
 
   // Same retry-with-backoff pattern used elsewhere on this page — only
   // fetches once the player actually opens the tab, not on every profile visit.
@@ -478,7 +481,10 @@ export default function ProfilePage() {
     return () => {
       cancelled = true;
     };
-  }, [user, tab, gameHistoryRetryKey]);
+    // Keyed on user?.id, not user itself — a live balance update creates a
+    // new user object on every bet/bonus event, and re-running this would
+    // flash the game history list back to its loading skeleton constantly.
+  }, [user?.id, tab, gameHistoryRetryKey]);
 
   async function loadMoreGameHistory() {
     setGameHistoryLoadingMore(true);

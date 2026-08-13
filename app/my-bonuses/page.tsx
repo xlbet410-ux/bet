@@ -61,7 +61,7 @@ export default function MyBonusesPage() {
     return () => {
       cancelled = true;
     };
-  }, [user]);
+  }, [user?.id]);
 
   async function handleForfeit() {
     if (!confirmingForfeit) return;

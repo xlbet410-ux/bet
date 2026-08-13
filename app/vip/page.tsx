@@ -51,7 +51,7 @@ export default function VipPage() {
       .then((s) => { if (!cancelled) setStatus(s); })
       .catch(() => { if (!cancelled) setStatus(null); });
     return () => { cancelled = true; };
-  }, [user]);
+  }, [user?.id]);
 
   const t =
     lang === "bn"

@@ -79,7 +79,10 @@ export default function LiveChatPage() {
       esRef.current?.close();
       if (reconnectTimer.current) clearTimeout(reconnectTimer.current);
     };
-  }, [user]);
+    // Keyed on user?.id, not user itself — a live balance update creates a
+    // new user object on every bet/bonus event, and re-running this would
+    // tear down and reconnect the SSE stream mid-conversation for no reason.
+  }, [user?.id]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
