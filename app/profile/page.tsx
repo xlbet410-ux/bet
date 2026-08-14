@@ -30,10 +30,10 @@ const METHOD_LABELS: Record<string, string> = {
 
 type TxFilter = "all" | "24h" | "week" | "month";
 
-type Tab     = "profile" | "wallet" | "deposit" | "withdraw" | "history" | "settings" | "kyc";
+type Tab     = "profile" | "wallet" | "deposit" | "withdraw" | "history" | "settings" | "kyc" | "referral";
 type KycStep = "idle" | "phone" | "otp" | "docType" | "upload" | "selfie" | "done";
 
-const TABS: Tab[] = ["profile", "wallet", "deposit", "withdraw", "history", "settings", "kyc"];
+const TABS: Tab[] = ["profile", "wallet", "deposit", "withdraw", "history", "settings", "kyc", "referral"];
 
 function DocTypeIcon({ id, className = "" }: { id: string; className?: string }) {
   if (id === "passport") {
@@ -691,6 +691,7 @@ export default function ProfilePage() {
     { id:"history", label:t.profileTabHistory, icon:<svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2" strokeLinecap="round" strokeLinejoin="round"/></svg> },
     { id:"settings",label:t.profileTabSettings,icon:<svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> },
     { id:"kyc",     label:t.profileTabKyc,     icon:<svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9,12 11,14 15,10" strokeLinecap="round" strokeLinejoin="round"/></svg> },
+    { id:"referral",label:t.profileTabReferral,icon:<svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-2"><circle cx="9" cy="7" r="3"/><path d="M2 20c0-3.3 2.7-6 6-6h2c3.3 0 6 2.7 6 6" strokeLinecap="round"/><path d="M17 8a3 3 0 1 1 0 6" strokeLinecap="round"/><path d="M20.5 20c0-2.5-1.8-4.6-4.2-5.4" strokeLinecap="round"/></svg> },
   ];
 
   // Deposit/Withdraw now live on their own page — every other tab still
@@ -924,8 +925,8 @@ export default function ProfilePage() {
                           const statusLabel =
                             tx.status === "completed" ? t.profileStatusCompleted : tx.status === "failed" ? t.profileStatusFailed : t.profileStatusPending;
                           return (
-                            <div key={tx.id} className="flex items-center justify-between rounded-xl px-4 py-3 transition-colors hover:bg-white/3" style={INNER}>
-                              <div className="flex items-center gap-3">
+                            <div key={tx.id} className="flex items-center justify-between gap-3 rounded-xl px-4 py-3 transition-colors hover:bg-white/3" style={INNER}>
+                              <div className="flex min-w-0 flex-1 items-center gap-3">
                                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
                                   style={{ background: isOut ? "rgba(239,68,68,.12)" : "rgba(34,197,94,.12)" }}>
                                   {isOut
@@ -934,7 +935,7 @@ export default function ProfilePage() {
                                   }
                                 </div>
                                 <div className="min-w-0">
-                                  <p className="text-sm font-semibold text-white">
+                                  <p className="truncate text-sm font-semibold text-white">
                                     {methodLabel} {isOut ? t.profileTxWithdraw : t.profileTxDeposit}
                                   </p>
                                   <p className="truncate text-[11px] text-[#9B8EC4]">
@@ -942,11 +943,11 @@ export default function ProfilePage() {
                                   </p>
                                 </div>
                               </div>
-                              <div className="shrink-0 text-right">
+                              <div className="flex shrink-0 flex-col items-end gap-1 text-right">
                                 <p className={`font-bold tabular-nums ${isOut ? "text-red-400" : "text-green-400"}`}>
                                   {isOut ? "-" : "+"}৳{tx.amount.toLocaleString()}
                                 </p>
-                                <span className="rounded-full px-2 py-0.5 text-[10px] font-semibold" style={statusStyle}>
+                                <span className="whitespace-nowrap rounded-full px-2 py-0.5 text-[10px] font-semibold" style={statusStyle}>
                                   {statusLabel}
                                 </span>
                               </div>
@@ -1110,42 +1111,6 @@ export default function ProfilePage() {
                         {pwdSubmitting ? t.profileUpdatingBtn : t.profileUpdatePasswordBtn}
                       </button>
                     </div>
-                  </div>
-
-                  {/* Share & Earn */}
-                  <div className="rounded-2xl p-6" style={CARD}>
-                    <h3 className="mb-1 text-lg font-extrabold text-white">{t.profileShareEarnTitle}</h3>
-                    <p className="mb-5 text-sm text-[#9B8EC4]">{t.profileShareEarnDesc}</p>
-
-                    <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#7B5EA7]">{t.profileReferralCodeLabel}</p>
-                    <div className="mb-4 flex items-center gap-2">
-                      <div className="flex-1 rounded-xl px-4 py-3 font-mono text-lg font-bold tracking-widest text-[#F5C842]" style={INNER}>
-                        {user.referralCode ?? "—"}
-                      </div>
-                      <button onClick={() => user.referralCode && copyText(user.referralCode, setCodeCopied)}
-                        disabled={!user.referralCode}
-                        className="shrink-0 rounded-xl px-4 py-3 text-sm font-bold text-[#0A0612] transition-all hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-40"
-                        style={{ background:"linear-gradient(to right,#D4AF37,#F5C842)" }}>
-                        {codeCopied ? t.profileCopied : t.profileCopy}
-                      </button>
-                    </div>
-
-                    <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#7B5EA7]">{t.profileReferralLinkLabel}</p>
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1 truncate rounded-xl px-4 py-3 text-sm text-[#C9B8E8]" style={INNER}>
-                        {typeof window !== "undefined" ? `${window.location.origin}/?ref=${user.referralCode ?? ""}` : ""}
-                      </div>
-                      <button
-                        onClick={() => user.referralCode && copyText(`${window.location.origin}/?ref=${user.referralCode}`, setLinkCopied)}
-                        disabled={!user.referralCode}
-                        className="shrink-0 rounded-xl border border-[#7B2FBE]/40 bg-white/4 px-4 py-3 text-sm font-semibold text-[#C9B8E8] transition-all hover:bg-white/[.07] disabled:cursor-not-allowed disabled:opacity-40">
-                        {linkCopied ? t.profileCopied : t.profileCopyLink}
-                      </button>
-                    </div>
-
-                    <Link href="/referral" className="mt-4 inline-block text-[11px] font-semibold text-[#F5C842] transition-colors hover:text-[#D4AF37]">
-                      {lang === "bn" ? "আপনার রেফারেল ও আয় দেখুন →" : "View your referrals & earnings →"}
-                    </Link>
                   </div>
 
                 </div>
@@ -1569,6 +1534,46 @@ export default function ProfilePage() {
 
                     </div>
                   )}
+                </div>
+              )}
+
+              {/* ════ REFERRAL ════ */}
+              {tab === "referral" && (
+                <div className="space-y-4">
+                  <div className="rounded-2xl p-6" style={CARD}>
+                    <h3 className="mb-1 text-lg font-extrabold text-white">{t.profileShareEarnTitle}</h3>
+                    <p className="mb-5 text-sm text-[#9B8EC4]">{t.profileShareEarnDesc}</p>
+
+                    <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#7B5EA7]">{t.profileReferralCodeLabel}</p>
+                    <div className="mb-4 flex items-center gap-2">
+                      <div className="flex-1 rounded-xl px-4 py-3 font-mono text-lg font-bold tracking-widest text-[#F5C842]" style={INNER}>
+                        {user.referralCode ?? "—"}
+                      </div>
+                      <button onClick={() => user.referralCode && copyText(user.referralCode, setCodeCopied)}
+                        disabled={!user.referralCode}
+                        className="shrink-0 rounded-xl px-4 py-3 text-sm font-bold text-[#0A0612] transition-all hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-40"
+                        style={{ background:"linear-gradient(to right,#D4AF37,#F5C842)" }}>
+                        {codeCopied ? t.profileCopied : t.profileCopy}
+                      </button>
+                    </div>
+
+                    <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#7B5EA7]">{t.profileReferralLinkLabel}</p>
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 truncate rounded-xl px-4 py-3 text-sm text-[#C9B8E8]" style={INNER}>
+                        {typeof window !== "undefined" ? `${window.location.origin}/?ref=${user.referralCode ?? ""}` : ""}
+                      </div>
+                      <button
+                        onClick={() => user.referralCode && copyText(`${window.location.origin}/?ref=${user.referralCode}`, setLinkCopied)}
+                        disabled={!user.referralCode}
+                        className="shrink-0 rounded-xl border border-[#7B2FBE]/40 bg-white/4 px-4 py-3 text-sm font-semibold text-[#C9B8E8] transition-all hover:bg-white/[.07] disabled:cursor-not-allowed disabled:opacity-40">
+                        {linkCopied ? t.profileCopied : t.profileCopyLink}
+                      </button>
+                    </div>
+
+                    <Link href="/referral" className="mt-4 inline-block text-[11px] font-semibold text-[#F5C842] transition-colors hover:text-[#D4AF37]">
+                      {lang === "bn" ? "আপনার রেফারেল ও আয় দেখুন →" : "View your referrals & earnings →"}
+                    </Link>
+                  </div>
                 </div>
               )}
 

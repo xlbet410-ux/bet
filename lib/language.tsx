@@ -111,6 +111,7 @@ export type Translations = {
   profileTabWithdraw: string;
   profileTabSettings: string;
   profileTabKyc: string;
+  profileTabReferral: string;
   profileTabHistory: string;
   profileGameHistoryTitle: string;
   profileGameHistoryEmpty: string;
@@ -380,6 +381,7 @@ const T: Record<Lang, Translations> = {
     profileTabWithdraw: "Withdraw",
     profileTabSettings: "Settings",
     profileTabKyc: "KYC",
+    profileTabReferral: "Referral",
     profileTabHistory: "Game History",
     profileGameHistoryTitle: "Game History",
     profileGameHistoryEmpty: "No games played yet.",
@@ -645,6 +647,7 @@ const T: Record<Lang, Translations> = {
     profileTabWithdraw: "উত্তোলন",
     profileTabSettings: "সেটিংস",
     profileTabKyc: "কেওয়াইসি",
+    profileTabReferral: "রেফারেল",
     profileTabHistory: "গেম হিস্টোরি",
     profileGameHistoryTitle: "গেম হিস্টোরি",
     profileGameHistoryEmpty: "এখনো কোনো গেম খেলা হয়নি।",

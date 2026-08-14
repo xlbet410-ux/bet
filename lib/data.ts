@@ -65,25 +65,28 @@ export type LeaderboardEntry = {
   games: number;
 };
 
+// Winnings/wagered scaled so the podium (1st-3rd) reads in lakh territory
+// (৳1,00,000+) with the same realistic taper the original smaller numbers
+// had down to 20th place — not a flat/arbitrary curve.
 export const LEADERBOARD: LeaderboardEntry[] = [
-  { rank: 1,  name: "Rakib H.",  winnings: 84320, wagered: 210500, games: 312 },
-  { rank: 2,  name: "Nusrat J.", winnings: 71950, wagered: 188200, games: 289 },
-  { rank: 3,  name: "Shakil A.", winnings: 58200, wagered: 165900, games: 341 },
-  { rank: 4,  name: "Farzana Y.",winnings: 42600, wagered: 121300, games: 198 },
-  { rank: 5,  name: "Tanvir I.", winnings: 38450, wagered: 109800, games: 256 },
-  { rank: 6,  name: "Sadia R.",  winnings: 35120, wagered: 98700,  games: 210 },
-  { rank: 7,  name: "Mahmud H.", winnings: 31800, wagered: 87400,  games: 175 },
-  { rank: 8,  name: "Ruma K.",   winnings: 28340, wagered: 79200,  games: 190 },
-  { rank: 9,  name: "Arif U.",   winnings: 25900, wagered: 71600,  games: 164 },
-  { rank: 10, name: "Shathi A.", winnings: 23150, wagered: 64300,  games: 201 },
-  { rank: 11, name: "Kamal H.",  winnings: 21700, wagered: 59800,  games: 143 },
-  { rank: 12, name: "Mim S.",    winnings: 19880, wagered: 54200,  games: 178 },
-  { rank: 13, name: "Rasel M.",  winnings: 18300, wagered: 49700,  games: 159 },
-  { rank: 14, name: "Popy B.",   winnings: 16750, wagered: 45100,  games: 132 },
-  { rank: 15, name: "Jashim U.", winnings: 15200, wagered: 41300,  games: 147 },
-  { rank: 16, name: "Lima A.",   winnings: 14100, wagered: 37800,  games: 128 },
-  { rank: 17, name: "Faisal K.", winnings: 12950, wagered: 34200,  games: 115 },
-  { rank: 18, name: "Bithi R.",  winnings: 11600, wagered: 30500,  games: 109 },
-  { rank: 19, name: "Nayeem C.", winnings: 10450, wagered: 27100,  games: 98  },
-  { rank: 20, name: "Rina P.",   winnings: 9800,  wagered: 24600,  games: 87  },
+  { rank: 1,  name: "Rakib H.",  winnings: 151800, wagered: 378900, games: 312 },
+  { rank: 2,  name: "Nusrat J.", winnings: 129500, wagered: 338800, games: 289 },
+  { rank: 3,  name: "Shakil A.", winnings: 104800, wagered: 298600, games: 341 },
+  { rank: 4,  name: "Farzana Y.",winnings: 76700,  wagered: 218300, games: 198 },
+  { rank: 5,  name: "Tanvir I.", winnings: 69200,  wagered: 197600, games: 256 },
+  { rank: 6,  name: "Sadia R.",  winnings: 63200,  wagered: 177700, games: 210 },
+  { rank: 7,  name: "Mahmud H.", winnings: 57200,  wagered: 157300, games: 175 },
+  { rank: 8,  name: "Ruma K.",   winnings: 51000,  wagered: 142600, games: 190 },
+  { rank: 9,  name: "Arif U.",   winnings: 46600,  wagered: 128900, games: 164 },
+  { rank: 10, name: "Shathi A.", winnings: 41700,  wagered: 115700, games: 201 },
+  { rank: 11, name: "Kamal H.",  winnings: 39100,  wagered: 107600, games: 143 },
+  { rank: 12, name: "Mim S.",    winnings: 35800,  wagered: 97600,  games: 178 },
+  { rank: 13, name: "Rasel M.",  winnings: 32900,  wagered: 89500,  games: 159 },
+  { rank: 14, name: "Popy B.",   winnings: 30200,  wagered: 81200,  games: 132 },
+  { rank: 15, name: "Jashim U.", winnings: 27400,  wagered: 74300,  games: 147 },
+  { rank: 16, name: "Lima A.",   winnings: 25400,  wagered: 68000,  games: 128 },
+  { rank: 17, name: "Faisal K.", winnings: 23300,  wagered: 61600,  games: 115 },
+  { rank: 18, name: "Bithi R.",  winnings: 20900,  wagered: 54900,  games: 109 },
+  { rank: 19, name: "Nayeem C.", winnings: 18800,  wagered: 48800,  games: 98  },
+  { rank: 20, name: "Rina P.",   winnings: 17600,  wagered: 44300,  games: 87  },
 ];
