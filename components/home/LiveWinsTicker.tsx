@@ -3,7 +3,14 @@
 import { useEffect, useState } from "react";
 import { FaCrown, FaTrophy, FaMedal } from "react-icons/fa6";
 import { useLang } from "@/lib/language";
-import { getLiveWins, type LiveWin } from "@/lib/liveWins";
+import { generateLiveWins, type LiveWin } from "@/lib/liveWins";
+
+// How many rows are visible in one scroll of the marquee at a time (not all
+// 26 names at once — a rotating window, closer to how a real live-win feed
+// would only ever show the most recent handful).
+const VISIBLE_COUNT = 10;
+// How often the visible batch reshuffles to a fresh random draw.
+const RESHUFFLE_MS = 20_000;
 
 function tierOf(value: number) {
   if (value >= 5000)
@@ -32,24 +39,21 @@ function tierOf(value: number) {
 }
 
 export default function LiveWinsTicker() {
-  const { t } = useLang();
-  const [realWins, setRealWins] = useState<LiveWin[] | null>(null);
+  const { t, lang } = useLang();
+  // Generated on the client only (see the useEffect below) — starting from
+  // an empty array keeps server- and first-client-render markup identical,
+  // avoiding a hydration mismatch, since Math.random() can't run during SSR.
+  const [wins, setWins] = useState<LiveWin[]>([]);
 
-  // Real wins replace the placeholders once they arrive; on any failure or
-  // an empty result (not enough real play yet), the placeholders stay put.
+  // Also regenerates on a lang switch (dependency below) so names flip
+  // script immediately instead of waiting for the next reshuffle tick.
   useEffect(() => {
-    let cancelled = false;
-    getLiveWins()
-      .then((wins) => {
-        if (!cancelled && wins.length > 0) setRealWins(wins);
-      })
-      .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+    setWins(generateLiveWins(VISIBLE_COUNT, lang));
+    const id = setInterval(() => setWins(generateLiveWins(VISIBLE_COUNT, lang)), RESHUFFLE_MS);
+    return () => clearInterval(id);
+  }, [lang]);
 
-  const wins = realWins ?? t.wins;
+  if (wins.length === 0) return null;
 
   return (
     <section className="relative z-10 mt-8 overflow-hidden border-y border-[#D4AF37]/15 bg-gradient-to-r from-[#120920] via-[#1B0838]/60 to-[#120920] py-4 sm:mt-12">

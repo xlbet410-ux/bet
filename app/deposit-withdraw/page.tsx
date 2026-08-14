@@ -612,7 +612,7 @@ export default function DepositWithdrawPage() {
       <Header onOpenAuth={(m) => setAuthMode(m)} />
       {authMode && <AuthModal mode={authMode} onClose={() => setAuthMode(null)} onSwitch={(m) => setAuthMode(m)} />}
 
-      <main className="relative z-10 min-h-screen bg-white px-4 pb-20 pt-24 sm:px-5 lg:pt-28">
+      <main className="relative z-10 min-h-screen bg-white px-4 pb-20 pt-35 sm:px-5 lg:pt-28">
         <div className="mx-auto max-w-2xl">
           <div className="mb-5 flex items-center gap-2 text-xs text-gray-400">
             <Link href="/" className="transition-colors hover:text-[#B8892E]">{t.profileHome}</Link>

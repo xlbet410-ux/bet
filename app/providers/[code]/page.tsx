@@ -129,7 +129,7 @@ export default function ProviderPage({ params }: { params: Promise<{ code: strin
         <AuthModal mode={authMode} onClose={() => setAuthMode(null)} onSwitch={(m) => setAuthMode(m)} />
       )}
 
-      <main className="relative z-10 min-h-screen px-4 pb-24 pt-24 sm:px-5 lg:pt-28">
+      <main className="relative z-10 min-h-screen px-4 pb-24 pt-35 sm:px-5 lg:pt-28">
         <div className="mx-auto flex max-w-7xl gap-6">
           {/* sidebar — every provider, current one highlighted */}
           <aside className="hidden w-56 shrink-0 md:block">

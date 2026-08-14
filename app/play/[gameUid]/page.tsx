@@ -69,7 +69,7 @@ export default function PlayPage({ params }: { params: Promise<{ gameUid: string
           page renders taller than what's actually visible and the game's own
           bottom controls end up hidden behind the browser's bottom bar. The
           dynamic viewport unit tracks the chrome's real, current height. */}
-      <main className="relative z-10 flex h-dvh flex-col pt-[62px] sm:pt-20">
+      <main className="relative z-10 flex h-dvh flex-col pt-26.5 sm:pt-31 lg:pt-20">
         <div className="relative min-h-0 flex-1 bg-black">
           {!user ? (
             <div className="flex h-full flex-col items-center justify-center gap-3 text-center">

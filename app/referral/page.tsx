@@ -107,7 +107,7 @@ export default function ReferralPage() {
       <Header onOpenAuth={(m) => setAuthMode(m)} />
       {authMode && <AuthModal mode={authMode} onClose={() => setAuthMode(null)} onSwitch={(m) => setAuthMode(m)} />}
 
-      <main className="relative z-10 min-h-screen bg-white px-4 pb-20 pt-24 sm:px-5 lg:pt-28">
+      <main className="relative z-10 min-h-screen bg-white px-4 pb-20 pt-35 sm:px-5 lg:pt-28">
         <div className="mx-auto max-w-2xl">
           <Link href="/profile" className="mb-4 flex w-fit items-center gap-1.5 text-xs font-semibold text-gray-500 transition-colors hover:text-[#B8892E]">
             <FaChevronLeft className="text-[10px]" /> {t.back}

@@ -77,7 +77,7 @@ export default function HeroSlider() {
   };
 
   return (
-    <section className="relative z-10 w-full px-3 pt-16 sm:px-4 sm:pt-20 md:px-6">
+    <section className="relative z-10 w-full px-3 pt-27 sm:px-4 sm:pt-31 md:px-6 lg:pt-20">
       <div
         className="relative mx-auto w-full max-w-6xl overflow-hidden rounded-2xl bg-[#1B0838] shadow-[0_0_60px_#7B2FBE30] sm:rounded-3xl"
         style={{ aspectRatio: "16/7" }}

@@ -429,7 +429,7 @@ export default function PromotionsPage() {
       <Header onOpenAuth={(m) => setAuthMode(m)} />
       {authMode && <AuthModal mode={authMode} onClose={() => setAuthMode(null)} onSwitch={(m) => setAuthMode(m)} />}
 
-      <main className="relative z-10 min-h-screen px-4 pb-20 pt-24 sm:px-5 lg:pt-28">
+      <main className="relative z-10 min-h-screen px-4 pb-20 pt-35 sm:px-5 lg:pt-28">
         <div className="mx-auto max-w-6xl">
           <h1 className="mb-4 flex items-center gap-2 text-lg font-extrabold text-white">
             <FaGift className="text-[#D4AF37]" /> {t.title}

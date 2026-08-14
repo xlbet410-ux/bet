@@ -86,7 +86,7 @@ export default function VipPage() {
       <Header onOpenAuth={(m) => setAuthMode(m)} />
       {authMode && <AuthModal mode={authMode} onClose={() => setAuthMode(null)} onSwitch={(m) => setAuthMode(m)} />}
 
-      <main className="relative z-10 min-h-screen px-4 pb-20 pt-24 sm:px-5 lg:pt-28">
+      <main className="relative z-10 min-h-screen px-4 pb-20 pt-35 sm:px-5 lg:pt-28">
         <div className="mx-auto max-w-5xl">
           <Link href="/profile" className="mb-4 flex w-fit items-center gap-1.5 text-xs font-semibold text-[#9B8EC4] transition-colors hover:text-[#F5C842]">
             <FaChevronLeft className="text-[10px]" /> {t.back}

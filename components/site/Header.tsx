@@ -6,7 +6,7 @@ import { useState, useRef, useEffect } from "react";
 import { FaBars, FaXmark, FaChevronDown } from "react-icons/fa6";
 import { useLang } from "@/lib/language";
 import { useAuth } from "@/lib/auth";
-import { useScrolled } from "@/lib/hooks";
+import { useScrolled, useIsDesktop } from "@/lib/hooks";
 import NotificationBell from "@/components/site/NotificationBell";
 import logo from "@/assets/logo.png";
 
@@ -44,6 +44,9 @@ export default function Header({
   onOpenAuth: (mode: "login" | "register") => void;
 }) {
   const scrolled = useScrolled(20);
+  // Governs where LangPill/NotificationBell mount — exactly one of the two
+  // spots below, never both, so their polling/effects don't run twice.
+  const isDesktop = useIsDesktop();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
@@ -98,8 +101,16 @@ export default function Header({
 
           {/* right controls */}
           <div className="flex items-center gap-1 sm:gap-2">
-            <LangPill />
-            <NotificationBell />
+            {/* Lang + notifications move to their own bar below on mobile
+                (not enough room in this row once the profile/auth widget is
+                also present) — mounted here only from lg: up (see the
+                secondary bar below for <lg:), never both at once. */}
+            {isDesktop && (
+              <div className="flex items-center gap-2">
+                <LangPill />
+                <NotificationBell />
+              </div>
+            )}
 
             {user ? (
               /* ── logged-in profile widget — one combined pill, balance
@@ -240,6 +251,22 @@ export default function Header({
             </button>
           </div>
         </div>
+
+        {/* mobile-only utility bar — lang toggle + notifications, moved out
+            of the cramped main row above. Part of the same fixed header
+            block (not a second independently-positioned fixed element) so
+            it scrolls/hides together with it automatically. Adds 44px
+            (h-11) below `lg:` — every page's top padding below `lg:` is
+            bumped by that same 44px to still clear the header. Rendered
+            (not just CSS-hidden) only when !isDesktop — see isDesktop
+            above for why this must never be mounted alongside the lg:
+            copy. */}
+        {!isDesktop && (
+          <div className="flex h-11 items-center justify-between border-t border-white/[0.06] px-4 sm:px-5">
+            <LangPill />
+            <NotificationBell />
+          </div>
+        )}
       </header>
 
       {/* mobile drawer */}

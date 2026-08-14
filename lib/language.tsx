@@ -40,7 +40,6 @@ export type Translations = {
   // live wins ticker
   liveWinsLabel: string;
   liveWinsSub: string;
-  wins: { name: string; game: string; amount: string; value: number }[];
   // leaderboard page
   lbBreadcrumb: string;
   lbEyebrow: string;
@@ -309,14 +308,6 @@ const T: Record<Lang, Translations> = {
 
     liveWinsLabel: "Live Wins",
     liveWinsSub: "Real players, real payouts — right now",
-    wins: [
-      { name: "Karim", game: "Aviator", amount: "৳1,240", value: 1240 },
-      { name: "Nasrin", game: "Sweet Bonanza", amount: "৳890", value: 890 },
-      { name: "Rafiq", game: "Lightning Roulette", amount: "৳5,210", value: 5210 },
-      { name: "Shirin", game: "Crazy Time", amount: "৳325", value: 325 },
-      { name: "Jamal", game: "Mega Jackpot", amount: "৳11,200", value: 11200 },
-      { name: "Rima", game: "Blackjack VIP", amount: "৳678", value: 678 },
-    ],
 
     lbBreadcrumb: "Leaderboard",
     lbEyebrow: "This Week",
@@ -583,14 +574,6 @@ const T: Record<Lang, Translations> = {
 
     liveWinsLabel: "লাইভ জয়",
     liveWinsSub: "আসল খেলোয়াড়, আসল পেআউট — এই মুহূর্তে",
-    wins: [
-      { name: "করিম", game: "Aviator", amount: "৳১,২৪০", value: 1240 },
-      { name: "নাসরিন", game: "Sweet Bonanza", amount: "৳৮৯০", value: 890 },
-      { name: "রফিক", game: "Lightning Roulette", amount: "৳৫,২১০", value: 5210 },
-      { name: "শিরিন", game: "Crazy Time", amount: "৳৩২৫", value: 325 },
-      { name: "জামাল", game: "Mega Jackpot", amount: "৳১১,২০০", value: 11200 },
-      { name: "রিমা", game: "Blackjack VIP", amount: "৳৬৭৮", value: 678 },
-    ],
 
     lbBreadcrumb: "লিডারবোর্ড",
     lbEyebrow: "এই সপ্তাহে",

@@ -191,7 +191,7 @@ export default function CategoryPage({ params }: { params: Promise<{ category: s
         <AuthModal mode={authMode} onClose={() => setAuthMode(null)} onSwitch={(m) => setAuthMode(m)} />
       )}
 
-      <main className="relative z-10 min-h-screen px-3 pb-20 pt-20 sm:px-5 sm:pb-24 sm:pt-24 lg:pt-28">
+      <main className="relative z-10 min-h-screen px-3 pb-20 pt-31 sm:px-5 sm:pb-24 sm:pt-35 lg:pt-28">
         <div className="mx-auto max-w-7xl">
           {/* category cards — same card design as the homepage hero nav, switch
               section without leaving this page layout */}

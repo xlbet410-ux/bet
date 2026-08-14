@@ -31,3 +31,21 @@ export function useScrolled(threshold = 10) {
   }, [threshold]);
   return scrolled;
 }
+
+// Defaults to false (mobile) on the server and on first client paint — SSR
+// and the initial client render must produce identical markup, so this
+// can't read matchMedia until after mount; it then corrects itself
+// (and stays in sync on resize/rotate) via the effect below. Used to mount
+// a component in exactly one of two places instead of rendering it twice
+// and CSS-hiding one copy, which would double any polling/effects it runs.
+export function useIsDesktop(breakpointPx = 1024) {
+  const [isDesktop, setIsDesktop] = useState(false);
+  useEffect(() => {
+    const mql = window.matchMedia(`(min-width: ${breakpointPx}px)`);
+    setIsDesktop(mql.matches);
+    const onChange = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
+    mql.addEventListener("change", onChange);
+    return () => mql.removeEventListener("change", onChange);
+  }, [breakpointPx]);
+  return isDesktop;
+}

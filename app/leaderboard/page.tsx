@@ -146,7 +146,7 @@ export default function LeaderboardPage() {
         <AuthModal mode={authMode} onClose={() => setAuthMode(null)} onSwitch={(m) => setAuthMode(m)} />
       )}
 
-      <main className="relative z-10 min-h-screen px-4 pb-20 pt-24 sm:px-5 lg:pt-28">
+      <main className="relative z-10 min-h-screen px-4 pb-20 pt-35 sm:px-5 lg:pt-28">
         <div className="mx-auto max-w-4xl">
           {/* breadcrumb */}
           <div className="mb-5 flex items-center gap-2 text-xs text-[#9B8EC4]">
