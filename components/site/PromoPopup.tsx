@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { FaChevronLeft, FaChevronRight, FaChevronDown, FaXmark, FaCrown, FaGift, FaWandMagicSparkles } from "react-icons/fa6";
 import { useLang } from "@/lib/language";
@@ -111,9 +112,12 @@ export default function PromoPopup({ trigger }: { trigger: boolean }) {
     <div className="fixed inset-0 z-[105] flex items-center justify-center p-4" onClick={close}>
       <div className="absolute inset-0 bg-black/80 backdrop-blur-md animate-[fadeIn_0.3s_ease]" />
 
-      {/* ambient glow behind the card, matching the site's hero/auth-modal treatment */}
+      {/* ambient glow behind the card, matching the site's hero/auth-modal treatment.
+          Opacity-only pulse (not scale) — this popup reopens on nearly every
+          homepage visit, so keeping the 100px-blur layer's size static avoids
+          repeated filter repaint cost while still reading as "alive". */}
       <div
-        className="pointer-events-none absolute h-[420px] w-[420px] rounded-full bg-[#9B30FF]/25 blur-[100px] animate-[pulseGlow_4s_ease-in-out_infinite]"
+        className="pointer-events-none absolute h-[420px] w-[420px] rounded-full bg-[#9B30FF]/25 blur-[100px] animate-[pulseGlowSoft_4s_ease-in-out_infinite]"
         aria-hidden="true"
       />
       <div
@@ -138,6 +142,10 @@ export default function PromoPopup({ trigger }: { trigger: boolean }) {
         {offer.imageOnly ? (
           <div className="relative flex-1 overflow-y-auto">
             {bannerSrc ? (
+              // Deliberately raw <img>, not next/image: image-only mode's
+              // whole point is showing the upload at its own natural aspect
+              // ratio with no cropping, which next/image can't do without a
+              // pre-known width/height or a fixed-aspect `fill` container.
               // eslint-disable-next-line @next/next/no-img-element
               <img src={`${API_URL}${bannerSrc}`} alt={title} className="block w-full" />
             ) : (
@@ -170,8 +178,14 @@ export default function PromoPopup({ trigger }: { trigger: boolean }) {
 
           <div className="relative w-full shrink-0 overflow-hidden bg-black" style={{ aspectRatio: "16/9" }}>
             {bannerSrc ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={`${API_URL}${bannerSrc}`} alt={title} className="h-full w-full object-cover" />
+              <Image
+                src={`${API_URL}${bannerSrc}`}
+                alt={title}
+                fill
+                sizes="(max-width: 640px) 100vw, 448px"
+                className="object-cover"
+                priority
+              />
             ) : (
               <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#4A0E8F] to-[#1B0838]">
                 <FaGift className="text-4xl text-[#D4AF37]/50" />

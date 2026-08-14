@@ -28,8 +28,13 @@ export default function Home() {
   const [authMode, setAuthMode] = useState<"login" | "register" | null>(null);
   const [refCode, setRefCode] = useState<string | null>(null);
 
+  // Branding splash, not a real loading gate — homepage content underneath
+  // starts fetching immediately regardless of this timer. Kept just long
+  // enough for the logo's entrance animation (~1.15s, see Loader.tsx) to
+  // play out instead of the previous fixed 2.2s that added dead time on
+  // every load regardless of connection speed.
   useEffect(() => {
-    const tm = setTimeout(() => setLoading(false), 2200);
+    const tm = setTimeout(() => setLoading(false), 1200);
     return () => clearTimeout(tm);
   }, []);
 

@@ -16,8 +16,10 @@ export default function Loader({ done }: { done: boolean }) {
           animation: "orbFloat 4s ease-in-out infinite",
         }}
       />
-      {/* inner glow pulse */}
-      <div className="absolute h-64 w-64 animate-[pulseGlow_2s_ease-in-out_infinite] rounded-full blur-3xl"
+      {/* inner glow pulse — opacity-only (not scale) to avoid repeated
+          blur-3xl filter repaint during the one moment (initial load) the
+          browser is also busiest with parsing/hydration */}
+      <div className="absolute h-64 w-64 animate-[pulseGlowSoft_2s_ease-in-out_infinite] rounded-full blur-3xl"
         style={{ background: "radial-gradient(circle, #9B30FF55 0%, transparent 70%)" }} />
 
       {/* logo — entrance via logoReveal, then a continuous zoom in/out pulse via breathe */}
