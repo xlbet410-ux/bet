@@ -9,6 +9,7 @@ import Footer from "@/components/site/Footer";
 import MobileBottomNav from "@/components/site/MobileBottomNav";
 import AuthModal from "@/components/site/AuthModal";
 import AmbientBackground from "@/components/site/AmbientBackground";
+import ShareLinkBar from "@/components/site/ShareLinkBar";
 import { useAuth } from "@/lib/auth";
 import { useLang } from "@/lib/language";
 import { getReferralStats, type ReferralStats } from "@/lib/referral";
@@ -55,6 +56,8 @@ export default function ReferralPage() {
         yourLink: "আপনার রেফারেল লিংক",
         copy: "কপি করুন",
         copied: "কপি হয়েছে!",
+        shareVia: "শেয়ার করুন",
+        instagramHint: "লিংক কপি হয়েছে! আপনার ইনস্টাগ্রাম বায়ো বা স্টোরিতে পেস্ট করুন।",
         totalReferrals: "মোট রেফারেল",
         active: "সক্রিয়",
         pending: "অপেক্ষায়",
@@ -75,6 +78,8 @@ export default function ReferralPage() {
         yourLink: "Your referral link",
         copy: "Copy",
         copied: "Copied!",
+        shareVia: "Share via",
+        instagramHint: "Link copied! Paste it in your Instagram bio or story.",
         totalReferrals: "Total referrals",
         active: "Active",
         pending: "Pending",
@@ -135,6 +140,11 @@ export default function ReferralPage() {
                   >
                     {copied ? <FaCheck /> : <FaCopy />} {copied ? t.copied : t.copy}
                   </button>
+                </div>
+
+                <div className="mt-3.5 flex items-center gap-2.5">
+                  <span className="text-[11px] font-medium text-gray-500">{t.shareVia}</span>
+                  <ShareLinkBar link={referralLink} instagramHint={t.instagramHint} />
                 </div>
               </div>
 
