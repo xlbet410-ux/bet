@@ -172,7 +172,7 @@ function OfferPicker({
 }: {
   offers: DepositOffer[];
   loading: boolean;
-  selectedId: string | null;
+  selectedId: string | null | undefined;
   onSelect: (id: string | null) => void;
   lang: string;
 }) {
@@ -428,7 +428,13 @@ export default function DepositWithdrawPage() {
   const [depositAmt, setDepositAmt] = useState("");
   const [depositOffers, setDepositOffers] = useState<DepositOffer[]>([]);
   const [depositOffersLoading, setDepositOffersLoading] = useState(false);
-  const [selectedOfferId, setSelectedOfferId] = useState<string | null>(null);
+  // Tri-state: undefined = no explicit choice made yet, null = explicitly
+  // picked "do not participate in any promotions", string = a chosen
+  // offer's id. Distinguishing undefined from null matters — collapsing
+  // them both to null (as before) meant the backend couldn't tell "no
+  // offers were ever shown" apart from "the player declined", so it kept
+  // auto-applying an eligible bonus anyway on an explicit opt-out.
+  const [selectedOfferId, setSelectedOfferId] = useState<string | null | undefined>(undefined);
   const [depositTrxId, setDepositTrxId] = useState("");
   const [depositSubmitted, setDepositSubmitted] = useState(false);
   const [depositSubmitting, setDepositSubmitting] = useState(false);
@@ -532,7 +538,7 @@ export default function DepositWithdrawPage() {
     if (!depositAmt || Number.isNaN(amount) || amount < 100) {
       Promise.resolve().then(() => {
         setDepositOffers([]);
-        setSelectedOfferId(null);
+        setSelectedOfferId(undefined);
       });
       return;
     }
@@ -544,7 +550,13 @@ export default function DepositWithdrawPage() {
         if (cancelled) return;
         setDepositOffers(offers);
         setDepositOffersLoading(false);
-        setSelectedOfferId((prev) => (prev && offers.some((o) => o.id === prev) ? prev : null));
+        // An explicit "don't participate" (null) carries over across an
+        // amount change; a real offer pick only carries over if it's still
+        // in the new eligible list; anything else resets to undecided
+        // rather than silently reinterpreting "undecided" as "declined".
+        setSelectedOfferId((prev) =>
+          prev === null ? null : prev && offers.some((o) => o.id === prev) ? prev : undefined,
+        );
       })
       .catch(() => {
         if (cancelled) return;
@@ -575,6 +587,7 @@ export default function DepositWithdrawPage() {
         reference: depositTrxId.trim(),
         paymentAccountId: depositAccount?.id,
         offerId: selectedOfferId ?? undefined,
+        noOffer: selectedOfferId === null,
       });
       setDepositSubmitted(true);
     } catch (err) {
@@ -661,7 +674,7 @@ export default function DepositWithdrawPage() {
                     setDepositAmt("");
                     setDepositTrxId("");
                     setDepositSubmitError(null);
-                    setSelectedOfferId(null);
+                    setSelectedOfferId(undefined);
                     setDepositStep(1);
                   }}
                   t={t}

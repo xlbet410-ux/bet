@@ -30,6 +30,10 @@ type CreateCashTransactionInput = {
   // The bonus offer the player picked on the deposit step, if any — cash-in
   // only, same reasoning as paymentAccountId.
   offerId?: string;
+  // True only when the player explicitly picked "do not participate in
+  // any promotions" — distinct from just omitting offerId — so the
+  // backend never auto-applies some other eligible offer instead.
+  noOffer?: boolean;
 };
 
 async function createCashTransaction(kind: "cash-in" | "cash-out", input: CreateCashTransactionInput) {
