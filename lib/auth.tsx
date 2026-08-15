@@ -53,11 +53,16 @@ const AuthContext = createContext<AuthCtx>({
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
 const TOKEN_KEY = "2xlbet:token";
 
-// Persists a silently-captured ?agent=CODE across the visit — a player
-// might land on the homepage, browse a few pages, and only open the
-// register modal later from the header/bottom-nav/another page, none of
-// which pass the code through directly. AuthModal falls back to this when
-// no initialAgentCode prop is given; register() clears it once used.
+// Persists a silently-captured ?agent=CODE across THIS visit only (backed
+// by sessionStorage, not localStorage — see the two call sites) — a
+// player might land on the homepage, browse a few pages, and only open
+// the register modal later from the header/bottom-nav/another page, none
+// of which pass the code through directly. AuthModal falls back to this
+// when no initialAgentCode prop is given; register() clears it once used.
+// Using sessionStorage instead of localStorage matters: it must not
+// resurface on some later, completely unrelated visit that never went
+// through a referral link — sessionStorage clears itself when the tab or
+// browser closes, localStorage would linger forever.
 export const AGENT_CODE_KEY = "2xlbet:agentCode";
 
 async function parseApiError(res: Response) {
@@ -141,7 +146,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!res.ok) throw new Error(await parseApiError(res));
     const data = await res.json();
     localStorage.setItem(TOKEN_KEY, data.token);
-    localStorage.removeItem(AGENT_CODE_KEY);
+    sessionStorage.removeItem(AGENT_CODE_KEY);
     setUser(data.user);
   }
 

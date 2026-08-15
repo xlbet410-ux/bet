@@ -46,13 +46,26 @@ export default function Home() {
     if (ref) setRefCode(ref);
     // Silent agent affiliate link — captured but never shown as a visible
     // input (unlike ref), sent straight through at registration. Persisted
-    // to localStorage (see AGENT_CODE_KEY) so it survives if the player
+    // to sessionStorage (see AGENT_CODE_KEY) so it survives if the player
     // doesn't register right away from this exact popup — AuthModal reads
-    // it back regardless of which page/button later opens the register form.
+    // it back regardless of which page/button later opens the register
+    // form. sessionStorage, not localStorage — it must NOT survive past
+    // this browser tab/visit, or a completely unrelated later visit with
+    // no referral link at all would still show a stale agent code forever.
     const agent = params.get("agent");
     if (agent) {
       setAgentCode(agent);
-      localStorage.setItem(AGENT_CODE_KEY, agent);
+      sessionStorage.setItem(AGENT_CODE_KEY, agent);
+    }
+    // Scrub ref/agent out of the URL once captured — otherwise every
+    // reload (or just leaving this tab open and coming back later) keeps
+    // finding the same query params and re-triggers the register popup
+    // instead of the normal offer popup, every single time.
+    if (ref || agent) {
+      params.delete("ref");
+      params.delete("agent");
+      const qs = params.toString();
+      window.history.replaceState(null, "", qs ? `${window.location.pathname}?${qs}` : window.location.pathname);
     }
   }, []);
 

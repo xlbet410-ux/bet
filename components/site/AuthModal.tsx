@@ -26,14 +26,16 @@ export default function AuthModal({
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   // A captured ?agent=CODE takes over the same visible Referral Code field
-  // (falling back to whatever was persisted from an earlier visit — see
+  // (falling back to whatever was persisted earlier THIS visit — see
   // AGENT_CODE_KEY — so it isn't lost just because this particular modal
   // open wasn't the homepage's own auto-popup) so the player can actually
   // see it was applied, instead of it working silently in the background.
+  // sessionStorage, not localStorage — it must never resurface on some
+  // later, unrelated visit that never went through a referral link at all.
   // referralIsAgentCode remembers which kind of code this field started as,
   // so submission still routes it to the right backend field.
   const [initialAgentCodeValue] = useState(
-    () => initialAgentCode ?? (typeof window !== "undefined" ? localStorage.getItem(AGENT_CODE_KEY) ?? "" : ""),
+    () => initialAgentCode ?? (typeof window !== "undefined" ? sessionStorage.getItem(AGENT_CODE_KEY) ?? "" : ""),
   );
   const [referral, setReferral] = useState(initialAgentCodeValue || initialReferralCode || "");
   const [referralIsAgentCode] = useState(Boolean(initialAgentCodeValue));
