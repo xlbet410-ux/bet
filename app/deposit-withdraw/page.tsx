@@ -506,18 +506,22 @@ export default function DepositWithdrawPage() {
     };
   }, [accountsRetryKey, user]);
 
-  // Picks a random account among the active ones for the selected method,
-  // rather than always the same one — spreads deposit volume across agents
-  // instead of concentrating it on whichever account happens to be first.
-  // Re-rolls only when the method or the account list itself changes, so it
-  // stays put (matching what's already been copied/submitted) while the
-  // player is mid-transaction on this step.
+  // A player referred by an agent always sees that agent's own account for
+  // the method, never shuffled in with anyone else's — isMyAgent comes
+  // straight from getMyPaymentAccounts and is only ever true for accounts
+  // belonging to this player's own referring agent. Only when there's no
+  // such account (not referred, or their agent has no number for this
+  // method) do we fall back to a random pick among the shared pool, so
+  // deposit volume spreads across agents instead of concentrating on
+  // whichever account happens to be first. Re-rolls only when the method or
+  // the account list itself changes, so it stays put (matching what's
+  // already been copied/submitted) while the player is mid-transaction.
   useEffect(() => {
     const matches = accounts.filter((a) => a.method === depositMethod);
-    if (matches.length > 0) {
-      const index = Math.floor(Math.random() * matches.length);
-      Promise.resolve().then(() => setDepositAccountIndex(index));
-    }
+    if (matches.length === 0) return;
+    const myAgentIndex = matches.findIndex((a) => a.isMyAgent);
+    const index = myAgentIndex !== -1 ? myAgentIndex : Math.floor(Math.random() * matches.length);
+    Promise.resolve().then(() => setDepositAccountIndex(index));
   }, [accounts, depositMethod]);
 
   // Fetches the offers this player could pick for the entered amount —

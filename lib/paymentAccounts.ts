@@ -12,6 +12,10 @@ export type PaymentAccount = {
   details: string | null;
   isActive: boolean;
   createdAt: string;
+  // True only from getMyPaymentAccounts, for a player referred by an agent —
+  // this account belongs to that specific agent. The deposit page must
+  // always show this one instead of shuffling it in with the shared pool.
+  isMyAgent: boolean;
 };
 
 // Public route — only ever returns accounts an admin has marked active, so

@@ -5,7 +5,7 @@ import logo from "@/assets/logo.png";
 import { useEffect, useState } from "react";
 import { FaXmark } from "react-icons/fa6";
 import { useLang } from "@/lib/language";
-import { useAuth } from "@/lib/auth";
+import { useAuth, AGENT_CODE_KEY } from "@/lib/auth";
 
 export default function AuthModal({
   mode,
@@ -25,9 +25,18 @@ export default function AuthModal({
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
-  const [referral, setReferral] = useState(initialReferralCode ?? "");
-  // Silent — never rendered as a visible field, unlike referral above.
-  const [agentCode] = useState(initialAgentCode ?? "");
+  // A captured ?agent=CODE takes over the same visible Referral Code field
+  // (falling back to whatever was persisted from an earlier visit — see
+  // AGENT_CODE_KEY — so it isn't lost just because this particular modal
+  // open wasn't the homepage's own auto-popup) so the player can actually
+  // see it was applied, instead of it working silently in the background.
+  // referralIsAgentCode remembers which kind of code this field started as,
+  // so submission still routes it to the right backend field.
+  const [initialAgentCodeValue] = useState(
+    () => initialAgentCode ?? (typeof window !== "undefined" ? localStorage.getItem(AGENT_CODE_KEY) ?? "" : ""),
+  );
+  const [referral, setReferral] = useState(initialAgentCodeValue || initialReferralCode || "");
+  const [referralIsAgentCode] = useState(Boolean(initialAgentCodeValue));
   const [agree, setAgree] = useState(false);
   const [error, setError] = useState("");
   const [showPwd, setShowPwd] = useState(false);
@@ -63,8 +72,8 @@ export default function AuthModal({
           fullName: name.trim(),
           phoneNumber: digits,
           password,
-          referralCode: referral.trim() || undefined,
-          agentCode: agentCode.trim() || undefined,
+          referralCode: referralIsAgentCode ? undefined : referral.trim() || undefined,
+          agentCode: referralIsAgentCode ? referral.trim() || undefined : undefined,
           agreedTerms: agree,
         });
       }

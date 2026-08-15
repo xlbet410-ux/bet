@@ -15,6 +15,7 @@ import LiveWinsTicker from "@/components/home/LiveWinsTicker";
 import LiveGames from "@/components/home/LiveGames";
 import CtaStrip from "@/components/home/CtaStrip";
 import ChatSupport from "@/components/site/ChatSupport";
+import { AGENT_CODE_KEY } from "@/lib/auth";
 
 // This route is entirely client-rendered (all data loads via useEffect), so
 // there's nothing to gain from Next's Full Route Cache — and a stale cached
@@ -44,9 +45,15 @@ export default function Home() {
     const ref = params.get("ref");
     if (ref) setRefCode(ref);
     // Silent agent affiliate link — captured but never shown as a visible
-    // input (unlike ref), sent straight through at registration.
+    // input (unlike ref), sent straight through at registration. Persisted
+    // to localStorage (see AGENT_CODE_KEY) so it survives if the player
+    // doesn't register right away from this exact popup — AuthModal reads
+    // it back regardless of which page/button later opens the register form.
     const agent = params.get("agent");
-    if (agent) setAgentCode(agent);
+    if (agent) {
+      setAgentCode(agent);
+      localStorage.setItem(AGENT_CODE_KEY, agent);
+    }
   }, []);
 
   useEffect(() => {
