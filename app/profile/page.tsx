@@ -550,6 +550,19 @@ export default function ProfilePage() {
     };
   }, [kycStep, docSide, frontImg, backImg, selfieImg]);
 
+  // Ticks the resend cooldown down to 0 once a second while it's active.
+  // Must stay above the `if (!user)` guard below — every hook in this
+  // component has to run on every render regardless of `user`, or a render
+  // where `user` is still null (first paint, before the auth check
+  // resolves) calls fewer hooks than a later render where it's populated,
+  // which crashes React with "Rendered more hooks than during the previous
+  // render."
+  useEffect(() => {
+    if (otpResendCooldown <= 0) return;
+    const id = setInterval(() => setOtpResendCooldown((s) => Math.max(0, s - 1)), 1000);
+    return () => clearInterval(id);
+  }, [otpResendCooldown]);
+
   if (!user) return null;
 
   const accountId = `#${user.memberId}`;
@@ -619,13 +632,6 @@ export default function ProfilePage() {
     setFrontImg(null); setBackImg(null); setSelfieImg(null);
     setDocType(""); setKycPhone("");
   }
-
-  // Ticks the resend cooldown down to 0 once a second while it's active.
-  useEffect(() => {
-    if (otpResendCooldown <= 0) return;
-    const id = setInterval(() => setOtpResendCooldown((s) => Math.max(0, s - 1)), 1000);
-    return () => clearInterval(id);
-  }, [otpResendCooldown]);
 
   async function handleSendOtp() {
     if (kycPhone.length < 7 || otpSending) return;
