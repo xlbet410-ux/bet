@@ -27,6 +27,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [authMode, setAuthMode] = useState<"login" | "register" | null>(null);
   const [refCode, setRefCode] = useState<string | null>(null);
+  const [agentCode, setAgentCode] = useState<string | null>(null);
 
   // Branding splash, not a real loading gate — homepage content underneath
   // starts fetching immediately regardless of this timer. Kept just long
@@ -39,18 +40,23 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    const ref = new URLSearchParams(window.location.search).get("ref");
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get("ref");
     if (ref) setRefCode(ref);
+    // Silent agent affiliate link — captured but never shown as a visible
+    // input (unlike ref), sent straight through at registration.
+    const agent = params.get("agent");
+    if (agent) setAgentCode(agent);
   }, []);
 
   useEffect(() => {
-    if (!loading && refCode) setAuthMode("register");
-  }, [loading, refCode]);
+    if (!loading && (refCode || agentCode)) setAuthMode("register");
+  }, [loading, refCode, agentCode]);
 
   return (
     <>
       <Loader done={!loading} />
-      <PromoPopup trigger={!loading && !refCode} />
+      <PromoPopup trigger={!loading && !refCode && !agentCode} />
 
       {authMode && (
         <AuthModal
@@ -58,6 +64,7 @@ export default function Home() {
           onClose={() => setAuthMode(null)}
           onSwitch={(m) => setAuthMode(m)}
           initialReferralCode={refCode ?? undefined}
+          initialAgentCode={agentCode ?? undefined}
         />
       )}
 

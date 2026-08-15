@@ -12,11 +12,13 @@ export default function AuthModal({
   onClose,
   onSwitch,
   initialReferralCode,
+  initialAgentCode,
 }: {
   mode: "login" | "register";
   onClose: () => void;
   onSwitch: (m: "login" | "register") => void;
   initialReferralCode?: string;
+  initialAgentCode?: string;
 }) {
   const isLogin = mode === "login";
   const [name, setName] = useState("");
@@ -24,6 +26,8 @@ export default function AuthModal({
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [referral, setReferral] = useState(initialReferralCode ?? "");
+  // Silent — never rendered as a visible field, unlike referral above.
+  const [agentCode] = useState(initialAgentCode ?? "");
   const [agree, setAgree] = useState(false);
   const [error, setError] = useState("");
   const [showPwd, setShowPwd] = useState(false);
@@ -60,6 +64,7 @@ export default function AuthModal({
           phoneNumber: digits,
           password,
           referralCode: referral.trim() || undefined,
+          agentCode: agentCode.trim() || undefined,
           agreedTerms: agree,
         });
       }

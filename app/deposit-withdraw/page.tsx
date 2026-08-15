@@ -12,7 +12,7 @@ import AuthModal from "@/components/site/AuthModal";
 import { useAuth } from "@/lib/auth";
 import { useLang } from "@/lib/language";
 import { fmt } from "@/lib/format";
-import { getActivePaymentAccounts, type PaymentAccount, type PaymentMethod } from "@/lib/paymentAccounts";
+import { getMyPaymentAccounts, type PaymentAccount, type PaymentMethod } from "@/lib/paymentAccounts";
 import { createCashIn, createCashOut } from "@/lib/cashTransactions";
 import { getApplicableDepositOffers, type DepositOffer } from "@/lib/offers";
 import { getWithdrawable, type WithdrawableInfo } from "@/lib/wallet";
@@ -468,8 +468,13 @@ export default function DepositWithdrawPage() {
 
   // The payment-accounts list rarely changes and this page can't function
   // without it, so retry a few times with backoff before giving up —
-  // matches the pattern used for the game catalog on a cold backend.
+  // matches the pattern used for the game catalog on a cold backend. Uses
+  // the authenticated /mine endpoint so a player referred by a
+  // commission-type agent sees that agent's own number, never shown to
+  // anyone else — this page already redirects guests to "/" above, so a
+  // logged-in user is guaranteed by the time this fires.
   useEffect(() => {
+    if (!user) return;
     let cancelled = false;
 
     async function load() {
@@ -478,7 +483,7 @@ export default function DepositWithdrawPage() {
       const maxAttempts = 3;
       for (let attempt = 1; attempt <= maxAttempts; attempt++) {
         try {
-          const list = await getActivePaymentAccounts();
+          const list = await getMyPaymentAccounts();
           if (!cancelled) {
             setAccounts(list);
             setAccountsLoading(false);
@@ -499,7 +504,7 @@ export default function DepositWithdrawPage() {
     return () => {
       cancelled = true;
     };
-  }, [accountsRetryKey]);
+  }, [accountsRetryKey, user]);
 
   // Picks a random account among the active ones for the selected method,
   // rather than always the same one — spreads deposit volume across agents

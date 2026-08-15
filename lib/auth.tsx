@@ -17,6 +17,7 @@ type RegisterInput = {
   phoneNumber: string;
   password: string;
   referralCode?: string;
+  agentCode?: string;
   isAdult?: boolean;
   agreedTerms: boolean;
 };
