@@ -635,13 +635,17 @@ export default function ProfilePage() {
   }
 
   async function handleSendOtp() {
-    if (kycPhone.length < 7 || otpSending) return;
+    if (kycPhone.length < 7 || otpSending || otpResendCooldown > 0) return;
     setOtpError("");
     setOtpSending(true);
+    // Armed for every attempt, not just a successful one, matching the
+    // backend's own per-attempt cooldown — otherwise the button re-enables
+    // right after a failed send and nothing stops repeated clicks from
+    // firing off more requests than the backend will even accept.
+    setOtpResendCooldown(60);
     try {
       await sendKycOtp(kycPhone);
       setOtpDigits(["","","","","",""]);
-      setOtpResendCooldown(60);
       setKycStep("otp");
     } catch (err) {
       setOtpError(err instanceof Error ? err.message : t.profileErrGeneric);
@@ -1271,10 +1275,14 @@ export default function ProfilePage() {
                               <p className="mb-3 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-300">{otpError}</p>
                             )}
                             <button onClick={handleSendOtp}
-                              disabled={kycPhone.length < 7 || otpSending}
+                              disabled={kycPhone.length < 7 || otpSending || otpResendCooldown > 0}
                               className="w-full rounded-full py-3.5 text-sm font-bold text-[#0A0612] transition-all hover:scale-[1.02] disabled:opacity-40"
                               style={{ background:"linear-gradient(to right,#D4AF37,#F5C842)" }}>
-                              {otpSending ? t.profileOtpSending : t.profileSendOtp}
+                              {otpSending
+                                ? t.profileOtpSending
+                                : otpResendCooldown > 0
+                                  ? `${t.profileSendOtp} (${otpResendCooldown}s)`
+                                  : t.profileSendOtp}
                             </button>
                           </div>
                         </div>
