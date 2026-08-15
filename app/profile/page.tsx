@@ -8,6 +8,7 @@ import Footer from "@/components/site/Footer";
 import MobileBottomNav from "@/components/site/MobileBottomNav";
 import AuthModal from "@/components/site/AuthModal";
 import AmbientBackground from "@/components/site/AmbientBackground";
+import ShareLinkBar from "@/components/site/ShareLinkBar";
 import { useAuth } from "@/lib/auth";
 import { useLang } from "@/lib/language";
 import { getMyKyc, submitKyc, type KycStatus } from "@/lib/kyc";
@@ -1575,6 +1576,17 @@ export default function ProfilePage() {
                         {linkCopied ? t.profileCopied : t.profileCopyLink}
                       </button>
                     </div>
+
+                    {user.referralCode && (
+                      <div className="mt-4 flex items-center gap-2.5">
+                        <span className="text-[11px] font-medium text-[#9B8EC4]">{t.profileShareVia}</span>
+                        <ShareLinkBar
+                          link={typeof window !== "undefined" ? `${window.location.origin}/?ref=${user.referralCode}` : ""}
+                          instagramHint={t.profileInstagramHint}
+                          variant="dark"
+                        />
+                      </div>
+                    )}
 
                     <Link href="/referral" className="mt-4 inline-block text-[11px] font-semibold text-[#F5C842] transition-colors hover:text-[#D4AF37]">
                       {lang === "bn" ? "আপনার রেফারেল ও আয় দেখুন →" : "View your referrals & earnings →"}

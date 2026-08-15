@@ -193,6 +193,8 @@ export type Translations = {
   profileReferralCodeLabel: string;
   profileReferralLinkLabel: string;
   profileCopyLink: string;
+  profileShareVia: string;
+  profileInstagramHint: string;
   profileKycLoading: string;
   profileKycVerifiedTitle: string;
   profileKycVerifiedDesc: string;
@@ -463,6 +465,8 @@ const T: Record<Lang, Translations> = {
     profileReferralCodeLabel: "Your Referral Code",
     profileReferralLinkLabel: "Your Referral Link",
     profileCopyLink: "Copy Link",
+    profileShareVia: "Share via",
+    profileInstagramHint: "Link copied! Paste it in your Instagram bio or story.",
     profileKycLoading: "Loading verification status…",
     profileKycVerifiedTitle: "You Are Verified!",
     profileKycVerifiedDesc: "Your identity has been successfully verified. You have full access to all features.",
@@ -729,6 +733,8 @@ const T: Record<Lang, Translations> = {
     profileReferralCodeLabel: "আপনার রেফারেল কোড",
     profileReferralLinkLabel: "আপনার রেফারেল লিংক",
     profileCopyLink: "লিংক কপি করুন",
+    profileShareVia: "শেয়ার করুন",
+    profileInstagramHint: "লিংক কপি হয়েছে! আপনার ইনস্টাগ্রাম বায়ো বা স্টোরিতে পেস্ট করুন।",
     profileKycLoading: "ভেরিফিকেশন স্ট্যাটাস লোড হচ্ছে…",
     profileKycVerifiedTitle: "আপনি ভেরিফাইড!",
     profileKycVerifiedDesc: "আপনার পরিচয় সফলভাবে যাচাই করা হয়েছে। আপনি সব ফিচারে সম্পূর্ণ প্রবেশাধিকার পেয়েছেন।",
