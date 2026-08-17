@@ -27,3 +27,30 @@ export async function getWithdrawable(): Promise<WithdrawableInfo> {
   if (!res.ok) throw new Error("Couldn't load wallet status.");
   return res.json();
 }
+
+export type WalletSummary = {
+  balance: string;
+  mainWallet: string;
+  turnoverWallet: string;
+  depositTurnover: {
+    totalPrincipal: string;
+    turnoverRequired: string;
+    turnoverDone: string;
+    progressPercent: number;
+  } | null;
+  turnoverBonuses: Array<{
+    id: string;
+    type: string;
+    amount: string;
+    turnoverRequired: string;
+    turnoverDone: string;
+    progressPercent: number;
+    daysLeft: number;
+  }>;
+};
+
+export async function getWalletSummary(): Promise<WalletSummary> {
+  const res = await fetch(`${API_URL}/offers/wallet-summary`, { headers: authHeaders(), cache: "no-store" });
+  if (!res.ok) throw new Error("Couldn't load wallet status.");
+  return res.json();
+}

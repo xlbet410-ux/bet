@@ -17,6 +17,8 @@ import { getMyCashTransactions, type MyCashTransaction } from "@/lib/cashTransac
 import { getMyVipStatus, type VipStatus } from "@/lib/vip";
 import { getStreakInfo, type StreakInfo } from "@/lib/loginStreak";
 import { getMyGameHistory, type MyGameHistoryEntry } from "@/lib/gameHistory";
+import { getWalletSummary, type WalletSummary } from "@/lib/wallet";
+import { formatBalance } from "@/lib/balance";
 import { fmt } from "@/lib/format";
 
 const METHOD_LABELS: Record<string, string> = {
@@ -360,6 +362,7 @@ export default function ProfilePage() {
   // VIP — real, backend-computed level/progress (auto-upgrades on deposit/bet)
   const [vipStatus, setVipStatus] = useState<VipStatus | null>(null);
   const [streakInfo, setStreakInfo] = useState<StreakInfo | null>(null);
+  const [walletSummary, setWalletSummary] = useState<WalletSummary | null>(null);
 
   // Game history — bet-by-bet, profile "Game History" tab
   const [gameHistory, setGameHistory] = useState<MyGameHistoryEntry[]>([]);
@@ -412,6 +415,13 @@ export default function ProfilePage() {
     getStreakInfo()
       .then((s) => setStreakInfo(s))
       .catch(() => {}); // Non-critical — just a small display card.
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (!user) return;
+    getWalletSummary()
+      .then((s) => setWalletSummary(s))
+      .catch(() => {}); // Non-critical — falls back to the raw balance below.
   }, [user?.id]);
 
   // Same retry-with-backoff pattern used for the game catalog and payment
@@ -877,9 +887,48 @@ export default function ProfilePage() {
                   <div className="rounded-2xl p-6"
                     style={{ background:"linear-gradient(135deg,#7B2FBE,#4A0E8F)", boxShadow:"0 16px 48px rgba(123,47,190,.35)", border:"1px solid rgba(212,175,55,.2)" }}>
                     <p className="mb-1 text-[11px] font-semibold uppercase tracking-widest text-purple-200/60">{t.balance}</p>
-                    <p className="text-4xl font-black text-white">{user.balance}</p>
+                    <p className="text-4xl font-black text-white">{walletSummary ? formatBalance(walletSummary.mainWallet) : user.balance}</p>
                     <p className="mt-1 text-sm text-purple-200/50">{t.profileAvailableToPlay}</p>
                   </div>
+
+                  {walletSummary && (walletSummary.turnoverBonuses.length > 0 || walletSummary.depositTurnover) && (
+                    <div className="rounded-2xl p-5" style={CARD}>
+                      <div className="mb-1 flex items-center justify-between gap-3">
+                        <h3 className="font-extrabold text-white">{t.profileTurnoverWallet}</h3>
+                        <p className="text-lg font-black text-[#F5C842]">{formatBalance(walletSummary.turnoverWallet)}</p>
+                      </div>
+                      <p className="mb-4 text-xs leading-relaxed text-purple-200/50">{t.profileTurnoverWalletDesc}</p>
+
+                      {walletSummary.depositTurnover && (
+                        <div className="mb-3 rounded-xl p-3" style={INNER}>
+                          <div className="mb-1.5 flex items-center justify-between text-xs text-purple-200/70">
+                            <span>{formatBalance(walletSummary.depositTurnover.totalPrincipal)} {t.profileDepositTurnoverLabel}</span>
+                            <span>{walletSummary.depositTurnover.progressPercent}%</span>
+                          </div>
+                          <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
+                            <div className="h-2 rounded-full" style={{ width: `${walletSummary.depositTurnover.progressPercent}%`, background: "linear-gradient(to right,#7B2FBE,#D4AF37)" }} />
+                          </div>
+                        </div>
+                      )}
+
+                      {walletSummary.turnoverBonuses.map((b) => (
+                        <div key={b.id} className="mb-3 rounded-xl p-3 last:mb-0" style={INNER}>
+                          <div className="mb-1.5 flex items-center justify-between text-xs text-purple-200/70">
+                            <span className="capitalize">{b.type.replace(/_/g, " ")} — {formatBalance(b.amount)}</span>
+                            <span>{b.progressPercent}%</span>
+                          </div>
+                          <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
+                            <div className="h-2 rounded-full" style={{ width: `${b.progressPercent}%`, background: "linear-gradient(to right,#D4AF37,#F5C842)" }} />
+                          </div>
+                        </div>
+                      ))}
+
+                      <Link href="/my-bonuses" className="mt-1 inline-block text-xs font-semibold text-[#F5C842] hover:underline">
+                        {t.profileTurnoverBonusesViewAll} →
+                      </Link>
+                    </div>
+                  )}
+
                   <div className="rounded-2xl p-5" style={CARD}>
                     <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
                       <h3 className="font-extrabold text-white">{t.profileRecentTransactions}</h3>

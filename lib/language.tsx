@@ -144,6 +144,10 @@ export type Translations = {
   profileValueStandardPlayer: string;
   profileActive: string;
   profileAvailableToPlay: string;
+  profileTurnoverWallet: string;
+  profileTurnoverWalletDesc: string;
+  profileDepositTurnoverLabel: string;
+  profileTurnoverBonusesViewAll: string;
   profileRecentTransactions: string;
   profileStatusCompleted: string;
   profileStatusPending: string;
@@ -416,6 +420,10 @@ const T: Record<Lang, Translations> = {
     profileValueStandardPlayer: "Standard Player",
     profileActive: "Active",
     profileAvailableToPlay: "Available to play",
+    profileTurnoverWallet: "Turnover Wallet",
+    profileTurnoverWalletDesc: "Bonus money still wagering off its requirement. Each bonus moves into your Main Wallet automatically as soon as its own turnover is complete.",
+    profileDepositTurnoverLabel: "of your deposit is in Main Wallet, wagered",
+    profileTurnoverBonusesViewAll: "View all bonuses",
     profileRecentTransactions: "Recent Transactions",
     profileStatusCompleted: "completed",
     profileStatusPending: "pending",
@@ -684,6 +692,10 @@ const T: Record<Lang, Translations> = {
     profileValueStandardPlayer: "স্ট্যান্ডার্ড প্লেয়ার",
     profileActive: "সক্রিয়",
     profileAvailableToPlay: "খেলার জন্য উপলব্ধ",
+    profileTurnoverWallet: "টার্নওভার ওয়ালেট",
+    profileTurnoverWalletDesc: "বোনাসের টাকা এখনো টার্নওভার শর্ত পূরণ করছে। প্রতিটি বোনাসের টার্নওভার শেষ হওয়ার সাথে সাথে তা স্বয়ংক্রিয়ভাবে আপনার মেইন ওয়ালেটে যোগ হয়ে যাবে।",
+    profileDepositTurnoverLabel: "আপনার ডিপোজিটের এই পরিমাণ মেইন ওয়ালেটে আছে, ওয়েজার্ড হয়েছে",
+    profileTurnoverBonusesViewAll: "সব বোনাস দেখুন",
     profileRecentTransactions: "সাম্প্রতিক লেনদেন",
     profileStatusCompleted: "সম্পন্ন",
     profileStatusPending: "অপেক্ষমান",
