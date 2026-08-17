@@ -654,7 +654,7 @@ export default function ProfilePage() {
     // firing off more requests than the backend will even accept.
     setOtpResendCooldown(60);
     try {
-      await sendKycOtp(kycPhone);
+      await sendKycOtp(`88${kycPhone}`);
       setOtpDigits(["","","","","",""]);
       setKycStep("otp");
     } catch (err) {
@@ -1326,7 +1326,7 @@ export default function ProfilePage() {
                           <p className="mb-6 text-sm text-[#9B8EC4]">{t.profileKycPhoneDesc}</p>
                           <div className="mx-auto max-w-xs">
                             <div className="relative mb-4">
-                              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-[#9B8EC4]">+88</span>
+                              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-[#9B8EC4]">88</span>
                               <input type="tel" value={kycPhone} onChange={(e) => setKycPhone(e.target.value.replace(/\D/g,""))}
                                 placeholder={t.profileKycPhonePlaceholder}
                                 className="w-full rounded-xl border border-[#7B2FBE]/40 bg-white/4 py-3 pl-12 pr-4 text-sm text-white placeholder-[#8A7DB0] outline-none transition-all focus:border-[#D4AF37]" />
@@ -1352,7 +1352,7 @@ export default function ProfilePage() {
                       {kycStep === "otp" && (
                         <div className="text-center">
                           <h3 className="mb-1 text-lg font-extrabold text-white">{t.profileKycOtpTitle}</h3>
-                          <p className="mb-1 text-sm text-[#9B8EC4]">{t.profileKycOtpSentTo} <span className="text-white">+88{kycPhone}</span></p>
+                          <p className="mb-1 text-sm text-[#9B8EC4]">{t.profileKycOtpSentTo} <span className="text-white">88{kycPhone}</span></p>
                           <p className="mb-6 text-xs text-[#7B5EA7]">{t.profileKycOtpDemo}</p>
                           <div className="mx-auto mb-6 flex max-w-xs justify-center gap-2">
                             {otpDigits.map((d, i) => (
