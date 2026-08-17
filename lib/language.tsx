@@ -108,6 +108,7 @@ export type Translations = {
   profileUnverified: string;
   profileTabProfile: string;
   profileTabWallet: string;
+  profileTabTurnover: string;
   profileTabWithdraw: string;
   profileTabSettings: string;
   profileTabKyc: string;
@@ -148,6 +149,7 @@ export type Translations = {
   profileTurnoverWalletDesc: string;
   profileDepositTurnoverLabel: string;
   profileTurnoverBonusesViewAll: string;
+  profileTurnoverEmpty: string;
   profileRecentTransactions: string;
   profileStatusCompleted: string;
   profileStatusPending: string;
@@ -384,6 +386,7 @@ const T: Record<Lang, Translations> = {
     profileUnverified: "Unverified",
     profileTabProfile: "Profile",
     profileTabWallet: "Wallet",
+    profileTabTurnover: "Turnover Wallet",
     profileTabWithdraw: "Withdraw",
     profileTabSettings: "Settings",
     profileTabKyc: "KYC",
@@ -424,6 +427,7 @@ const T: Record<Lang, Translations> = {
     profileTurnoverWalletDesc: "Bonus money still wagering off its requirement. Each bonus moves into your Main Wallet automatically as soon as its own turnover is complete.",
     profileDepositTurnoverLabel: "of your deposit is in Main Wallet, wagered",
     profileTurnoverBonusesViewAll: "View all bonuses",
+    profileTurnoverEmpty: "Nothing pending — no active bonus or deposit turnover right now.",
     profileRecentTransactions: "Recent Transactions",
     profileStatusCompleted: "completed",
     profileStatusPending: "pending",
@@ -656,6 +660,7 @@ const T: Record<Lang, Translations> = {
     profileUnverified: "অযাচাইকৃত",
     profileTabProfile: "প্রোফাইল",
     profileTabWallet: "ওয়ালেট",
+    profileTabTurnover: "টার্নওভার ওয়ালেট",
     profileTabWithdraw: "উত্তোলন",
     profileTabSettings: "সেটিংস",
     profileTabKyc: "কেওয়াইসি",
@@ -696,6 +701,7 @@ const T: Record<Lang, Translations> = {
     profileTurnoverWalletDesc: "বোনাসের টাকা এখনো টার্নওভার শর্ত পূরণ করছে। প্রতিটি বোনাসের টার্নওভার শেষ হওয়ার সাথে সাথে তা স্বয়ংক্রিয়ভাবে আপনার মেইন ওয়ালেটে যোগ হয়ে যাবে।",
     profileDepositTurnoverLabel: "আপনার ডিপোজিটের এই পরিমাণ মেইন ওয়ালেটে আছে, ওয়েজার্ড হয়েছে",
     profileTurnoverBonusesViewAll: "সব বোনাস দেখুন",
+    profileTurnoverEmpty: "এখন কিছু অপেক্ষমাণ নেই — কোনো সক্রিয় বোনাস বা ডিপোজিট টার্নওভার নেই।",
     profileRecentTransactions: "সাম্প্রতিক লেনদেন",
     profileStatusCompleted: "সম্পন্ন",
     profileStatusPending: "অপেক্ষমান",

@@ -33,10 +33,10 @@ const METHOD_LABELS: Record<string, string> = {
 
 type TxFilter = "all" | "24h" | "week" | "month";
 
-type Tab     = "profile" | "wallet" | "deposit" | "withdraw" | "history" | "settings" | "kyc" | "referral";
+type Tab     = "profile" | "wallet" | "turnover" | "deposit" | "withdraw" | "history" | "settings" | "kyc" | "referral";
 type KycStep = "idle" | "phone" | "otp" | "docType" | "upload" | "selfie" | "done";
 
-const TABS: Tab[] = ["profile", "wallet", "deposit", "withdraw", "history", "settings", "kyc", "referral"];
+const TABS: Tab[] = ["profile", "wallet", "turnover", "deposit", "withdraw", "history", "settings", "kyc", "referral"];
 
 function DocTypeIcon({ id, className = "" }: { id: string; className?: string }) {
   if (id === "passport") {
@@ -707,6 +707,7 @@ export default function ProfilePage() {
   const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
     { id:"profile", label:t.profileTabProfile, icon:<svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" strokeLinecap="round"/></svg> },
     { id:"wallet",  label:t.profileTabWallet,  icon:<svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 3H8a2 2 0 0 0-2 4h12a2 2 0 0 0-2-4z"/><circle cx="16" cy="14" r="1.5" className="fill-current stroke-none"/></svg> },
+    { id:"turnover",label:t.profileTabTurnover,icon:<svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-2"><path d="M21 12a9 9 0 1 1-2.64-6.36" strokeLinecap="round" strokeLinejoin="round"/><path d="M21 3v6h-6" strokeLinecap="round" strokeLinejoin="round"/></svg> },
     { id:"deposit", label:t.deposit, icon:<svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-2"><path d="M12 3v12m0 0-4-4m4 4 4-4" strokeLinecap="round" strokeLinejoin="round"/><path d="M20 21H4" strokeLinecap="round"/></svg> },
     { id:"withdraw",label:t.profileTabWithdraw,icon:<svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-2"><path d="M12 21V9m0 0 4 4m-4-4-4 4" strokeLinecap="round" strokeLinejoin="round"/><path d="M20 3H4" strokeLinecap="round"/></svg> },
     { id:"history", label:t.profileTabHistory, icon:<svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2" strokeLinecap="round" strokeLinejoin="round"/></svg> },
@@ -891,44 +892,6 @@ export default function ProfilePage() {
                     <p className="mt-1 text-sm text-purple-200/50">{t.profileAvailableToPlay}</p>
                   </div>
 
-                  {walletSummary && (walletSummary.turnoverBonuses.length > 0 || walletSummary.depositTurnover) && (
-                    <div className="rounded-2xl p-5" style={CARD}>
-                      <div className="mb-1 flex items-center justify-between gap-3">
-                        <h3 className="font-extrabold text-white">{t.profileTurnoverWallet}</h3>
-                        <p className="text-lg font-black text-[#F5C842]">{formatBalance(walletSummary.turnoverWallet)}</p>
-                      </div>
-                      <p className="mb-4 text-xs leading-relaxed text-purple-200/50">{t.profileTurnoverWalletDesc}</p>
-
-                      {walletSummary.depositTurnover && (
-                        <div className="mb-3 rounded-xl p-3" style={INNER}>
-                          <div className="mb-1.5 flex items-center justify-between text-xs text-purple-200/70">
-                            <span>{formatBalance(walletSummary.depositTurnover.totalPrincipal)} {t.profileDepositTurnoverLabel}</span>
-                            <span>{walletSummary.depositTurnover.progressPercent}%</span>
-                          </div>
-                          <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
-                            <div className="h-2 rounded-full" style={{ width: `${walletSummary.depositTurnover.progressPercent}%`, background: "linear-gradient(to right,#7B2FBE,#D4AF37)" }} />
-                          </div>
-                        </div>
-                      )}
-
-                      {walletSummary.turnoverBonuses.map((b) => (
-                        <div key={b.id} className="mb-3 rounded-xl p-3 last:mb-0" style={INNER}>
-                          <div className="mb-1.5 flex items-center justify-between text-xs text-purple-200/70">
-                            <span className="capitalize">{b.type.replace(/_/g, " ")} — {formatBalance(b.amount)}</span>
-                            <span>{b.progressPercent}%</span>
-                          </div>
-                          <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
-                            <div className="h-2 rounded-full" style={{ width: `${b.progressPercent}%`, background: "linear-gradient(to right,#D4AF37,#F5C842)" }} />
-                          </div>
-                        </div>
-                      ))}
-
-                      <Link href="/my-bonuses" className="mt-1 inline-block text-xs font-semibold text-[#F5C842] hover:underline">
-                        {t.profileTurnoverBonusesViewAll} →
-                      </Link>
-                    </div>
-                  )}
-
                   <div className="rounded-2xl p-5" style={CARD}>
                     <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
                       <h3 className="font-extrabold text-white">{t.profileRecentTransactions}</h3>
@@ -1015,6 +978,54 @@ export default function ProfilePage() {
                           );
                         })}
                       </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* ════ TURNOVER WALLET ════ */}
+              {tab === "turnover" && (
+                <div className="space-y-4">
+                  <div className="rounded-2xl p-6"
+                    style={{ background:"linear-gradient(135deg,#7B2FBE,#4A0E8F)", boxShadow:"0 16px 48px rgba(123,47,190,.35)", border:"1px solid rgba(212,175,55,.2)" }}>
+                    <p className="mb-1 text-[11px] font-semibold uppercase tracking-widest text-purple-200/60">{t.profileTurnoverWallet}</p>
+                    <p className="text-4xl font-black text-white">{walletSummary ? formatBalance(walletSummary.turnoverWallet) : "৳0.00"}</p>
+                    <p className="mt-1 text-sm text-purple-200/50">{t.profileTurnoverWalletDesc}</p>
+                  </div>
+
+                  <div className="rounded-2xl p-5" style={CARD}>
+                    {!walletSummary || (walletSummary.turnoverBonuses.length === 0 && !walletSummary.depositTurnover) ? (
+                      <p className="py-6 text-center text-sm text-purple-200/50">{t.profileTurnoverEmpty}</p>
+                    ) : (
+                      <>
+                        {walletSummary.depositTurnover && (
+                          <div className="mb-3 rounded-xl p-3" style={INNER}>
+                            <div className="mb-1.5 flex items-center justify-between text-xs text-purple-200/70">
+                              <span>{formatBalance(walletSummary.depositTurnover.totalPrincipal)} {t.profileDepositTurnoverLabel}</span>
+                              <span>{walletSummary.depositTurnover.progressPercent}%</span>
+                            </div>
+                            <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
+                              <div className="h-2 rounded-full" style={{ width: `${walletSummary.depositTurnover.progressPercent}%`, background: "linear-gradient(to right,#7B2FBE,#D4AF37)" }} />
+                            </div>
+                          </div>
+                        )}
+
+                        {walletSummary.turnoverBonuses.map((b) => (
+                          <div key={b.id} className="mb-3 rounded-xl p-3 last:mb-0" style={INNER}>
+                            <div className="mb-1.5 flex items-center justify-between text-xs text-purple-200/70">
+                              <span className="capitalize">{b.type.replace(/_/g, " ")} — {formatBalance(b.amount)}</span>
+                              <span>{b.progressPercent}%</span>
+                            </div>
+                            <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
+                              <div className="h-2 rounded-full" style={{ width: `${b.progressPercent}%`, background: "linear-gradient(to right,#D4AF37,#F5C842)" }} />
+                            </div>
+                          </div>
+                        ))}
+
+                        <Link href="/my-bonuses" className="mt-1 inline-block text-xs font-semibold text-[#F5C842] hover:underline">
+                          {t.profileTurnoverBonusesViewAll} →
+                        </Link>
+                      </>
                     )}
                   </div>
                 </div>
