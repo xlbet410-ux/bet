@@ -178,8 +178,8 @@ function OfferPicker({
 }) {
   const strings =
     lang === "bn"
-      ? { heading: "প্রমোশন", noneLabel: "কোনো প্রমোশনে অংশগ্রহণ করবেন না", turnover: "টার্নওভার", validity: "মেয়াদ", days: "দিন" }
-      : { heading: "Promotions", noneLabel: "Do not participate in any promotions", turnover: "TURNOVER", validity: "VALID", days: "days" };
+      ? { heading: "প্রমোশন", noneLabel: "কোনো প্রমোশনে অংশগ্রহণ করবেন না", turnover: "টার্নওভার", validity: "মেয়াদ", days: "দিন", terms: "শর্তাবলী" }
+      : { heading: "Promotions", noneLabel: "Do not participate in any promotions", turnover: "TURNOVER", validity: "VALID", days: "days", terms: "TERMS" };
 
   if (loading || offers.length === 0) return null;
 
@@ -194,6 +194,7 @@ function OfferPicker({
         {offers.map((o) => {
           const selected = selectedId === o.id;
           const title = (lang === "bn" ? o.titleBn : o.titleEn) || o.titleBn;
+          const terms = (lang === "bn" ? o.termsBn : o.termsEn) || o.termsBn;
           return (
             <button
               key={o.id}
@@ -225,6 +226,12 @@ function OfferPicker({
                     {strings.turnover}: {o.turnoverMultiplier}x
                     {o.bonusValidityDays ? ` · ${strings.validity}: ${o.bonusValidityDays} ${strings.days}` : ""}
                   </p>
+                  {terms && (
+                    <p className="mt-1.5 leading-relaxed">
+                      <span className="font-semibold text-gray-600">{strings.terms}: </span>
+                      {terms}
+                    </p>
+                  )}
                 </div>
               )}
             </button>

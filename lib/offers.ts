@@ -129,6 +129,7 @@ export type DepositOffer = {
   turnoverBase: string;
   bonusValidityDays: number | null;
   termsBn: string | null;
+  termsEn: string | null;
 };
 
 // Offers this player could actually pick for the given deposit amount —
