@@ -1,6 +1,8 @@
 "use client";
 
 import Image from "next/image";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { FaXmark } from "react-icons/fa6";
 import type { PublicOffer } from "@/lib/offers";
 
@@ -116,8 +118,18 @@ export function OfferDetailModal({
   const steps = toLines(stepsToClaim).length > 0 ? toLines(stepsToClaim) : toBullets(description);
   const termsList = toBullets(terms);
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6">
+  // Rendered into document.body via a portal — the page's <main> wrapper
+  // sets its own z-index (creating a stacking context), which would trap
+  // this modal underneath the fixed site header no matter how high a
+  // z-index is set on it from inside. Escaping to body sidesteps that.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  if (!mounted) return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-[130] flex items-center justify-center p-3 sm:p-6">
       <div className="absolute inset-0 bg-black/70" onClick={onClose} aria-hidden="true" />
 
       <div
@@ -215,6 +227,7 @@ export function OfferDetailModal({
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
