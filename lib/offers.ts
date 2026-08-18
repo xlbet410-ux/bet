@@ -27,6 +27,13 @@ export type PublicOffer = {
   bannerUrl: string | null;
   termsBn: string | null;
   termsEn: string | null;
+  // One step per line / one "Label | Value" row per line — parsed by
+  // OfferDetailModal into the Steps to Claim list and Bonus Information
+  // table. Null falls back to a heuristic derived from description/reward.
+  stepsToClaimBn: string | null;
+  stepsToClaimEn: string | null;
+  bonusInfoBn: string | null;
+  bonusInfoEn: string | null;
   // When true, render ONLY the image — no title/description/reward badge,
   // no padding around it.
   imageOnly: boolean;

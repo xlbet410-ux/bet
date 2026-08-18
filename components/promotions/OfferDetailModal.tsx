@@ -56,15 +56,40 @@ function buildBonusRows(offer: PublicOffer, lang: string): { label: string; valu
   return rows;
 }
 
-// Splits a single free-text field into sentence-sized bullets. Placeholder
-// for Steps to Claim until a dedicated, admin-authored stepsToClaim field
-// exists — same idea used for the Terms & Conditions list below.
+// Splits a single free-text field into sentence-sized bullets. Used for
+// Terms & Conditions, and as the Steps-to-Claim fallback when an offer has
+// no admin-authored stepsToClaimBn/En.
 function toBullets(text: string | null): string[] {
   if (!text) return [];
   return text
     .split(/(?<=[.!?।])\s+/)
     .map((s) => s.trim())
     .filter(Boolean);
+}
+
+// One item per line — used for the admin-authored Steps to Claim field.
+function toLines(text: string | null): string[] {
+  if (!text) return [];
+  return text
+    .split("\n")
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+// One "Label | Value" row per line — used for the admin-authored Bonus
+// Information field.
+function parseBonusInfoRows(text: string | null): { label: string; value: string }[] {
+  if (!text) return [];
+  return text
+    .split("\n")
+    .map((line) => {
+      const i = line.indexOf("|");
+      if (i === -1) return null;
+      const label = line.slice(0, i).trim();
+      const value = line.slice(i + 1).trim();
+      return label && value ? { label, value } : null;
+    })
+    .filter((row): row is { label: string; value: string } => row !== null);
 }
 
 export function OfferDetailModal({
@@ -84,9 +109,11 @@ export function OfferDetailModal({
   const title = (lang === "bn" ? offer.titleBn : offer.titleEn) || offer.titleBn;
   const description = (lang === "bn" ? offer.descriptionBn : offer.descriptionEn) || offer.descriptionBn;
   const terms = (lang === "bn" ? offer.termsBn : offer.termsEn) || offer.termsBn;
+  const stepsToClaim = (lang === "bn" ? offer.stepsToClaimBn : offer.stepsToClaimEn) || offer.stepsToClaimBn;
+  const bonusInfo = (lang === "bn" ? offer.bonusInfoBn : offer.bonusInfoEn) || offer.bonusInfoBn;
 
-  const bonusRows = buildBonusRows(offer, lang);
-  const steps = toBullets(description);
+  const bonusRows = parseBonusInfoRows(bonusInfo).length > 0 ? parseBonusInfoRows(bonusInfo) : buildBonusRows(offer, lang);
+  const steps = toLines(stepsToClaim).length > 0 ? toLines(stepsToClaim) : toBullets(description);
   const termsList = toBullets(terms);
 
   return (
