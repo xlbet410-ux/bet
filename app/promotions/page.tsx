@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { FaChevronRight, FaGift, FaCircleCheck, FaLayerGroup } from "react-icons/fa6";
+import { FaGift, FaCircleCheck, FaLayerGroup } from "react-icons/fa6";
 import Header from "@/components/site/Header";
 import Footer from "@/components/site/Footer";
 import MobileBottomNav from "@/components/site/MobileBottomNav";
@@ -11,8 +11,9 @@ import AuthModal from "@/components/site/AuthModal";
 import AmbientBackground from "@/components/site/AmbientBackground";
 import { useAuth } from "@/lib/auth";
 import { useLang } from "@/lib/language";
-import { getOffers, claimOffer, rewardLabel, type PublicOffer } from "@/lib/offers";
+import { getOffers, claimOffer, type PublicOffer } from "@/lib/offers";
 import { RedEnvelope } from "@/components/promotions/RedEnvelope";
+import { PromotionCard } from "@/components/promotions/PromotionCard";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
 
@@ -33,196 +34,6 @@ const CATEGORIES: { id: string; en: string; bn: string }[] = [
   { id: "cashback", en: "Cashback", bn: "ক্যাশব্যাক" },
   { id: "special", en: "Special", bn: "স্পেশাল" },
 ];
-
-function PromotionCard({
-  offer,
-  lang,
-  expanded,
-  onToggle,
-  loggedIn,
-  onRequireLogin,
-  groupBadge,
-  onToggleGroup,
-}: {
-  offer: PublicOffer;
-  lang: string;
-  expanded: boolean;
-  onToggle: () => void;
-  loggedIn: boolean;
-  onRequireLogin: () => void;
-  groupBadge?: number;
-  onToggleGroup?: () => void;
-}) {
-  const [claiming, setClaiming] = useState(false);
-  const [claimError, setClaimError] = useState<string | null>(null);
-  const [claimed, setClaimed] = useState(offer.alreadyClaimed);
-
-  const strings =
-    lang === "bn"
-      ? {
-          view: "বিস্তারিত দেখুন",
-          hide: "লুকান",
-          turnover: "টার্নওভার",
-          validity: "মেয়াদ",
-          days: "দিন",
-          terms: "শর্তাবলী",
-          claim: "দাবি করুন",
-          claiming: "...",
-          claimed: "দাবি করা হয়েছে",
-          notEligible: "আপনি এখন এই অফারের জন্য যোগ্য নন",
-        }
-      : {
-          view: "View details",
-          hide: "Hide",
-          turnover: "Turnover",
-          validity: "Valid for",
-          days: "days",
-          terms: "Terms",
-          claim: "Claim",
-          claiming: "...",
-          claimed: "Claimed",
-          notEligible: "You're not eligible for this offer right now",
-        };
-
-  const title = (lang === "bn" ? offer.titleBn : offer.titleEn) || offer.titleBn;
-  const description = (lang === "bn" ? offer.descriptionBn : offer.descriptionEn) || offer.descriptionBn;
-  const terms = (lang === "bn" ? offer.termsBn : offer.termsEn) || offer.termsBn;
-  const reward = rewardLabel(offer, lang);
-
-  async function handleClaim() {
-    if (!loggedIn) {
-      onRequireLogin();
-      return;
-    }
-    setClaiming(true);
-    setClaimError(null);
-    try {
-      await claimOffer(offer.slug);
-      setClaimed(true);
-    } catch (err) {
-      setClaimError(err instanceof Error ? err.message : "Something went wrong.");
-    } finally {
-      setClaiming(false);
-    }
-  }
-
-  const groupPill = groupBadge !== undefined && groupBadge > 0 && (
-    <button
-      type="button"
-      onClick={(e) => {
-        e.stopPropagation();
-        onToggleGroup?.();
-      }}
-      className="flex items-center gap-1 rounded-full bg-black/60 px-2.5 py-1 text-[11px] font-bold text-white backdrop-blur-sm"
-    >
-      <FaLayerGroup className="text-[10px]" /> +{groupBadge}
-    </button>
-  );
-  const rewardPill = reward && (
-    <span
-      className="rounded-full px-3 py-1 text-xs font-black text-[#0A0612]"
-      style={{ background: "linear-gradient(to right,#D4AF37,#F5C842)" }}
-    >
-      +{reward}
-    </span>
-  );
-
-  return (
-    <div className="overflow-hidden rounded-2xl" style={CARD}>
-      {/* No image on this offer → skip the image area entirely (text-only
-          card) instead of showing a generic placeholder box. */}
-      {offer.imageUrl && (
-        <div className="relative aspect-[16/8] w-full bg-[#1B0838]">
-          <Image
-            src={`${API_URL}${offer.imageUrl}`}
-            alt={title}
-            fill
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 400px"
-            className="object-cover"
-          />
-          {groupPill && <div className="absolute left-3 top-3">{groupPill}</div>}
-          {rewardPill && <div className="absolute right-3 top-3">{rewardPill}</div>}
-        </div>
-      )}
-
-      <div className="p-4">
-        {!offer.imageUrl && (groupPill || rewardPill) && (
-          <div className="mb-2.5 flex flex-wrap items-center gap-2">
-            {groupPill}
-            {rewardPill}
-          </div>
-        )}
-        <button
-          onClick={onToggle}
-          aria-expanded={expanded}
-          aria-label={expanded ? strings.hide : strings.view}
-          className="mb-1 flex w-full items-start justify-between gap-2 text-left"
-        >
-          <div className="min-w-0">
-            <h3 className="font-extrabold text-white">{title}</h3>
-            {description && !expanded && (
-              <p className="mt-1 line-clamp-2 text-xs text-[#9B8EC4]">{description}</p>
-            )}
-          </div>
-          <span
-            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[#F5C842] transition-transform"
-            style={{ background: "rgba(212,175,55,.1)", transform: expanded ? "rotate(90deg)" : "none" }}
-          >
-            <FaChevronRight className="text-xs" />
-          </span>
-        </button>
-
-        {offer.triggerType === "manual_claim" && (
-          <div className="mt-2 flex items-center">
-            {claimed ? (
-              <span className="flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-bold text-[#4ade80]" style={{ background: "rgba(34,197,94,.15)" }}>
-                <FaCircleCheck /> {strings.claimed}
-              </span>
-            ) : (
-              <button
-                onClick={handleClaim}
-                disabled={claiming || !offer.eligible}
-                className="rounded-full px-4 py-1.5 text-xs font-bold text-[#0A0612] transition-all disabled:cursor-not-allowed disabled:opacity-40"
-                style={{ background: "linear-gradient(to right,#D4AF37,#F5C842)" }}
-              >
-                {claiming ? strings.claiming : strings.claim}
-              </button>
-            )}
-          </div>
-        )}
-
-        {claimError && <p className="mt-2 text-xs text-red-400">{claimError}</p>}
-        {offer.triggerType === "manual_claim" && !offer.eligible && !claimed && (
-          <p className="mt-2 text-[11px] text-[#7B5EA7]">{strings.notEligible}</p>
-        )}
-
-        {expanded && (
-          <div className="mt-3 flex flex-col gap-2 border-t border-white/10 pt-3 text-xs text-[#C9B8E8]">
-            {description && <p className="leading-relaxed">{description}</p>}
-            <div className="flex flex-wrap gap-x-4 gap-y-1 text-[#9B8EC4]">
-              {Number(offer.turnoverMultiplier) > 0 && (
-                <span>
-                  {strings.turnover}: <span className="font-bold text-[#D4AF37]">{offer.turnoverMultiplier}x</span>
-                </span>
-              )}
-              {offer.bonusValidityDays && (
-                <span>
-                  {strings.validity}: <span className="font-bold text-[#D4AF37]">{offer.bonusValidityDays} {strings.days}</span>
-                </span>
-              )}
-            </div>
-            {terms && (
-              <div>
-                <p className="mb-1 font-semibold text-white">{strings.terms}</p>
-                <p className="leading-relaxed text-[#9B8EC4]">{terms}</p>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
 
 // For offers admin-flagged imageOnly — just the uploaded image, no title,
 // description, reward badge, or padding. If the offer is a manual_claim
@@ -330,7 +141,6 @@ export default function PromotionsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [retryKey, setRetryKey] = useState(0);
-  const [expandedId, setExpandedId] = useState<string | null>(null);
   const [activeCategory, setActiveCategory] = useState("all");
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
 
@@ -502,10 +312,9 @@ export default function PromotionsPage() {
                     key={o.id}
                     offer={o}
                     lang={lang}
-                    expanded={expandedId === o.id}
-                    onToggle={() => setExpandedId((cur) => (cur === o.id ? null : o.id))}
                     loggedIn={!!user}
                     onRequireLogin={() => setAuthMode("login")}
+                    onRegister={() => router.push("/deposit-withdraw")}
                     groupBadge={groupBadge}
                     onToggleGroup={groupKey ? () => toggleGroup(groupKey) : undefined}
                   />
