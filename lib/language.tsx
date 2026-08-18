@@ -7,6 +7,7 @@ export type Lang = "en" | "bn";
 export type Translations = {
   // header / nav
   nav: string[];
+  vipLevel: string;
   login: string;
   register: string;
   // chat widget
@@ -284,6 +285,7 @@ export type Translations = {
 const T: Record<Lang, Translations> = {
   en: {
     nav: ["Home", "Live Casino", "Slots", "Sports", "Promotions", "Leaderboard"],
+    vipLevel: "VIP Level",
     login: "Log In",
     register: "Sign Up",
 
@@ -559,6 +561,7 @@ const T: Record<Lang, Translations> = {
 
   bn: {
     nav: ["হোম", "লাইভ ক্যাসিনো", "স্লট", "স্পোর্টস", "প্রমোশন", "লিডারবোর্ড"],
+    vipLevel: "ভিআইপি লেভেল",
     login: "লগইন",
     register: "নিবন্ধন",
 

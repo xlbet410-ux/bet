@@ -10,6 +10,8 @@ export type VipTier = {
   bonusValidityDays: number | null;
   referralSignupBonus: string;
   referralBetCommissionPct: string;
+  referralBetCommissionPctTier2: string;
+  referralBetCommissionPctTier3: string;
   dailyCashbackPct: string;
 };
 

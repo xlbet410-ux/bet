@@ -49,15 +49,20 @@ export default function Header({
   const isDesktop = useIsDesktop();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [promoOpen, setPromoOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
+  const promoRef = useRef<HTMLDivElement>(null);
   const { t } = useLang();
   const { user, logout } = useAuth();
 
-  // close profile dropdown on outside click
+  // close profile/promotion dropdowns on outside click
   useEffect(() => {
     function onClickOutside(e: MouseEvent) {
       if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
         setProfileOpen(false);
+      }
+      if (promoRef.current && !promoRef.current.contains(e.target as Node)) {
+        setPromoOpen(false);
       }
     }
     document.addEventListener("mousedown", onClickOutside);
@@ -85,15 +90,53 @@ export default function Header({
             />
           </Link>
 
-          {/* desktop nav — no dropdowns; every game section lives in the
-              strip below instead */}
+          {/* desktop nav — every game section lives in the strip below
+              instead; Promotions is the one dropdown here, holding the
+              Promotions page itself plus VIP Level */}
           <nav className="hidden items-center gap-6 text-sm font-medium tracking-wide text-[#C9B8E8] lg:flex xl:gap-8">
             <Link href="/" className="whitespace-nowrap transition-colors hover:text-[#F5C842]">
               {t.nav[0]}
             </Link>
-            <Link href="/promotions" className="whitespace-nowrap transition-colors hover:text-[#F5C842]">
-              {t.nav[4]}
-            </Link>
+
+            <div className="relative" ref={promoRef}>
+              <button
+                onClick={() => setPromoOpen((v) => !v)}
+                className="flex items-center gap-1.5 whitespace-nowrap transition-colors hover:text-[#F5C842]"
+              >
+                {t.nav[4]}
+                <FaChevronDown
+                  className={`h-2.5 w-2.5 transition-transform duration-200 ${promoOpen ? "rotate-180" : ""}`}
+                />
+              </button>
+              {promoOpen && (
+                <div
+                  className="absolute left-0 top-full z-50 mt-3 w-52 animate-[popIn_0.18s_ease] overflow-hidden rounded-2xl"
+                  style={{
+                    background: "linear-gradient(145deg, rgba(27,8,56,0.98) 0%, rgba(10,6,18,0.99) 100%)",
+                    border: "1px solid rgba(212,175,55,0.2)",
+                    boxShadow: "0 20px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.04)",
+                  }}
+                >
+                  <div className="px-2 py-2">
+                    <Link
+                      href="/promotions"
+                      onClick={() => setPromoOpen(false)}
+                      className="block rounded-xl px-3 py-2.5 text-sm font-medium text-[#C9B8E8] transition-all hover:bg-white/5 hover:text-white"
+                    >
+                      {t.nav[4]}
+                    </Link>
+                    <Link
+                      href="/vip-level"
+                      onClick={() => setPromoOpen(false)}
+                      className="block rounded-xl px-3 py-2.5 text-sm font-medium text-[#C9B8E8] transition-all hover:bg-white/5 hover:text-white"
+                    >
+                      {t.vipLevel}
+                    </Link>
+                  </div>
+                </div>
+              )}
+            </div>
+
             <Link href="/leaderboard" className="whitespace-nowrap transition-colors hover:text-[#F5C842]">
               {t.nav[5]}
             </Link>
@@ -308,6 +351,13 @@ export default function Header({
                 className="rounded-xl px-3 py-3 transition-colors hover:bg-white/5 hover:text-[#F5C842]"
               >
                 {t.nav[4]}
+              </Link>
+              <Link
+                href="/vip-level"
+                onClick={() => setMobileOpen(false)}
+                className="rounded-xl px-3 py-3 pl-6 text-[15px] transition-colors hover:bg-white/5 hover:text-[#F5C842]"
+              >
+                {t.vipLevel}
               </Link>
               <Link
                 href="/leaderboard"
