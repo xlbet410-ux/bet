@@ -12,6 +12,7 @@ export type VipTier = {
   referralBetCommissionPct: string;
   referralBetCommissionPctTier2: string;
   referralBetCommissionPctTier3: string;
+  referralDepositCommissionPct: string;
   dailyCashbackPct: string;
 };
 

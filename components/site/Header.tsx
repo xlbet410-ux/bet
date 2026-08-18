@@ -132,6 +132,13 @@ export default function Header({
                     >
                       {t.vipLevel}
                     </Link>
+                    <Link
+                      href="/referral-program"
+                      onClick={() => setPromoOpen(false)}
+                      className="block rounded-xl px-3 py-2.5 text-sm font-medium text-[#C9B8E8] transition-all hover:bg-white/5 hover:text-white"
+                    >
+                      {t.referralProgram}
+                    </Link>
                   </div>
                 </div>
               )}
@@ -358,6 +365,13 @@ export default function Header({
                 className="rounded-xl px-3 py-3 pl-6 text-[15px] transition-colors hover:bg-white/5 hover:text-[#F5C842]"
               >
                 {t.vipLevel}
+              </Link>
+              <Link
+                href="/referral-program"
+                onClick={() => setMobileOpen(false)}
+                className="rounded-xl px-3 py-3 pl-6 text-[15px] transition-colors hover:bg-white/5 hover:text-[#F5C842]"
+              >
+                {t.referralProgram}
               </Link>
               <Link
                 href="/leaderboard"

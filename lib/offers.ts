@@ -54,6 +54,37 @@ export type PublicOffer = {
   priority: number;
 };
 
+// A narrower shape for GET /offers/by-group/:groupKey — offers kept off the
+// general Promotions grid (showInPromotionsPage: false) still need to be
+// readable by a dedicated page (e.g. the Referral Program page's milestone
+// ladder), so this endpoint isn't showInPromotionsPage-gated. No
+// eligible/alreadyClaimed fields since these aren't rendered as claimable
+// cards there — just as reference/table rows.
+export type GroupOffer = {
+  id: string;
+  slug: string;
+  titleBn: string;
+  titleEn: string | null;
+  descriptionBn: string | null;
+  descriptionEn: string | null;
+  triggerType: string;
+  triggerConfig: Record<string, unknown> | null;
+  rewardType: "fixed" | "percentage" | "no_reward" | "random";
+  rewardAmount: string | null;
+  rewardCap: string | null;
+  turnoverMultiplier: string;
+  bonusValidityDays: number | null;
+  maxClaimsPerUser: number;
+  termsBn: string | null;
+  termsEn: string | null;
+};
+
+export async function getOffersByGroup(groupKey: string): Promise<GroupOffer[]> {
+  const res = await fetch(`${API_URL}/offers/by-group/${encodeURIComponent(groupKey)}`, { cache: "no-store" });
+  if (!res.ok) throw new Error(`Failed to load offers (${res.status})`);
+  return res.json();
+}
+
 // Every active offer for a category (referral/level/daily/...), regardless
 // of whether this player is currently eligible — used for promo pages that
 // should show what's available, not silently hide entries.
