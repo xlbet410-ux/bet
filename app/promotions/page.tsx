@@ -314,6 +314,7 @@ export default function PromotionsPage() {
                     lang={lang}
                     loggedIn={!!user}
                     onRequireLogin={() => setAuthMode("login")}
+                    onRequireRegister={() => setAuthMode("register")}
                     onRegister={() => router.push("/deposit-withdraw")}
                     groupBadge={groupBadge}
                     onToggleGroup={groupKey ? () => toggleGroup(groupKey) : undefined}

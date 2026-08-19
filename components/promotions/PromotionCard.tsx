@@ -22,6 +22,7 @@ export function PromotionCard({
   lang,
   loggedIn,
   onRequireLogin,
+  onRequireRegister,
   onRegister,
   groupBadge,
   onToggleGroup,
@@ -30,6 +31,10 @@ export function PromotionCard({
   lang: string;
   loggedIn: boolean;
   onRequireLogin: () => void;
+  // Distinct from onRequireLogin: the "Register Now" button below is
+  // labeled for signup, not sign-in — a logged-out click should open the
+  // register form directly, not the login form.
+  onRequireRegister: () => void;
   onRegister: () => void;
   groupBadge?: number;
   onToggleGroup?: () => void;
@@ -44,6 +49,7 @@ export function PromotionCard({
       ? {
           detail: "বিস্তারিত",
           register: "রেজিস্টার করুন",
+          claimNow: "এখনই দাবি করুন",
           claim: "দাবি করুন",
           claiming: "...",
           claimed: "দাবি করা হয়েছে",
@@ -52,6 +58,7 @@ export function PromotionCard({
       : {
           detail: "Detail",
           register: "Register Now",
+          claimNow: "Claim Now",
           claim: "Claim",
           claiming: "...",
           claimed: "Claimed",
@@ -84,7 +91,7 @@ export function PromotionCard({
 
   function handleRegisterClick() {
     if (!loggedIn) {
-      onRequireLogin();
+      onRequireRegister();
       return;
     }
     onRegister();
@@ -158,7 +165,7 @@ export function PromotionCard({
                 className="flex-1 py-2.5 text-xs font-bold"
                 style={{ background: "#DAD9D4", color: "#1A1A1A", borderRadius: "3px" }}
               >
-                {strings.register}
+                {loggedIn ? strings.claimNow : strings.register}
               </button>
             )}
             <button
