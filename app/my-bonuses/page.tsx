@@ -219,11 +219,15 @@ export default function MyBonusesPage() {
                   </summary>
                   <div className="flex flex-col gap-1.5">
                     {history.map((b) => (
-                      <div key={b.id} className="flex items-center justify-between rounded-lg px-3 py-2 text-xs" style={INNER}>
-                        <span className="text-gray-600">{b.type}</span>
-                        <span className="tabular-nums text-gray-500">৳{Number(b.amount).toLocaleString()}</span>
+                      <div
+                        key={b.id}
+                        className="grid grid-cols-[1fr_5.5rem_4.5rem] items-center gap-2 rounded-lg px-3 py-2 text-xs sm:grid-cols-[1fr_6rem_5rem]"
+                        style={INNER}
+                      >
+                        <span className="min-w-0 truncate text-gray-600">{b.type}</span>
+                        <span className="text-right tabular-nums text-gray-500">৳{Number(b.amount).toLocaleString()}</span>
                         <span
-                          className={`font-semibold ${
+                          className={`text-right font-semibold ${
                             b.status === "completed" ? "text-green-600" : b.status === "forfeited" ? "text-red-500" : "text-gray-400"
                           }`}
                         >
