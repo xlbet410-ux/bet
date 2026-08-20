@@ -1,12 +1,27 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 import { FaClock, FaLayerGroup, FaCircleCheck } from "react-icons/fa6";
 import { claimOffer, localizedImage, type PublicOffer } from "@/lib/offers";
 import { OfferDetailModal } from "./OfferDetailModal";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+
+// A row of downward-pointing teeth cut into the bottom edge of the card
+// image, like a torn ticket stub — matches the reference card design. Built
+// from percentages so it scales with the card's actual width/height instead
+// of a hand-typed coordinate list.
+function buildZigzagClipPath(teeth: number, notchPct: number): string {
+  const points = ["0% 0%", "100% 0%"];
+  const step = 100 / teeth;
+  for (let i = 0; i <= teeth; i++) {
+    const x = 100 - i * step;
+    const y = i % 2 === 0 ? 100 : 100 - notchPct;
+    points.push(`${x}% ${y}%`);
+  }
+  return `polygon(${points.join(", ")})`;
+}
+const CARD_IMAGE_CLIP_PATH = buildZigzagClipPath(12, 12);
 
 const CATEGORY_LABELS: Record<string, { en: string; bn: string }> = {
   deposit: { en: "Deposit", bn: "ডিপোজিট" },
@@ -101,17 +116,21 @@ export function PromotionCard({
   return (
     <>
       <div className="overflow-hidden" style={{ background: "#333231", borderRadius: "3px" }}>
-        <div className="relative aspect-12/5 w-full bg-[#1B0838]">
+        <div className="relative w-full bg-[#1B0838]">
           {image ? (
-            <Image
+            // Plain <img>, not next/image: these are variable-aspect-ratio
+            // banners uploaded per-offer, so we can't pre-declare a
+            // width/height — natural width:100%/height:auto is what shows
+            // the full image with no cropping and no letterboxing.
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
               src={`${API_URL}${image}`}
               alt={title}
-              fill
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 400px"
-              className="object-contain"
+              className="block h-auto w-full"
+              style={{ clipPath: CARD_IMAGE_CLIP_PATH, WebkitClipPath: CARD_IMAGE_CLIP_PATH }}
             />
           ) : (
-            <div className="h-full w-full bg-gradient-to-br from-[#4A0E8F] to-[#1B0838]" />
+            <div className="aspect-12/5 w-full bg-gradient-to-br from-[#4A0E8F] to-[#1B0838]" />
           )}
           {groupBadge !== undefined && groupBadge > 0 && (
             <button
@@ -126,18 +145,6 @@ export function PromotionCard({
             </button>
           )}
         </div>
-
-        {/* Torn-ticket zigzag seam between the banner image and the content
-            panel, matching the reference card design. */}
-        <div
-          aria-hidden="true"
-          className="h-2.5 w-full"
-          style={{
-            background:
-              "linear-gradient(135deg, transparent 50%, #333231 50%) 0 0 / 14px 14px repeat-x, " +
-              "linear-gradient(-135deg, transparent 50%, #333231 50%) 0 0 / 14px 14px repeat-x",
-          }}
-        />
 
         <div className="p-3.5">
           <h3 className="text-[16px] font-bold text-white">{title}</h3>
