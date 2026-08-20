@@ -11,7 +11,7 @@ import AuthModal from "@/components/site/AuthModal";
 import AmbientBackground from "@/components/site/AmbientBackground";
 import { useAuth } from "@/lib/auth";
 import { useLang } from "@/lib/language";
-import { getOffers, claimOffer, type PublicOffer } from "@/lib/offers";
+import { getOffers, claimOffer, GAME_CATEGORY_LABELS, type PublicOffer, type GameCategoryId } from "@/lib/offers";
 import { RedEnvelope } from "@/components/promotions/RedEnvelope";
 import { PromotionCard } from "@/components/promotions/PromotionCard";
 
@@ -23,17 +23,21 @@ const CARD = {
   boxShadow: "0 8px 32px rgba(0,0,0,.4)",
 };
 
-// Same category set as the CRM's offer form (OffersManager.tsx) — "all" is
-// a page-local pseudo-category, not a real offer.category value.
-const CATEGORIES: { id: string; en: string; bn: string }[] = [
+// "all" and "deposit" ("Welcome Bonus") are always-shown pseudo-categories
+// — "deposit" is the real offer.category value welcome/deposit bonuses
+// already use, just relabeled here. Game-section tabs (Slots, Live Casino,
+// ...) are NOT hardcoded — they're built from whatever offers are actually
+// live and restricted to a specific game category (offer.eligibleGames),
+// so a tab only ever appears once a matching offer really exists. Game
+// tab ids are prefixed "game:" to keep them unambiguous from category ids.
+const BASE_TABS: { id: string; en: string; bn: string }[] = [
   { id: "all", en: "All", bn: "সব" },
-  { id: "deposit", en: "Deposit", bn: "ডিপোজিট" },
-  { id: "referral", en: "Referral", bn: "রেফারেল" },
-  { id: "level", en: "VIP / Level", bn: "ভিআইপি / লেভেল" },
-  { id: "daily", en: "Daily", bn: "দৈনিক" },
-  { id: "cashback", en: "Cashback", bn: "ক্যাশব্যাক" },
-  { id: "special", en: "Special", bn: "স্পেশাল" },
+  { id: "deposit", en: "Welcome Bonus", bn: "ওয়েলকাম বোনাস" },
 ];
+
+function gameTabId(category: GameCategoryId) {
+  return `game:${category}`;
+}
 
 // For offers admin-flagged imageOnly — just the uploaded image, no title,
 // description, reward badge, or padding. If the offer is a manual_claim
@@ -156,14 +160,19 @@ export default function PromotionsPage() {
   // Reads ?category= on mount only — window isn't available during
   // prerendering, and useSearchParams() would force a Suspense boundary
   // around the whole page (same reasoning as the profile page's ?tab=).
+  // Valid values are "all", "deposit", or "game:<category>" — validated
+  // loosely by shape since the game-tab list itself is only known once
+  // offers have loaded (see gameTabs below).
   useEffect(() => {
     const fromUrl = new URLSearchParams(window.location.search).get("category");
-    if (fromUrl && CATEGORIES.some((c) => c.id === fromUrl)) setActiveCategory(fromUrl);
+    if (fromUrl === "all" || fromUrl === "deposit" || fromUrl?.startsWith("game:")) {
+      setActiveCategory(fromUrl);
+    }
   }, []);
 
   function selectCategory(id: string) {
     setActiveCategory(id);
-    router.replace(id === "all" ? "/promotions" : `/promotions?category=${id}`, { scroll: false });
+    router.replace(id === "all" ? "/promotions" : `/promotions?category=${encodeURIComponent(id)}`, { scroll: false });
   }
 
   const t =
@@ -205,10 +214,33 @@ export default function PromotionsPage() {
     };
   }, [retryKey]);
 
-  const visibleOffers = useMemo(
-    () => (activeCategory === "all" ? offers : offers.filter((o) => o.category === activeCategory)),
-    [offers, activeCategory]
-  );
+  // Game-section tabs (Slots, Live Casino, ...) only appear once at least
+  // one live offer is actually restricted to that category via the CRM's
+  // "Specific category" eligible-games setting — built straight from real
+  // offer data rather than a hardcoded list, so a tab shows up (or
+  // disappears) exactly when staff configure/unconfigure an offer for it.
+  const gameTabs = useMemo(() => {
+    const seen = new Set<GameCategoryId>();
+    for (const o of offers) {
+      if (o.eligibleGames?.mode === "category") seen.add(o.eligibleGames.category);
+    }
+    return Array.from(seen).map((category) => ({
+      id: gameTabId(category),
+      en: GAME_CATEGORY_LABELS[category].en,
+      bn: GAME_CATEGORY_LABELS[category].bn,
+    }));
+  }, [offers]);
+
+  const tabs = useMemo(() => [...BASE_TABS, ...gameTabs], [gameTabs]);
+
+  const visibleOffers = useMemo(() => {
+    if (activeCategory === "all") return offers;
+    if (activeCategory.startsWith("game:")) {
+      const category = activeCategory.slice("game:".length) as GameCategoryId;
+      return offers.filter((o) => o.eligibleGames?.mode === "category" && o.eligibleGames.category === category);
+    }
+    return offers.filter((o) => o.category === activeCategory);
+  }, [offers, activeCategory]);
 
   // Offers sharing a groupKey collapse into one "cover" card (the
   // highest-priority member — visibleOffers already arrives priority-sorted
@@ -250,7 +282,7 @@ export default function PromotionsPage() {
               className="mb-5 flex gap-2 overflow-x-auto pb-1"
               style={{ scrollbarWidth: "none" }}
             >
-              {CATEGORIES.map((c) => (
+              {tabs.map((c) => (
                 <button
                   key={c.id}
                   onClick={() => selectCategory(c.id)}

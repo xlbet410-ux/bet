@@ -16,6 +16,25 @@ async function parseApiError(res: Response) {
   return "Something went wrong. Please try again.";
 }
 
+// Mirrors the CRM's GAME_CATEGORIES (lib/betApi.ts) — which games count
+// toward an offer's turnover, and (used here) which "game section" an
+// offer belongs to for the Promotions page's dynamic filter tabs.
+export const GAME_CATEGORIES = ["slots", "live_casino", "cards", "fishing", "mini_games", "sports", "esports"] as const;
+export type GameCategoryId = (typeof GAME_CATEGORIES)[number];
+export const GAME_CATEGORY_LABELS: Record<GameCategoryId, { en: string; bn: string }> = {
+  slots: { en: "Slots", bn: "স্লটস" },
+  live_casino: { en: "Live Casino", bn: "লাইভ ক্যাসিনো" },
+  cards: { en: "Cards", bn: "কার্ড" },
+  fishing: { en: "Fishing", bn: "ফিশিং" },
+  mini_games: { en: "Mini Games", bn: "মিনি গেমস" },
+  sports: { en: "Sports", bn: "স্পোর্টস" },
+  esports: { en: "Esports", bn: "ই-স্পোর্টস" },
+};
+export type EligibleGames =
+  | { mode: "all" }
+  | { mode: "category"; category: GameCategoryId }
+  | { mode: "specific"; games: { gameUid: string; name: string }[] };
+
 export type PublicOffer = {
   id: string;
   slug: string;
@@ -49,6 +68,7 @@ export type PublicOffer = {
   rewardMax: string | null;
   turnoverMultiplier: string;
   bonusValidityDays: number | null;
+  eligibleGames: EligibleGames;
   alreadyClaimed: boolean;
   eligible: boolean;
   priority: number;
