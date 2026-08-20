@@ -130,11 +130,11 @@ export function OfferDetailModal({
   if (!mounted) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-[130] flex items-center justify-center p-3 sm:p-6">
+    <div className="fixed inset-0 z-[130] flex items-center justify-center p-4 sm:p-6">
       <div className="absolute inset-0 bg-black/70" onClick={onClose} aria-hidden="true" />
 
       <div
-        className="relative flex max-h-[90vh] w-full max-w-md flex-col overflow-hidden sm:max-h-[85vh] sm:max-w-xl md:max-w-2xl lg:max-w-3xl"
+        className="relative flex max-h-[88dvh] w-full max-w-md flex-col overflow-hidden sm:max-h-[82dvh] sm:max-w-lg md:max-w-xl lg:max-w-2xl"
         style={{ background: "#333231", borderRadius: "3px" }}
       >
         <div className="relative aspect-video w-full shrink-0 bg-[#1B0838] sm:aspect-[21/9]">
