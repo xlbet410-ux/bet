@@ -11,7 +11,7 @@ import AuthModal from "@/components/site/AuthModal";
 import AmbientBackground from "@/components/site/AmbientBackground";
 import { useAuth } from "@/lib/auth";
 import { useLang } from "@/lib/language";
-import { getOffers, claimOffer, GAME_CATEGORY_LABELS, type PublicOffer, type GameCategoryId } from "@/lib/offers";
+import { getOffers, claimOffer, GAME_CATEGORIES, GAME_CATEGORY_LABELS, type PublicOffer, type GameCategoryId } from "@/lib/offers";
 import { RedEnvelope } from "@/components/promotions/RedEnvelope";
 import { PromotionCard } from "@/components/promotions/PromotionCard";
 
@@ -23,16 +23,22 @@ const CARD = {
   boxShadow: "0 8px 32px rgba(0,0,0,.4)",
 };
 
-// "all" and "deposit" ("Welcome Bonus") are always-shown pseudo-categories
-// — "deposit" is the real offer.category value welcome/deposit bonuses
-// already use, just relabeled here. Game-section tabs (Slots, Live Casino,
-// ...) are NOT hardcoded — they're built from whatever offers are actually
-// live and restricted to a specific game category (offer.eligibleGames),
-// so a tab only ever appears once a matching offer really exists. Game
-// tab ids are prefixed "game:" to keep them unambiguous from category ids.
+// "all" and "deposit" ("Welcome Bonus") are pseudo-categories — "deposit"
+// is the real offer.category value welcome/deposit bonuses already use,
+// just relabeled here. Game-section tabs (Slots, Live Casino, ...) are
+// always shown too, for every category the CRM supports — not just ones
+// with a live offer right now — so players can see what's coming; picking
+// one with nothing live yet just falls through to the page's normal empty
+// state ("No promotions right now") rather than hiding the tab entirely.
+// Game tab ids are prefixed "game:" to keep them unambiguous from category ids.
 const BASE_TABS: { id: string; en: string; bn: string }[] = [
   { id: "all", en: "All", bn: "সব" },
   { id: "deposit", en: "Welcome Bonus", bn: "ওয়েলকাম বোনাস" },
+  ...GAME_CATEGORIES.map((category) => ({
+    id: gameTabId(category),
+    en: GAME_CATEGORY_LABELS[category].en,
+    bn: GAME_CATEGORY_LABELS[category].bn,
+  })),
 ];
 
 function gameTabId(category: GameCategoryId) {
@@ -214,25 +220,6 @@ export default function PromotionsPage() {
     };
   }, [retryKey]);
 
-  // Game-section tabs (Slots, Live Casino, ...) only appear once at least
-  // one live offer is actually restricted to that category via the CRM's
-  // "Specific category" eligible-games setting — built straight from real
-  // offer data rather than a hardcoded list, so a tab shows up (or
-  // disappears) exactly when staff configure/unconfigure an offer for it.
-  const gameTabs = useMemo(() => {
-    const seen = new Set<GameCategoryId>();
-    for (const o of offers) {
-      if (o.eligibleGames?.mode === "category") seen.add(o.eligibleGames.category);
-    }
-    return Array.from(seen).map((category) => ({
-      id: gameTabId(category),
-      en: GAME_CATEGORY_LABELS[category].en,
-      bn: GAME_CATEGORY_LABELS[category].bn,
-    }));
-  }, [offers]);
-
-  const tabs = useMemo(() => [...BASE_TABS, ...gameTabs], [gameTabs]);
-
   const visibleOffers = useMemo(() => {
     if (activeCategory === "all") return offers;
     if (activeCategory.startsWith("game:")) {
@@ -282,7 +269,7 @@ export default function PromotionsPage() {
               className="mb-5 flex gap-2 overflow-x-auto pb-1"
               style={{ scrollbarWidth: "none" }}
             >
-              {tabs.map((c) => (
+              {BASE_TABS.map((c) => (
                 <button
                   key={c.id}
                   onClick={() => selectCategory(c.id)}
