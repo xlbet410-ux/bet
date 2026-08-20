@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { FaXmark } from "react-icons/fa6";
@@ -137,15 +136,16 @@ export function OfferDetailModal({
         className="relative flex max-h-[88dvh] w-full max-w-md flex-col overflow-hidden sm:max-h-[82dvh] sm:max-w-lg md:max-w-xl lg:max-w-2xl"
         style={{ background: "#333231", borderRadius: "3px" }}
       >
-        <div className="relative aspect-video w-full shrink-0 bg-[#1B0838] sm:aspect-[21/9]">
-          {image && (
-            <Image
-              src={`${API_URL}${image}`}
-              alt={title}
-              fill
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 640px, 768px"
-              className="object-cover"
-            />
+        <div className="relative w-full shrink-0 bg-[#1B0838]">
+          {image ? (
+            // Plain <img>, not next/image: these are variable-aspect-ratio
+            // banners uploaded per-offer, so we can't pre-declare a
+            // width/height — natural width:100%/height:auto is what shows
+            // the full image with no cropping and no letterboxing.
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={`${API_URL}${image}`} alt={title} className="block h-auto w-full" />
+          ) : (
+            <div className="aspect-video w-full bg-gradient-to-br from-[#4A0E8F] to-[#1B0838]" />
           )}
           <button
             type="button"
