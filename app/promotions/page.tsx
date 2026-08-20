@@ -11,7 +11,15 @@ import AuthModal from "@/components/site/AuthModal";
 import AmbientBackground from "@/components/site/AmbientBackground";
 import { useAuth } from "@/lib/auth";
 import { useLang } from "@/lib/language";
-import { getOffers, claimOffer, GAME_CATEGORIES, GAME_CATEGORY_LABELS, type PublicOffer, type GameCategoryId } from "@/lib/offers";
+import {
+  getOffers,
+  claimOffer,
+  localizedImage,
+  GAME_CATEGORIES,
+  GAME_CATEGORY_LABELS,
+  type PublicOffer,
+  type GameCategoryId,
+} from "@/lib/offers";
 import { RedEnvelope } from "@/components/promotions/RedEnvelope";
 import { PromotionCard } from "@/components/promotions/PromotionCard";
 
@@ -51,12 +59,14 @@ function gameTabId(category: GameCategoryId) {
 // overlay is the only feedback — no text, matching the "image only" intent).
 function ImageOnlyCard({
   offer,
+  lang,
   loggedIn,
   onRequireLogin,
   groupBadge,
   onToggleGroup,
 }: {
   offer: PublicOffer;
+  lang: string;
   loggedIn: boolean;
   onRequireLogin: () => void;
   groupBadge?: number;
@@ -86,12 +96,13 @@ function ImageOnlyCard({
   }
 
   const title = (offer.titleBn || offer.titleEn) ?? "";
+  const imageSrc = localizedImage(offer.imageUrl, offer.imageUrlEn, lang);
 
   const image = (
     <div className="relative aspect-[16/9] w-full overflow-hidden rounded-2xl bg-[#1B0838]">
-      {offer.imageUrl ? (
+      {imageSrc ? (
         <Image
-          src={`${API_URL}${offer.imageUrl}`}
+          src={`${API_URL}${imageSrc}`}
           alt={title}
           fill
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 400px"
@@ -321,6 +332,7 @@ export default function PromotionsPage() {
                   <ImageOnlyCard
                     key={o.id}
                     offer={o}
+                    lang={lang}
                     loggedIn={!!user}
                     onRequireLogin={() => setAuthMode("login")}
                     groupBadge={groupBadge}

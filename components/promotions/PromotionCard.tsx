@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { FaClock, FaLayerGroup, FaCircleCheck } from "react-icons/fa6";
-import { claimOffer, type PublicOffer } from "@/lib/offers";
+import { claimOffer, localizedImage, type PublicOffer } from "@/lib/offers";
 import { OfferDetailModal } from "./OfferDetailModal";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
@@ -71,6 +71,7 @@ export function PromotionCard({
   const subtitle = (lang === "bn" ? offer.descriptionBn : offer.descriptionEn) || offer.descriptionBn;
   const categoryLabel = CATEGORY_LABELS[offer.category]?.[lang === "bn" ? "bn" : "en"] ?? offer.category;
   const isManualClaim = offer.triggerType === "manual_claim";
+  const image = localizedImage(offer.imageUrl, offer.imageUrlEn, lang);
 
   async function handleClaim() {
     if (!loggedIn) {
@@ -101,9 +102,9 @@ export function PromotionCard({
     <>
       <div className="overflow-hidden" style={{ background: "#333231", borderRadius: "3px" }}>
         <div className="relative aspect-video w-full bg-[#1B0838]">
-          {offer.imageUrl ? (
+          {image ? (
             <Image
-              src={`${API_URL}${offer.imageUrl}`}
+              src={`${API_URL}${image}`}
               alt={title}
               fill
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 400px"

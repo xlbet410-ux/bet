@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { FaXmark } from "react-icons/fa6";
-import type { PublicOffer } from "@/lib/offers";
+import { localizedImage, type PublicOffer } from "@/lib/offers";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
 const GOLD = "#F8BB25";
@@ -113,6 +113,7 @@ export function OfferDetailModal({
   const terms = (lang === "bn" ? offer.termsBn : offer.termsEn) || offer.termsBn;
   const stepsToClaim = (lang === "bn" ? offer.stepsToClaimBn : offer.stepsToClaimEn) || offer.stepsToClaimBn;
   const bonusInfo = (lang === "bn" ? offer.bonusInfoBn : offer.bonusInfoEn) || offer.bonusInfoBn;
+  const image = localizedImage(offer.imageUrl, offer.imageUrlEn, lang);
 
   const bonusRows = parseBonusInfoRows(bonusInfo).length > 0 ? parseBonusInfoRows(bonusInfo) : buildBonusRows(offer, lang);
   const steps = toLines(stepsToClaim).length > 0 ? toLines(stepsToClaim) : toBullets(description);
@@ -137,9 +138,9 @@ export function OfferDetailModal({
         style={{ background: "#333231", borderRadius: "3px" }}
       >
         <div className="relative aspect-video w-full shrink-0 bg-[#1B0838] sm:aspect-[21/9]">
-          {offer.imageUrl && (
+          {image && (
             <Image
-              src={`${API_URL}${offer.imageUrl}`}
+              src={`${API_URL}${image}`}
               alt={title}
               fill
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 640px, 768px"

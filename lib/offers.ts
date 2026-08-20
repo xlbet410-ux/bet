@@ -43,7 +43,9 @@ export type PublicOffer = {
   descriptionBn: string | null;
   descriptionEn: string | null;
   imageUrl: string | null;
+  imageUrlEn: string | null;
   bannerUrl: string | null;
+  bannerUrlEn: string | null;
   termsBn: string | null;
   termsEn: string | null;
   // One step per line / one "Label | Value" row per line — parsed by
@@ -124,7 +126,9 @@ export type PopupOffer = {
   descriptionBn: string | null;
   descriptionEn: string | null;
   bannerUrl: string | null;
+  bannerUrlEn: string | null;
   imageUrl: string | null;
+  imageUrlEn: string | null;
   termsBn: string | null;
   termsEn: string | null;
   imageOnly: boolean;
@@ -137,6 +141,16 @@ export type PopupOffer = {
   popupCtaTextEn: string | null;
   popupCtaLink: string | null;
 };
+
+// Picks the language-matched image, falling back to whichever one actually
+// exists when only one of the two is set (e.g. an offer with only a Bengali
+// image shows that same image in English mode too, rather than nothing).
+// bn is the original/default field every offer already has; en is the newer
+// optional per-language override — same fallback shape used for every other
+// bilingual offer field (title, description, terms, ...).
+export function localizedImage(bn: string | null, en: string | null, lang: string): string | null {
+  return lang === "en" ? en || bn : bn || en;
+}
 
 // Shared between the Promotions page and the homepage popup — both render
 // the same "+X%" / "+৳X" / "৳X-Y" reward badge from the same offer shape.

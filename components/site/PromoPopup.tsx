@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { FaChevronLeft, FaChevronRight, FaChevronDown, FaXmark, FaCrown, FaGift, FaWandMagicSparkles } from "react-icons/fa6";
 import { useLang } from "@/lib/language";
-import { getPopupOffers, rewardLabel, type PopupOffer } from "@/lib/offers";
+import { getPopupOffers, localizedImage, rewardLabel, type PopupOffer } from "@/lib/offers";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
 
@@ -104,7 +104,12 @@ export default function PromoPopup({ trigger }: { trigger: boolean }) {
   const title = (lang === "bn" ? offer.titleBn : offer.titleEn) || offer.titleBn;
   const description = (lang === "bn" ? offer.descriptionBn : offer.descriptionEn) || offer.descriptionBn;
   const ctaText = lang === "bn" ? offer.popupCtaTextBn : offer.popupCtaTextEn;
-  const bannerSrc = offer.bannerUrl || offer.imageUrl;
+  // Prefer the popup-specific banner in the current language, falling back
+  // to the other language's banner if only one was uploaded, and finally to
+  // the card image if no popup banner was ever set for this offer at all
+  // (existing behavior, unchanged).
+  const bannerSrc =
+    localizedImage(offer.bannerUrl, offer.bannerUrlEn, lang) || localizedImage(offer.imageUrl, offer.imageUrlEn, lang);
   const reward = rewardLabel(offer, lang);
   const terms = (lang === "bn" ? offer.termsBn : offer.termsEn) || offer.termsBn;
 
