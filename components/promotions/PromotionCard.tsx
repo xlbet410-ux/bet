@@ -101,7 +101,7 @@ export function PromotionCard({
   return (
     <>
       <div className="overflow-hidden" style={{ background: "#333231", borderRadius: "3px" }}>
-        <div className="relative aspect-video w-full bg-[#1B0838]">
+        <div className="relative aspect-12/5 w-full bg-[#1B0838]">
           {image ? (
             <Image
               src={`${API_URL}${image}`}
@@ -126,6 +126,18 @@ export function PromotionCard({
             </button>
           )}
         </div>
+
+        {/* Torn-ticket zigzag seam between the banner image and the content
+            panel, matching the reference card design. */}
+        <div
+          aria-hidden="true"
+          className="h-2.5 w-full"
+          style={{
+            background:
+              "linear-gradient(135deg, transparent 50%, #333231 50%) 0 0 / 14px 14px repeat-x, " +
+              "linear-gradient(-135deg, transparent 50%, #333231 50%) 0 0 / 14px 14px repeat-x",
+          }}
+        />
 
         <div className="p-3.5">
           <h3 className="text-[16px] font-bold text-white">{title}</h3>
