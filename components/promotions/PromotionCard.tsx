@@ -108,7 +108,7 @@ export function PromotionCard({
               alt={title}
               fill
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 400px"
-              className="object-cover"
+              className="object-contain"
             />
           ) : (
             <div className="h-full w-full bg-gradient-to-br from-[#4A0E8F] to-[#1B0838]" />
