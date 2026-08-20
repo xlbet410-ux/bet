@@ -116,23 +116,23 @@ export function PromotionCard({
   return (
     <>
       <div className="overflow-hidden" style={{ background: "#333231", borderRadius: "3px" }}>
-        {/* Same color as the card's content panel below — this is what the
-            zigzag notches (clip-path cut into the image) reveal. */}
-        <div className="relative w-full bg-[#333231]">
+        {/* Fixed ratio so every card in the grid lines up the same size,
+            regardless of the uploaded image's own aspect ratio. The zigzag
+            notches (clip-path cut into this box's bottom edge) reveal the
+            wrapper's #333231 behind it. */}
+        <div
+          className="relative aspect-12/5 w-full overflow-hidden bg-[#1B0838]"
+          style={{ clipPath: CARD_IMAGE_CLIP_PATH, WebkitClipPath: CARD_IMAGE_CLIP_PATH }}
+        >
           {image ? (
             // Plain <img>, not next/image: these are variable-aspect-ratio
-            // banners uploaded per-offer, so we can't pre-declare a
-            // width/height — natural width:100%/height:auto is what shows
-            // the full image with no cropping and no letterboxing.
+            // banners uploaded per-offer. object-contain (not cover) shows
+            // the full image with no cropping, letterboxed within the fixed
+            // box above instead of stretching/cutting it.
             // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={`${API_URL}${image}`}
-              alt={title}
-              className="block h-auto w-full"
-              style={{ clipPath: CARD_IMAGE_CLIP_PATH, WebkitClipPath: CARD_IMAGE_CLIP_PATH }}
-            />
+            <img src={`${API_URL}${image}`} alt={title} className="block h-full w-full object-contain" />
           ) : (
-            <div className="aspect-12/5 w-full bg-gradient-to-br from-[#4A0E8F] to-[#1B0838]" />
+            <div className="h-full w-full bg-gradient-to-br from-[#4A0E8F] to-[#1B0838]" />
           )}
           {groupBadge !== undefined && groupBadge > 0 && (
             <button
