@@ -39,6 +39,9 @@ type AuthCtx = {
   login: (input: LoginInput) => Promise<void>;
   logout: () => void;
   changePassword: (input: ChangePasswordInput) => Promise<void>;
+  requestPasswordReset: (phoneNumber: string) => Promise<void>;
+  verifyPasswordResetOtp: (phoneNumber: string, code: string) => Promise<void>;
+  resetPassword: (phoneNumber: string, newPassword: string) => Promise<void>;
 };
 
 const AuthContext = createContext<AuthCtx>({
@@ -48,6 +51,9 @@ const AuthContext = createContext<AuthCtx>({
   login: async () => {},
   logout: () => {},
   changePassword: async () => {},
+  requestPasswordReset: async () => {},
+  verifyPasswordResetOtp: async () => {},
+  resetPassword: async () => {},
 });
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
@@ -178,8 +184,51 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!res.ok) throw new Error(await parseApiError(res));
   }
 
+  // --- Forgot password (unauthenticated) — same 3-step flow as KYC phone
+  // verification (send code / verify code), just keyed by phone number
+  // instead of a logged-in session, since nobody's logged in here.
+
+  async function requestPasswordReset(phoneNumber: string) {
+    const res = await fetch(`${API_URL}/auth/forgot-password/send-otp`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ phoneNumber }),
+    });
+    if (!res.ok) throw new Error(await parseApiError(res));
+  }
+
+  async function verifyPasswordResetOtp(phoneNumber: string, code: string) {
+    const res = await fetch(`${API_URL}/auth/forgot-password/verify-otp`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ phoneNumber, code }),
+    });
+    if (!res.ok) throw new Error(await parseApiError(res));
+  }
+
+  async function resetPassword(phoneNumber: string, newPassword: string) {
+    const res = await fetch(`${API_URL}/auth/forgot-password/reset`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ phoneNumber, newPassword }),
+    });
+    if (!res.ok) throw new Error(await parseApiError(res));
+  }
+
   return (
-    <AuthContext.Provider value={{ user, loading, register, login, logout, changePassword }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        register,
+        login,
+        logout,
+        changePassword,
+        requestPasswordReset,
+        verifyPasswordResetOtp,
+        resetPassword,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

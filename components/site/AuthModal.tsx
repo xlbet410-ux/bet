@@ -21,10 +21,22 @@ export default function AuthModal({
   initialAgentCode?: string;
 }) {
   const isLogin = mode === "login";
+  // "credentials" is the normal login/register form below — the forgot-
+  // password flow is 3 extra steps layered into this same modal shell
+  // rather than a new mode on the mode prop, so every page that renders
+  // <AuthModal mode="login" | "register"> doesn't need to change at all.
+  const [view, setView] = useState<"credentials" | "forgotPhone" | "forgotOtp" | "forgotNewPassword" | "forgotDone">(
+    "credentials"
+  );
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [otpCode, setOtpCode] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
+  const [showNewPwd, setShowNewPwd] = useState(false);
+  const [showConfirmNewPwd, setShowConfirmNewPwd] = useState(false);
   // A captured ?agent=CODE takes over the same visible Referral Code field
   // (falling back to whatever was persisted earlier THIS visit — see
   // AGENT_CODE_KEY — so it isn't lost just because this particular modal
@@ -45,7 +57,7 @@ export default function AuthModal({
   const [showConfirm, setShowConfirm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const { t } = useLang();
-  const { login, register } = useAuth();
+  const { login, register, requestPasswordReset, verifyPasswordResetOtp, resetPassword } = useAuth();
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
@@ -53,6 +65,14 @@ export default function AuthModal({
     document.body.style.overflow = "hidden";
     return () => { window.removeEventListener("keydown", onKey); document.body.style.overflow = ""; };
   }, [onClose]);
+
+  // Switching between login/register (via onSwitch) reuses this same modal
+  // instance — drop back to the normal form instead of leaving a stale
+  // forgot-password step showing.
+  useEffect(() => {
+    setView("credentials");
+    setError("");
+  }, [mode]);
 
   const handleSubmit = async () => {
     setError("");
@@ -80,6 +100,51 @@ export default function AuthModal({
         });
       }
       onClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const resetDigits = phone.replace(/\D/g, "");
+
+  const handleSendOtp = async () => {
+    setError("");
+    if (resetDigits.length < 7) { setError(t.authErrPhone); return; }
+    setSubmitting(true);
+    try {
+      await requestPasswordReset(resetDigits);
+      setView("forgotOtp");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    setError("");
+    if (otpCode.trim().length < 4) { setError(t.authErrOtp); return; }
+    setSubmitting(true);
+    try {
+      await verifyPasswordResetOtp(resetDigits, otpCode.trim());
+      setView("forgotNewPassword");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleResetPassword = async () => {
+    setError("");
+    if (newPassword.length < 6) { setError(t.authErrPassword); return; }
+    if (newPassword !== confirmNewPassword) { setError(t.authErrMatch); return; }
+    setSubmitting(true);
+    try {
+      await resetPassword(resetDigits, newPassword);
+      setView("forgotDone");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
     } finally {
@@ -144,130 +209,316 @@ export default function AuthModal({
           <Image src={logo} alt="2XLbet Casino" width={220} height={220} className="h-12 w-auto drop-shadow-[0_0_18px_#9B30FF66]" />
         </div>
 
-        <h2 className="relative text-center text-xl font-extrabold">
-          <span className="bg-gradient-to-r from-[#F5C842] to-[#D4AF37] bg-clip-text text-transparent">
-            {isLogin ? t.authLoginTitle : t.authRegisterTitle}
-          </span>
-        </h2>
-        <p className="relative mb-4 mt-1 text-center text-sm text-[#9B8EC4]">
-          {isLogin ? t.authLoginSub : t.authRegisterSub}
-        </p>
-
-        {/* name — register only */}
-        {!isLogin && (
-          <div className="relative mb-3">
-            <label className="mb-1 block text-xs font-medium text-[#C9B8E8]">{t.authNameLabel}</label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder={t.authNamePlaceholder}
-              className={inputBase}
-            />
-          </div>
-        )}
-
-        {/* phone */}
-        <div className="relative mb-3">
-          <label className="mb-1 block text-xs font-medium text-[#C9B8E8]">{t.authPhoneLabel}</label>
-          <input
-            type="tel"
-            inputMode="tel"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value.replace(/[^\d+]/g, ""))}
-            placeholder={t.authPhonePlaceholder}
-            className={inputBase}
-          />
-        </div>
-
-        {/* password */}
-        <div className="relative mb-3">
-          <label className="mb-1 block text-xs font-medium text-[#C9B8E8]">{t.authPasswordLabel}</label>
-          <div className="relative">
-            <input
-              type={showPwd ? "text" : "password"}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder={t.authPasswordPlaceholder}
-              className={inputBase}
-            />
-            <EyeBtn visible={showPwd} onToggle={() => setShowPwd((v) => !v)} />
-          </div>
-        </div>
-
-        {/* register-only fields */}
-        {!isLogin && (
+        {view === "credentials" && (
           <>
-            <div className="relative mb-3">
-              <label className="mb-1 block text-xs font-medium text-[#C9B8E8]">{t.authConfirmLabel}</label>
-              <div className="relative">
+            <h2 className="relative text-center text-xl font-extrabold">
+              <span className="bg-gradient-to-r from-[#F5C842] to-[#D4AF37] bg-clip-text text-transparent">
+                {isLogin ? t.authLoginTitle : t.authRegisterTitle}
+              </span>
+            </h2>
+            <p className="relative mb-4 mt-1 text-center text-sm text-[#9B8EC4]">
+              {isLogin ? t.authLoginSub : t.authRegisterSub}
+            </p>
+
+            {/* name — register only */}
+            {!isLogin && (
+              <div className="relative mb-3">
+                <label className="mb-1 block text-xs font-medium text-[#C9B8E8]">{t.authNameLabel}</label>
                 <input
-                  type={showConfirm ? "text" : "password"}
-                  value={confirm}
-                  onChange={(e) => setConfirm(e.target.value)}
-                  placeholder={t.authPasswordPlaceholder}
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder={t.authNamePlaceholder}
                   className={inputBase}
                 />
-                <EyeBtn visible={showConfirm} onToggle={() => setShowConfirm((v) => !v)} />
               </div>
-            </div>
+            )}
+
+            {/* phone */}
             <div className="relative mb-3">
-              <label className="mb-1 block text-xs font-medium text-[#C9B8E8]">
-                {t.authReferralLabel} <span className="text-[#8A7DB0]">{t.authReferralOptional}</span>
-              </label>
+              <label className="mb-1 block text-xs font-medium text-[#C9B8E8]">{t.authPhoneLabel}</label>
               <input
-                type="text"
-                value={referral}
-                onChange={(e) => setReferral(e.target.value)}
-                placeholder={t.authReferralPlaceholder}
+                type="tel"
+                inputMode="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value.replace(/[^\d+]/g, ""))}
+                placeholder={t.authPhonePlaceholder}
                 className={inputBase}
               />
             </div>
-            <label className="relative mb-3 flex cursor-pointer items-start gap-2 text-xs text-[#9B8EC4]">
-              <input
-                type="checkbox"
-                checked={agree}
-                onChange={(e) => setAgree(e.target.checked)}
-                className="mt-0.5 h-4 w-4 accent-[#D4AF37]"
-              />
-              <span>
-                {t.authConsent}{" "}
-                <span className="text-[#D4AF37]">{t.authTerms}</span>{" "}
-                <span className="text-[#D4AF37]">{t.authPrivacy}</span>.
-              </span>
-            </label>
+
+            {/* password */}
+            <div className="relative mb-3">
+              <label className="mb-1 block text-xs font-medium text-[#C9B8E8]">{t.authPasswordLabel}</label>
+              <div className="relative">
+                <input
+                  type={showPwd ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder={t.authPasswordPlaceholder}
+                  className={inputBase}
+                />
+                <EyeBtn visible={showPwd} onToggle={() => setShowPwd((v) => !v)} />
+              </div>
+            </div>
+
+            {/* register-only fields */}
+            {!isLogin && (
+              <>
+                <div className="relative mb-3">
+                  <label className="mb-1 block text-xs font-medium text-[#C9B8E8]">{t.authConfirmLabel}</label>
+                  <div className="relative">
+                    <input
+                      type={showConfirm ? "text" : "password"}
+                      value={confirm}
+                      onChange={(e) => setConfirm(e.target.value)}
+                      placeholder={t.authPasswordPlaceholder}
+                      className={inputBase}
+                    />
+                    <EyeBtn visible={showConfirm} onToggle={() => setShowConfirm((v) => !v)} />
+                  </div>
+                </div>
+                <div className="relative mb-3">
+                  <label className="mb-1 block text-xs font-medium text-[#C9B8E8]">
+                    {t.authReferralLabel} <span className="text-[#8A7DB0]">{t.authReferralOptional}</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={referral}
+                    onChange={(e) => setReferral(e.target.value)}
+                    placeholder={t.authReferralPlaceholder}
+                    className={inputBase}
+                  />
+                </div>
+                <label className="relative mb-3 flex cursor-pointer items-start gap-2 text-xs text-[#9B8EC4]">
+                  <input
+                    type="checkbox"
+                    checked={agree}
+                    onChange={(e) => setAgree(e.target.checked)}
+                    className="mt-0.5 h-4 w-4 accent-[#D4AF37]"
+                  />
+                  <span>
+                    {t.authConsent}{" "}
+                    <span className="text-[#D4AF37]">{t.authTerms}</span>{" "}
+                    <span className="text-[#D4AF37]">{t.authPrivacy}</span>.
+                  </span>
+                </label>
+              </>
+            )}
+
+            {isLogin && (
+              <div className="relative mb-3 text-right">
+                <button
+                  type="button"
+                  onClick={() => { setError(""); setView("forgotPhone"); }}
+                  className="text-xs text-[#D4AF37] hover:underline"
+                >
+                  {t.authForgot}
+                </button>
+              </div>
+            )}
+
+            {error && (
+              <p className="relative mb-3 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-300">
+                {error}
+              </p>
+            )}
+
+            <button
+              onClick={handleSubmit}
+              disabled={submitting}
+              className="relative w-full rounded-full bg-gradient-to-r from-[#D4AF37] to-[#F5C842] py-3 text-base font-bold text-[#0A0612] shadow-[0_0_25px_#D4AF3760] transition-all hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {submitting ? "..." : isLogin ? t.authLoginBtn : t.authSignupBtn}
+            </button>
+
+            <p className="relative mt-4 text-center text-sm text-[#9B8EC4]">
+              {isLogin ? t.authHaveAccount : t.authNoAccount}{" "}
+              <button
+                onClick={() => onSwitch(isLogin ? "register" : "login")}
+                className="font-semibold text-[#F5C842] hover:underline"
+              >
+                {isLogin ? t.authSwitchToSignup : t.authSwitchToLogin}
+              </button>
+            </p>
           </>
         )}
 
-        {isLogin && (
-          <div className="relative mb-3 text-right">
-            <a href="#" className="text-xs text-[#D4AF37] hover:underline">{t.authForgot}</a>
-          </div>
+        {view === "forgotPhone" && (
+          <>
+            <h2 className="relative text-center text-xl font-extrabold">
+              <span className="bg-gradient-to-r from-[#F5C842] to-[#D4AF37] bg-clip-text text-transparent">
+                {t.authForgotTitle}
+              </span>
+            </h2>
+            <p className="relative mb-4 mt-1 text-center text-sm text-[#9B8EC4]">{t.authForgotPhoneSub}</p>
+
+            <div className="relative mb-3">
+              <label className="mb-1 block text-xs font-medium text-[#C9B8E8]">{t.authPhoneLabel}</label>
+              <input
+                type="tel"
+                inputMode="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value.replace(/[^\d+]/g, ""))}
+                placeholder={t.authPhonePlaceholder}
+                className={inputBase}
+              />
+            </div>
+
+            {error && (
+              <p className="relative mb-3 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-300">
+                {error}
+              </p>
+            )}
+
+            <button
+              onClick={handleSendOtp}
+              disabled={submitting}
+              className="relative w-full rounded-full bg-gradient-to-r from-[#D4AF37] to-[#F5C842] py-3 text-base font-bold text-[#0A0612] shadow-[0_0_25px_#D4AF3760] transition-all hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {submitting ? "..." : t.authForgotSendOtpBtn}
+            </button>
+
+            <p className="relative mt-4 text-center text-sm text-[#9B8EC4]">
+              <button
+                type="button"
+                onClick={() => { setError(""); setView("credentials"); }}
+                className="font-semibold text-[#F5C842] hover:underline"
+              >
+                {t.authForgotBackToLogin}
+              </button>
+            </p>
+          </>
         )}
 
-        {error && (
-          <p className="relative mb-3 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-300">
-            {error}
-          </p>
+        {view === "forgotOtp" && (
+          <>
+            <h2 className="relative text-center text-xl font-extrabold">
+              <span className="bg-gradient-to-r from-[#F5C842] to-[#D4AF37] bg-clip-text text-transparent">
+                {t.authForgotTitle}
+              </span>
+            </h2>
+            <p className="relative mb-4 mt-1 text-center text-sm text-[#9B8EC4]">{t.authForgotOtpSub}</p>
+
+            <div className="relative mb-3">
+              <label className="mb-1 block text-xs font-medium text-[#C9B8E8]">{t.authOtpLabel}</label>
+              <input
+                type="text"
+                inputMode="numeric"
+                value={otpCode}
+                onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ""))}
+                placeholder={t.authOtpPlaceholder}
+                className={inputBase}
+              />
+            </div>
+
+            {error && (
+              <p className="relative mb-3 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-300">
+                {error}
+              </p>
+            )}
+
+            <button
+              onClick={handleVerifyOtp}
+              disabled={submitting}
+              className="relative w-full rounded-full bg-gradient-to-r from-[#D4AF37] to-[#F5C842] py-3 text-base font-bold text-[#0A0612] shadow-[0_0_25px_#D4AF3760] transition-all hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {submitting ? "..." : t.authForgotVerifyBtn}
+            </button>
+
+            <p className="relative mt-4 flex items-center justify-center gap-3 text-center text-sm text-[#9B8EC4]">
+              <button type="button" onClick={handleSendOtp} disabled={submitting} className="font-semibold text-[#F5C842] hover:underline disabled:opacity-60">
+                {t.authForgotResendBtn}
+              </button>
+              <span className="text-[#8A7DB0]">·</span>
+              <button
+                type="button"
+                onClick={() => { setError(""); setView("credentials"); }}
+                className="font-semibold text-[#F5C842] hover:underline"
+              >
+                {t.authForgotBackToLogin}
+              </button>
+            </p>
+          </>
         )}
 
-        <button
-          onClick={handleSubmit}
-          disabled={submitting}
-          className="relative w-full rounded-full bg-gradient-to-r from-[#D4AF37] to-[#F5C842] py-3 text-base font-bold text-[#0A0612] shadow-[0_0_25px_#D4AF3760] transition-all hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          {submitting ? "..." : isLogin ? t.authLoginBtn : t.authSignupBtn}
-        </button>
+        {view === "forgotNewPassword" && (
+          <>
+            <h2 className="relative text-center text-xl font-extrabold">
+              <span className="bg-gradient-to-r from-[#F5C842] to-[#D4AF37] bg-clip-text text-transparent">
+                {t.authForgotTitle}
+              </span>
+            </h2>
+            <p className="relative mb-4 mt-1 text-center text-sm text-[#9B8EC4]">{t.authForgotNewPasswordSub}</p>
 
-        <p className="relative mt-4 text-center text-sm text-[#9B8EC4]">
-          {isLogin ? t.authHaveAccount : t.authNoAccount}{" "}
-          <button
-            onClick={() => onSwitch(isLogin ? "register" : "login")}
-            className="font-semibold text-[#F5C842] hover:underline"
-          >
-            {isLogin ? t.authSwitchToSignup : t.authSwitchToLogin}
-          </button>
-        </p>
+            <div className="relative mb-3">
+              <label className="mb-1 block text-xs font-medium text-[#C9B8E8]">{t.authNewPasswordLabel}</label>
+              <div className="relative">
+                <input
+                  type={showNewPwd ? "text" : "password"}
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder={t.authPasswordPlaceholder}
+                  className={inputBase}
+                />
+                <EyeBtn visible={showNewPwd} onToggle={() => setShowNewPwd((v) => !v)} />
+              </div>
+            </div>
+
+            <div className="relative mb-3">
+              <label className="mb-1 block text-xs font-medium text-[#C9B8E8]">{t.authConfirmNewPasswordLabel}</label>
+              <div className="relative">
+                <input
+                  type={showConfirmNewPwd ? "text" : "password"}
+                  value={confirmNewPassword}
+                  onChange={(e) => setConfirmNewPassword(e.target.value)}
+                  placeholder={t.authPasswordPlaceholder}
+                  className={inputBase}
+                />
+                <EyeBtn visible={showConfirmNewPwd} onToggle={() => setShowConfirmNewPwd((v) => !v)} />
+              </div>
+            </div>
+
+            {error && (
+              <p className="relative mb-3 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-300">
+                {error}
+              </p>
+            )}
+
+            <button
+              onClick={handleResetPassword}
+              disabled={submitting}
+              className="relative w-full rounded-full bg-gradient-to-r from-[#D4AF37] to-[#F5C842] py-3 text-base font-bold text-[#0A0612] shadow-[0_0_25px_#D4AF3760] transition-all hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {submitting ? "..." : t.authForgotResetBtn}
+            </button>
+          </>
+        )}
+
+        {view === "forgotDone" && (
+          <>
+            <h2 className="relative text-center text-xl font-extrabold">
+              <span className="bg-gradient-to-r from-[#F5C842] to-[#D4AF37] bg-clip-text text-transparent">
+                {t.authForgotTitle}
+              </span>
+            </h2>
+            <p className="relative mb-4 mt-1 text-center text-sm text-[#9B8EC4]">{t.authForgotSuccessMsg}</p>
+
+            <button
+              onClick={() => {
+                setPassword("");
+                setOtpCode("");
+                setNewPassword("");
+                setConfirmNewPassword("");
+                setView("credentials");
+                onSwitch("login");
+              }}
+              className="relative w-full rounded-full bg-gradient-to-r from-[#D4AF37] to-[#F5C842] py-3 text-base font-bold text-[#0A0612] shadow-[0_0_25px_#D4AF3760] transition-all hover:scale-[1.02]"
+            >
+              {t.authForgotBackToLogin}
+            </button>
+          </>
+        )}
       </div>
     </div>
   );

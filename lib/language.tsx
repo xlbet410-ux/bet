@@ -93,6 +93,22 @@ export type Translations = {
   authErrMatch: string;
   authErrTerms: string;
   authErrName: string;
+  // forgot password flow
+  authForgotTitle: string;
+  authForgotPhoneSub: string;
+  authForgotSendOtpBtn: string;
+  authForgotOtpSub: string;
+  authOtpLabel: string;
+  authOtpPlaceholder: string;
+  authForgotVerifyBtn: string;
+  authForgotResendBtn: string;
+  authForgotNewPasswordSub: string;
+  authNewPasswordLabel: string;
+  authConfirmNewPasswordLabel: string;
+  authForgotResetBtn: string;
+  authForgotBackToLogin: string;
+  authForgotSuccessMsg: string;
+  authErrOtp: string;
   logout: string;
   balance: string;
   myProfile: string;
@@ -375,6 +391,21 @@ const T: Record<Lang, Translations> = {
     authErrPassword: "Password must be at least 6 characters.",
     authErrMatch: "Passwords do not match.",
     authErrTerms: "Please agree to the terms.",
+    authForgotTitle: "Reset Password",
+    authForgotPhoneSub: "Enter your registered phone number to receive a verification code.",
+    authForgotSendOtpBtn: "Send Code",
+    authForgotOtpSub: "Enter the 6-digit code sent to your phone.",
+    authOtpLabel: "Verification Code",
+    authOtpPlaceholder: "Enter code",
+    authForgotVerifyBtn: "Verify Code",
+    authForgotResendBtn: "Resend code",
+    authForgotNewPasswordSub: "Set a new password for your account.",
+    authNewPasswordLabel: "New Password",
+    authConfirmNewPasswordLabel: "Confirm New Password",
+    authForgotResetBtn: "Reset Password",
+    authForgotBackToLogin: "Back to Log In",
+    authForgotSuccessMsg: "Password reset! You can now log in with your new password.",
+    authErrOtp: "Please enter the code sent to your phone.",
     logout: "Log Out",
     balance: "Balance",
     myProfile: "My Profile",
@@ -651,6 +682,21 @@ const T: Record<Lang, Translations> = {
     authErrPassword: "পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে।",
     authErrMatch: "পাসওয়ার্ড মিলছে না।",
     authErrTerms: "শর্তাবলীতে সম্মত হন।",
+    authForgotTitle: "পাসওয়ার্ড রিসেট করুন",
+    authForgotPhoneSub: "যাচাইকরণ কোড পেতে আপনার নিবন্ধিত ফোন নম্বর লিখুন।",
+    authForgotSendOtpBtn: "কোড পাঠান",
+    authForgotOtpSub: "আপনার ফোনে পাঠানো ৬-সংখ্যার কোডটি লিখুন।",
+    authOtpLabel: "যাচাইকরণ কোড",
+    authOtpPlaceholder: "কোড লিখুন",
+    authForgotVerifyBtn: "কোড যাচাই করুন",
+    authForgotResendBtn: "আবার কোড পাঠান",
+    authForgotNewPasswordSub: "আপনার অ্যাকাউন্টের জন্য একটি নতুন পাসওয়ার্ড সেট করুন।",
+    authNewPasswordLabel: "নতুন পাসওয়ার্ড",
+    authConfirmNewPasswordLabel: "নতুন পাসওয়ার্ড নিশ্চিত করুন",
+    authForgotResetBtn: "পাসওয়ার্ড রিসেট করুন",
+    authForgotBackToLogin: "লগইনে ফিরে যান",
+    authForgotSuccessMsg: "পাসওয়ার্ড রিসেট হয়েছে! আপনি এখন নতুন পাসওয়ার্ড দিয়ে লগইন করতে পারেন।",
+    authErrOtp: "আপনার ফোনে পাঠানো কোডটি লিখুন।",
     logout: "লগআউট",
     balance: "ব্যালেন্স",
     myProfile: "আমার প্রোফাইল",
