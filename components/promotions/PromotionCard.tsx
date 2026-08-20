@@ -21,7 +21,7 @@ function buildZigzagClipPath(teeth: number, notchPct: number): string {
   }
   return `polygon(${points.join(", ")})`;
 }
-const CARD_IMAGE_CLIP_PATH = buildZigzagClipPath(12, 12);
+const CARD_IMAGE_CLIP_PATH = buildZigzagClipPath(28, 6);
 
 const CATEGORY_LABELS: Record<string, { en: string; bn: string }> = {
   deposit: { en: "Deposit", bn: "ডিপোজিট" },
@@ -116,7 +116,9 @@ export function PromotionCard({
   return (
     <>
       <div className="overflow-hidden" style={{ background: "#333231", borderRadius: "3px" }}>
-        <div className="relative w-full bg-[#1B0838]">
+        {/* Same color as the card's content panel below — this is what the
+            zigzag notches (clip-path cut into the image) reveal. */}
+        <div className="relative w-full bg-[#333231]">
           {image ? (
             // Plain <img>, not next/image: these are variable-aspect-ratio
             // banners uploaded per-offer, so we can't pre-declare a
