@@ -339,13 +339,14 @@ export default function PromotionsPage() {
           ) : (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {renderList.map(({ offer: o, groupBadge, groupKey }) =>
-                // "red-envelope-rain" is the plain once-a-day envelope;
-                // "9wicket-loss-envelope" is the 9Wicket monthly-principal-
-                // loss-triggered one (see OffersManager's manual_claim loss
-                // threshold fields, backed by
-                // OffersService.computeMonthlyPrincipalLoss) — same tap-to-
-                // open card, different claim condition entirely server-side.
-                o.slug === "red-envelope-rain" || o.slug === "9wicket-loss-envelope" ? (
+                // "red-envelope-rain" is the plain once-a-day envelope — the
+                // special tap-to-open animated card. Loss-triggered claim
+                // offers (9Wicket weekly/monthly principal-loss red
+                // envelope, cashback, etc.) render as a normal PromotionCard
+                // instead (operator preference — no envelope graphic, just
+                // the standard card with details + a Claim Now button,
+                // which already handles manual_claim offers generically).
+                o.slug === "red-envelope-rain" ? (
                   <RedEnvelope
                     key={o.id}
                     offer={o}

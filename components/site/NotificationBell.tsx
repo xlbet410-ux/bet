@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { FaBell } from "react-icons/fa6";
+import { FaBell, FaCircleCheck } from "react-icons/fa6";
 import { useLang } from "@/lib/language";
 import { useAuth } from "@/lib/auth";
 import {
@@ -11,6 +11,7 @@ import {
   type AppNotification,
   type NotificationType,
 } from "@/lib/notifications";
+import { claimOffer } from "@/lib/offers";
 
 const POLL_MS = 30_000;
 
@@ -35,6 +36,10 @@ function describe(n: AppNotification, lang: string): string {
       return lang === "bn" ? `আপনি ৳${amount} দৈনিক ক্যাশব্যাক পেয়েছেন` : `You received ৳${amount} daily cashback`;
     case "offer_bonus":
       return lang === "bn" ? `আপনি ৳${amount} বোনাস দাবি করেছেন` : `You claimed a ৳${amount} bonus`;
+    case "offer_claimable": {
+      const title = (lang === "bn" ? md.titleBn : md.titleEn) ?? md.titleBn ?? (lang === "bn" ? "একটি অফার" : "an offer");
+      return lang === "bn" ? `আপনি এখন "${title}" দাবি করতে পারবেন` : `You can now claim "${title}"`;
+    }
     case "kyc_approved":
       return lang === "bn" ? "আপনার কেওয়াইসি যাচাইকরণ অনুমোদিত হয়েছে" : "Your KYC verification was approved";
     case "kyc_rejected":
@@ -61,6 +66,70 @@ function timeAgo(iso: string, lang: string) {
   if (hrs < 24) return lang === "bn" ? `${hrs} ঘণ্টা আগে` : `${hrs}h ago`;
   const days = Math.floor(hrs / 24);
   return lang === "bn" ? `${days} দিন আগে` : `${days}d ago`;
+}
+
+// Every other notification type is purely descriptive (something already
+// happened) — this one is the only actionable kind, so it gets its own
+// small bit of local state (claiming/claimed/amount/error) rather than
+// threading that through the parent list for every item.
+function NotificationItem({ notification: n, lang }: { notification: AppNotification; lang: string }) {
+  const [claiming, setClaiming] = useState(false);
+  const [claimed, setClaimed] = useState(false);
+  const [amount, setAmount] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const offerSlug = n.type === "offer_claimable" ? (n.metadata?.offerSlug as string | undefined) : undefined;
+
+  async function handleClaim() {
+    if (!offerSlug) return;
+    setClaiming(true);
+    setError(null);
+    try {
+      const result = await claimOffer(offerSlug);
+      setAmount(result.rewardAmount);
+      setClaimed(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : (lang === "bn" ? "কিছু ভুল হয়েছে।" : "Something went wrong."));
+    } finally {
+      setClaiming(false);
+    }
+  }
+
+  return (
+    <div
+      className={`flex items-start gap-2.5 border-b border-white/[0.04] px-4 py-3 last:border-b-0 ${!n.isRead ? "bg-white/[0.03]" : ""}`}
+    >
+      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: n.isRead ? "transparent" : "#F5C842" }} />
+      <div className="min-w-0 flex-1">
+        <p className="text-xs leading-relaxed text-[#E5D9FF]">{describe(n, lang)}</p>
+        <p className="mt-1 text-[10px] text-[#6A5E8A]">{timeAgo(n.createdAt, lang)}</p>
+
+        {offerSlug && (
+          claimed ? (
+            <p className="mt-2 flex items-center gap-1 text-xs font-bold text-[#4ade80]">
+              <FaCircleCheck />
+              {amount
+                ? (lang === "bn" ? `আপনি ৳${Number(amount).toLocaleString()} পেয়েছেন!` : `You received ৳${Number(amount).toLocaleString()}!`)
+                : (lang === "bn" ? "দাবি করা হয়েছে" : "Claimed")}
+            </p>
+          ) : (
+            <>
+              <button
+                type="button"
+                onClick={handleClaim}
+                disabled={claiming}
+                className="mt-2 rounded-full px-3 py-1 text-[11px] font-bold text-[#1A1A1A] transition-opacity disabled:cursor-not-allowed disabled:opacity-50"
+                style={{ background: "#F5C842" }}
+              >
+                {claiming ? "…" : lang === "bn" ? "এখনই দাবি করুন" : "Claim Now"}
+              </button>
+              {error && <p className="mt-1 text-[10px] text-red-400">{error}</p>}
+            </>
+          )
+        )}
+      </div>
+    </div>
+  );
 }
 
 export default function NotificationBell() {
@@ -157,18 +226,7 @@ export default function NotificationBell() {
                 {lang === "bn" ? "কোনো নোটিফিকেশন নেই।" : "No notifications yet."}
               </p>
             ) : (
-              items.map((n) => (
-                <div
-                  key={n.id}
-                  className={`flex items-start gap-2.5 border-b border-white/[0.04] px-4 py-3 last:border-b-0 ${!n.isRead ? "bg-white/[0.03]" : ""}`}
-                >
-                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: n.isRead ? "transparent" : "#F5C842" }} />
-                  <div className="min-w-0">
-                    <p className="text-xs leading-relaxed text-[#E5D9FF]">{describe(n, lang)}</p>
-                    <p className="mt-1 text-[10px] text-[#6A5E8A]">{timeAgo(n.createdAt, lang)}</p>
-                  </div>
-                </div>
-              ))
+              items.map((n) => <NotificationItem key={n.id} notification={n} lang={lang} />)
             )}
           </div>
         </div>

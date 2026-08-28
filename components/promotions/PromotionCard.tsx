@@ -58,6 +58,11 @@ export function PromotionCard({
   const [claiming, setClaiming] = useState(false);
   const [claimError, setClaimError] = useState<string | null>(null);
   const [claimed, setClaimed] = useState(offer.alreadyClaimed);
+  // Only known right after THIS card's own claim — a page reload showing
+  // offer.alreadyClaimed=true has no rewardAmount to show (the claim
+  // endpoint only returns it once, at claim time), so the "you received"
+  // line only ever appears for the claim that just happened, not forever.
+  const [claimedAmount, setClaimedAmount] = useState<string | null>(null);
 
   const strings =
     lang === "bn"
@@ -68,6 +73,7 @@ export function PromotionCard({
           claim: "দাবি করুন",
           claiming: "...",
           claimed: "দাবি করা হয়েছে",
+          received: (amount: string) => `আপনি ৳${Number(amount).toLocaleString()} পেয়েছেন!`,
           notEligible: "আপনি এখন এই অফারের জন্য যোগ্য নন",
         }
       : {
@@ -77,6 +83,7 @@ export function PromotionCard({
           claim: "Claim",
           claiming: "...",
           claimed: "Claimed",
+          received: (amount: string) => `You received ৳${Number(amount).toLocaleString()}!`,
           notEligible: "You're not eligible for this offer right now",
         };
 
@@ -96,7 +103,8 @@ export function PromotionCard({
     setClaiming(true);
     setClaimError(null);
     try {
-      await claimOffer(offer.slug);
+      const result = await claimOffer(offer.slug);
+      setClaimedAmount(result.rewardAmount);
       setClaimed(true);
     } catch (err) {
       setClaimError(err instanceof Error ? err.message : "Something went wrong.");
@@ -171,7 +179,7 @@ export function PromotionCard({
                   className="flex flex-1 items-center justify-center gap-1 py-2.5 text-xs font-bold"
                   style={{ background: "rgba(34,197,94,.15)", color: "#4ade80", borderRadius: "3px" }}
                 >
-                  <FaCircleCheck /> {strings.claimed}
+                  <FaCircleCheck /> {claimedAmount ? strings.received(claimedAmount) : strings.claimed}
                 </span>
               ) : (
                 <button
