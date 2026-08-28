@@ -209,3 +209,39 @@ export async function launchGame(gameUid: string): Promise<{ gameUrl: string }> 
   }
   return res.json();
 }
+
+// Must match backend GamesService's NINE_WICKET_GAME_UID exactly.
+export const NINE_WICKET_GAME_UID = "9wicket-lobby";
+
+// Every game normally opens via the /play/[gameUid] page, which embeds the
+// launched game_url in an iframe. 9Wicket's own hosting refuses to run
+// inside an iframe (unlike every other provider) — it has to launch
+// straight into its own new browser tab instead. Centralized here so every
+// "Play" entry point (home, category pages, provider pages) gets the same
+// behavior without each duplicating the special case.
+export async function openGame(
+  gameUid: string,
+  router: { push: (href: string) => void }
+): Promise<void> {
+  if (gameUid !== NINE_WICKET_GAME_UID) {
+    router.push(`/play/${gameUid}`);
+    return;
+  }
+
+  // window.open must run synchronously inside the click handler, or
+  // browsers block it as a popup — open a blank tab immediately, then point
+  // it at the real game_url once the launch call resolves, instead of
+  // awaiting first and calling window.open from an async callback.
+  const tab = window.open("", "_blank");
+  if (!tab) {
+    alert("Please allow pop-ups for this site to launch 9Wicket.");
+    return;
+  }
+  try {
+    const { gameUrl } = await launchGame(gameUid);
+    tab.location.href = gameUrl;
+  } catch (err) {
+    tab.close();
+    alert(err instanceof Error ? err.message : "Couldn't launch this game right now.");
+  }
+}

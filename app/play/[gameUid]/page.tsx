@@ -7,7 +7,7 @@ import AuthModal from "@/components/site/AuthModal";
 import AmbientBackground from "@/components/site/AmbientBackground";
 import { useAuth } from "@/lib/auth";
 import { useLang } from "@/lib/language";
-import { launchGame } from "@/lib/games";
+import { launchGame, openGame, NINE_WICKET_GAME_UID } from "@/lib/games";
 
 export default function PlayPage({ params }: { params: Promise<{ gameUid: string }> }) {
   const { gameUid } = use(params);
@@ -25,6 +25,18 @@ export default function PlayPage({ params }: { params: Promise<{ gameUid: string
     // instead and never reaches the `loading` branch, so its stuck-true
     // value here is harmless.
     if (!user) return;
+
+    // 9Wicket can't run inside this page's iframe (unlike every other
+    // game) — someone landing directly on this URL (bookmark, back
+    // button, shared link) instead of clicking Play still needs the
+    // new-tab flow, not a blank iframe. Hand off to openGame and leave
+    // this page — there's nothing for it to render for this gameUid.
+    if (gameUid === NINE_WICKET_GAME_UID) {
+      void openGame(gameUid, router);
+      router.replace("/");
+      return;
+    }
+
     let cancelled = false;
 
     async function load() {

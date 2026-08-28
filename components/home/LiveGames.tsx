@@ -8,6 +8,7 @@ import GamesToolbar from "./GamesToolbar";
 import type { GameItem } from "@/lib/data";
 import {
   getCatalogCounts,
+  openGame,
   CATEGORY_ORDER,
   CATEGORY_ICONS,
   type GameCategory,
@@ -80,7 +81,7 @@ export default function LiveGames({ onOpenAuth }: { onOpenAuth: (mode: "login" |
         onOpenAuth("login");
         return;
       }
-      router.push(`/play/${gameUid}`);
+      void openGame(gameUid, router);
     },
     [user, onOpenAuth, router]
   );

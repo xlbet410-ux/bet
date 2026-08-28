@@ -11,7 +11,7 @@ import AmbientBackground from "@/components/site/AmbientBackground";
 import GameGrid from "@/components/home/GameGrid";
 import { useAuth } from "@/lib/auth";
 import { useLang } from "@/lib/language";
-import { getAllProviders, getProviderCatalog, type CategoryProvider, type ProviderSort } from "@/lib/games";
+import { getAllProviders, getProviderCatalog, openGame, type CategoryProvider, type ProviderSort } from "@/lib/games";
 import type { GameItem } from "@/lib/data";
 
 const PAGE_SIZE = 20;
@@ -108,7 +108,7 @@ export default function ProviderPage({ params }: { params: Promise<{ code: strin
         setAuthMode("login");
         return;
       }
-      router.push(`/play/${gameUid}`);
+      void openGame(gameUid, router);
     },
     [user, router]
   );

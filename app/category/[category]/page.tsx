@@ -15,6 +15,7 @@ import { useLang } from "@/lib/language";
 import {
   getCatalogPage,
   getCategoryProviders,
+  openGame,
   CATEGORY_ORDER,
   CATEGORY_ICONS,
   type CategoryProvider,
@@ -171,7 +172,7 @@ export default function CategoryPage({ params }: { params: Promise<{ category: s
         setAuthMode("login");
         return;
       }
-      router.push(`/play/${gameUid}`);
+      void openGame(gameUid, router);
     },
     [user, router]
   );
