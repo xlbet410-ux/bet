@@ -116,19 +116,23 @@ export function PromotionCard({
   return (
     <>
       <div className="overflow-hidden" style={{ background: "#333231", borderRadius: "3px" }}>
-        {/* Fixed ratio so every card in the grid lines up the same size,
-            regardless of the uploaded image's own aspect ratio. The zigzag
-            notches (clip-path cut into this box's bottom edge) reveal the
-            wrapper's #333231 behind it. */}
+        {/* Fixed 750x240 ratio (operator spec) so every card in the grid
+            lines up the same size, regardless of the uploaded image's own
+            aspect ratio — width stays fluid (w-full, fills the grid
+            column) with height following via aspect-ratio, so this still
+            works on mobile instead of a literal 750px box overflowing a
+            narrow screen. The zigzag notches (clip-path cut into this
+            box's bottom edge) reveal the wrapper's #333231 behind it. */}
         <div
-          className="relative aspect-12/5 w-full overflow-hidden bg-[#1B0838]"
+          className="relative aspect-[750/240] w-full overflow-hidden bg-[#1B0838]"
           style={{ clipPath: CARD_IMAGE_CLIP_PATH, WebkitClipPath: CARD_IMAGE_CLIP_PATH }}
         >
           {image ? (
             // Plain <img>, not next/image: these are variable-aspect-ratio
             // banners uploaded per-offer. object-contain (not cover) shows
             // the full image with no cropping, letterboxed within the fixed
-            // box above instead of stretching/cutting it.
+            // box above instead of stretching/cutting it — a bigger source
+            // image just scales down to fit, same as a smaller one scales up.
             // eslint-disable-next-line @next/next/no-img-element
             <img src={`${API_URL}${image}`} alt={title} className="block h-full w-full object-contain" />
           ) : (
