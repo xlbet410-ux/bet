@@ -12,15 +12,17 @@ export type GameCategory =
   | "sports"
   | "esports";
 
+// "sports" sits right under "hot_games" (operator request, for the 9Wicket
+// launch) — every other section keeps its prior relative order.
 export const CATEGORY_ORDER: GameCategory[] = [
   "featured",
   "hot_games",
+  "sports",
   "slots",
   "live_casino",
   "cards",
   "fishing",
   "mini_games",
-  "sports",
   "esports",
 ];
 
@@ -62,6 +64,7 @@ const SPORTS_CARD_IMAGES: Record<string, string> = {
   UG: "/SPORTS_UG.png",
   BTI: "/SPORTS_BTI.png",
   BETBY: "/SPORTS_BETBY.png",
+  "9W": "/SPORTS_9Wicket.png",
 };
 export const GENERIC_CARD_IMAGE = "/gamecard.png";
 
