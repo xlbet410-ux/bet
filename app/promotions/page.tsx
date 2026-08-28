@@ -25,6 +25,19 @@ import { PromotionCard } from "@/components/promotions/PromotionCard";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
 
+// Game-category tab membership for an offer whose eligibleGames is
+// 'specific' (a fixed gameUid list) rather than 'category' (a whole
+// category) — the tab filter below only matches 'category' mode natively,
+// so a 'specific' offer needs each of its gameUids resolved to a category
+// too. There's no live catalog fetch here (would mean an extra round-trip
+// just for tab filtering) — this covers the one real case today: 9Wicket's
+// single synthesized lobby game, always 'sports' on the backend (see
+// SPORTS_ESPORTS_PROVIDER_OVERRIDE['9W'] in category.util.ts). Extend this
+// map if another 'specific'-mode offer needs a game tab match later.
+const SPECIFIC_GAME_CATEGORY: Record<string, GameCategoryId> = {
+  "9wicket-lobby": "sports",
+};
+
 const CARD = {
   background: "linear-gradient(145deg,rgba(27,8,56,.65),rgba(10,6,18,.85))",
   border: "1px solid rgba(255,255,255,.07)",
@@ -235,7 +248,13 @@ export default function PromotionsPage() {
     if (activeCategory === "all") return offers;
     if (activeCategory.startsWith("game:")) {
       const category = activeCategory.slice("game:".length) as GameCategoryId;
-      return offers.filter((o) => o.eligibleGames?.mode === "category" && o.eligibleGames.category === category);
+      return offers.filter((o) => {
+        if (o.eligibleGames?.mode === "category") return o.eligibleGames.category === category;
+        if (o.eligibleGames?.mode === "specific") {
+          return o.eligibleGames.games.every((g) => SPECIFIC_GAME_CATEGORY[g.gameUid] === category);
+        }
+        return false;
+      });
     }
     return offers.filter((o) => o.category === activeCategory);
   }, [offers, activeCategory]);
