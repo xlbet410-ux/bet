@@ -1,0 +1,335 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import SectionHeading from "@/components/ui/SectionHeading";
+import Reveal from "@/components/ui/Reveal";
+import GameGrid from "./GameGrid";
+import GameRow from "./GameRow";
+import GamesToolbar from "./GamesToolbar";
+import type { GameItem } from "@/lib/data";
+import { useLang } from "@/lib/language";
+import { useAuth } from "@/lib/auth";
+import {
+  getCatalogPage,
+  getSubTagCounts,
+  CATEGORY_ACCENT,
+  SUB_TAGS,
+  type GameCategory,
+  type SubTag,
+} from "@/lib/games";
+
+// Top strip is a fixed-size horizontal scroller; everything beyond it lives
+// in the wrapping grid below, which grows as more pages load.
+const TOP_ROW_SIZE = 15;
+const GAMES_PAGE_SIZE = 20;
+
+// Hot Games instead gets three stacked rows, each independently horizontally
+// scrollable (unlike every other section, whose rows beyond the first wrap
+// into a static grid) — the first two rows are fixed at 20, the third grows
+// via Load More. Fetches a bigger page (3x20) up front so all three rows are
+// full on the first load instead of trickling in.
+const HOT_GAMES_ROW_SIZE = 20;
+const HOT_GAMES_PAGE_SIZE = HOT_GAMES_ROW_SIZE * 3;
+
+function toGameItem(g: { name: string; providerName: string; providerCode: string; thumbnail: string; original: string; gameUid: string }): GameItem {
+  return {
+    name: g.name,
+    provider: g.providerName,
+    providerCode: g.providerCode,
+    img: g.thumbnail || g.original,
+    glow: "#D4AF37",
+    gameUid: g.gameUid,
+  };
+}
+
+// Colors only the last word of the label (e.g. "Live Games" -> "Live" + gold "Games"),
+// matching the two-tone section-title treatment used across the homepage.
+function renderTitle(label: string, color: string) {
+  const words = label.split(" ");
+  const last = words.pop();
+  const prefix = words.join(" ");
+  return (
+    <>
+      {prefix ? `${prefix} ` : ""}
+      <span style={{ color }}>{last}</span>
+    </>
+  );
+}
+
+export default function GameCategorySection({
+  category,
+  label,
+  icon,
+  eyebrow,
+  favorites,
+  onToggleFavorite,
+  launchingUid,
+  onPlay,
+  toolbar,
+}: {
+  category: GameCategory;
+  label: string;
+  icon: string;
+  eyebrow: string;
+  favorites: Map<string, GameItem>;
+  onToggleFavorite: (game: GameItem) => void;
+  launchingUid: string | null;
+  onPlay: (gameUid: string) => void;
+  toolbar: {
+    hasFeatured: boolean;
+    favoritesCount: number;
+    showingFavorites: boolean;
+    onToggleFavoritesView: () => void;
+    onJumpToAll: () => void;
+    onJumpToFeatured: () => void;
+    onPlay: (gameUid: string) => void;
+  };
+}) {
+  const { t } = useLang();
+  // Only used so the Featured row re-fetches (and re-personalizes) right
+  // when the player logs in or out, instead of staying stuck with whichever
+  // list loaded first.
+  const { user } = useAuth();
+
+  const [games, setGames] = useState<GameItem[]>([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [retryKey, setRetryKey] = useState(0);
+
+  // Each sub-tag only ever has real matches within one category (e.g.
+  // table_games/video_poker only within Cards, crash_games/arcade/bingo/
+  // scratches only within Mini Games, megaways/jackpot mostly within Slots —
+  // see lib/games.ts SUB_TAGS) since that's where Oracle's own raw category
+  // for those games already places them. Fetching per-category counts here
+  // and only rendering tags with count > 0 means the chip row naturally
+  // shows the right tags for whichever section this is, with no per-category
+  // special-casing needed.
+  const [subTagCounts, setSubTagCounts] = useState<Record<SubTag, number> | null>(null);
+  const [activeTag, setActiveTag] = useState<SubTag | undefined>(undefined);
+
+  const pageSize = category === "hot_games" ? HOT_GAMES_PAGE_SIZE : GAMES_PAGE_SIZE;
+
+  useEffect(() => {
+    let cancelled = false;
+    getSubTagCounts(category)
+      .then((counts) => {
+        if (!cancelled) setSubTagCounts(counts);
+      })
+      .catch(() => {
+        // Non-critical — the chip row just doesn't render if this fails.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [category]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      setLoading(true);
+      setError(false);
+      const maxAttempts = 3;
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        try {
+          const { games: list, total: t } = await getCatalogPage(category, 1, pageSize, activeTag);
+          if (!cancelled) {
+            setGames(list.map(toGameItem));
+            setTotal(t);
+            setLoading(false);
+          }
+          return;
+        } catch {
+          if (attempt === maxAttempts) break;
+          await new Promise((r) => setTimeout(r, attempt * 700));
+        }
+      }
+      if (!cancelled) {
+        setGames([]);
+        setTotal(0);
+        setError(true);
+        setLoading(false);
+      }
+    }
+
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [category, activeTag, retryKey, pageSize, user?.id]);
+
+  // Nothing in this category and nothing to recover from — don't show an empty section.
+  if (!loading && !error && games.length === 0 && !activeTag) return null;
+
+  const accent = CATEGORY_ACCENT[category];
+  const subTagLabels: Record<SubTag, string> = {
+    megaways: t.subTagMegaways,
+    jackpot: t.subTagJackpot,
+    table_games: t.subTagTableGames,
+    video_poker: t.subTagVideoPoker,
+    crash_games: t.subTagCrashGames,
+    arcade: t.subTagArcade,
+    bingo: t.subTagBingo,
+    scratches: t.subTagScratches,
+  };
+  const showSubTags = subTagCounts && SUB_TAGS.some((tag) => subTagCounts[tag] > 0);
+
+  const moreTile = (
+    <Link
+      href={`/category/${category}`}
+      aria-label={`See all ${label}`}
+      className="flex aspect-4/5 w-full flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[#D4AF37]/40 text-[#F5C842] transition-colors hover:border-[#D4AF37] hover:bg-[#D4AF37]/5"
+    >
+      <span className="text-lg tracking-widest">•••</span>
+      <span className="text-xs font-bold uppercase tracking-wide">More</span>
+    </Link>
+  );
+
+  return (
+    <Reveal>
+      <section id={category} className="relative z-10 scroll-mt-32 px-3 py-0.5 sm:px-5 sm:py-1">
+        <div className="mx-auto max-w-6xl">
+          <div className="pb-3 sm:hidden">
+            <GamesToolbar {...toolbar} stacked />
+          </div>
+          <div className="hidden sm:block sm:pb-4">
+            <GamesToolbar {...toolbar} />
+          </div>
+
+          <SectionHeading
+            eyebrow={eyebrow}
+            title={<>{icon} {renderTitle(label, accent.to)}</>}
+            barFrom={accent.from}
+            barTo={accent.to}
+          />
+
+          {/* sub-tag filter chips stay desktop-only — mobile keeps just the
+              toolbar above and the game cards, to avoid too many filter rows */}
+          {showSubTags && (
+            <div className="mb-4 hidden flex-wrap gap-2 sm:flex">
+              <button
+                onClick={() => setActiveTag(undefined)}
+                className={`rounded-full px-4 py-1.5 text-xs font-bold transition-all ${
+                  !activeTag
+                    ? "bg-gradient-to-r from-[#D4AF37] to-[#F5C842] text-[#0A0612]"
+                    : "border border-white/10 text-[#9B8EC4] hover:border-[#7B2FBE]/60 hover:text-white"
+                }`}
+              >
+                {t.subTagAll}
+              </button>
+              {SUB_TAGS.filter((tag) => subTagCounts![tag] > 0).map((tag) => (
+                <button
+                  key={tag}
+                  onClick={() => setActiveTag(tag)}
+                  className={`rounded-full px-4 py-1.5 text-xs font-bold transition-all ${
+                    activeTag === tag
+                      ? "bg-gradient-to-r from-[#D4AF37] to-[#F5C842] text-[#0A0612]"
+                      : "border border-white/10 text-[#9B8EC4] hover:border-[#7B2FBE]/60 hover:text-white"
+                  }`}
+                >
+                  {subTagLabels[tag]} <span className="opacity-70">({subTagCounts![tag]})</span>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {loading ? (
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="aspect-4/5 animate-pulse rounded-lg bg-white/5" />
+              ))}
+            </div>
+          ) : error ? (
+            <div className="flex flex-col items-center gap-3 py-10 text-center">
+              <p className="text-sm text-[#7B5EA7]">Couldn&apos;t load {label.toLowerCase()} right now.</p>
+              <button
+                onClick={() => setRetryKey((k) => k + 1)}
+                className="rounded-full border border-[#D4AF37]/60 px-5 py-2 text-sm font-bold text-[#F5C842] transition-colors hover:bg-[#D4AF37]/10"
+              >
+                Retry
+              </button>
+            </div>
+          ) : games.length === 0 ? (
+            <p className="py-10 text-center text-sm text-[#7B5EA7]">No games match this filter right now.</p>
+          ) : category === "hot_games" ? (
+            <>
+              {/* three stacked rows, each independently horizontally scrollable at
+                  every breakpoint — first two fixed at 20, third grows via Load More */}
+              <GameRow
+                games={games.slice(0, HOT_GAMES_ROW_SIZE)}
+                favorites={favorites}
+                onToggleFavorite={onToggleFavorite}
+                onPlay={onPlay}
+                launchingUid={launchingUid}
+              />
+              {games.length > HOT_GAMES_ROW_SIZE && (
+                <div className="mt-2 sm:mt-3">
+                  <GameRow
+                    games={games.slice(HOT_GAMES_ROW_SIZE, HOT_GAMES_ROW_SIZE * 2)}
+                    favorites={favorites}
+                    onToggleFavorite={onToggleFavorite}
+                    onPlay={onPlay}
+                    launchingUid={launchingUid}
+                  />
+                </div>
+              )}
+              {(games.length > HOT_GAMES_ROW_SIZE * 2 || games.length < total) && (
+                <div className="mt-2 sm:mt-3">
+                  <GameRow
+                    games={games.slice(HOT_GAMES_ROW_SIZE * 2)}
+                    favorites={favorites}
+                    onToggleFavorite={onToggleFavorite}
+                    onPlay={onPlay}
+                    launchingUid={launchingUid}
+                    trailingTile={games.length < total ? moreTile : undefined}
+                  />
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              {/* upper strip — fixed first 15, horizontally scrollable/draggable on every breakpoint */}
+              <GameRow
+                games={games.slice(0, TOP_ROW_SIZE)}
+                favorites={favorites}
+                onToggleFavorite={onToggleFavorite}
+                onPlay={onPlay}
+                launchingUid={launchingUid}
+              />
+
+              {(games.length > TOP_ROW_SIZE || games.length < total) && (
+                <>
+                  {/* mobile: second row, also horizontally scrollable — keeps the section to exactly two rows */}
+                  <div className="mt-2 sm:hidden">
+                    <GameRow
+                      games={games.slice(TOP_ROW_SIZE)}
+                      favorites={favorites}
+                      onToggleFavorite={onToggleFavorite}
+                      onPlay={onPlay}
+                      launchingUid={launchingUid}
+                      trailingTile={games.length < total ? moreTile : undefined}
+                    />
+                  </div>
+
+                  {/* tablet/desktop: normal wrapping grid (not scrollable), grows via Load More */}
+                  <div className="mt-4 hidden sm:block">
+                    <GameGrid
+                      games={games.slice(TOP_ROW_SIZE)}
+                      favorites={favorites}
+                      onToggleFavorite={onToggleFavorite}
+                      onPlay={onPlay}
+                      launchingUid={launchingUid}
+                      trailingTile={games.length < total ? moreTile : undefined}
+                    />
+                  </div>
+                </>
+              )}
+            </>
+          )}
+        </div>
+      </section>
+    </Reveal>
+  );
+}

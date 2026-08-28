@@ -1,0 +1,899 @@
+"use client";
+
+import { createContext, useContext, useState, type ReactNode } from "react";
+
+export type Lang = "en" | "bn";
+
+export type Translations = {
+  // header / nav
+  nav: string[];
+  vipLevel: string;
+  referralProgram: string;
+  login: string;
+  register: string;
+  // chat widget
+  chatTitle: string;
+  chatSubtitle: string;
+  chatPlaceholder: string;
+  chatWelcome: string;
+  chatAutoReply: string;
+  // hero slider stats
+  statGames: string;
+  statPlayers: string;
+  statSupport: string;
+  // shared labels
+  recommend: string;
+  viewAll: string;
+  loadMoreGames: string;
+  loadMore: string;
+  // hot games section words
+  hotWord: string;
+  hotHighlight: string;
+  // live sports section
+  liveNow: string;
+  sportsWord: string;
+  sportsHighlight: string;
+  sportLabels: string[];        // must match SPORTS order in data.ts
+  noMatches: string;
+  // cta strip
+  ctaTitle: string;
+  ctaDesc: string;
+  ctaButton: string;
+  // live wins ticker
+  liveWinsLabel: string;
+  liveWinsSub: string;
+  // leaderboard page
+  lbBreadcrumb: string;
+  lbEyebrow: string;
+  lbTitleWord: string;
+  lbTitleHighlight: string;
+  lbDesc: string;
+  lbGames: string;
+  lbWagered: string;
+  lbPlace1: string;
+  lbPlace2: string;
+  lbPlace3: string;
+  // footer
+  footerDesc: string;
+  footerResponsibilityTitle: string;
+  footerResponsibilityDesc: string;
+  footerAge: string;
+  footerCopyright: string;
+  // promo popup
+  promoDesc: string;
+  promoButton: string;
+  promoLater: string;
+  // auth modal
+  authLoginTitle: string;
+  authRegisterTitle: string;
+  authLoginSub: string;
+  authRegisterSub: string;
+  authPhoneLabel: string;
+  authPhonePlaceholder: string;
+  authPasswordLabel: string;
+  authPasswordPlaceholder: string;
+  authConfirmLabel: string;
+  authReferralLabel: string;
+  authReferralOptional: string;
+  authReferralPlaceholder: string;
+  authConsent: string;
+  authTerms: string;
+  authPrivacy: string;
+  authForgot: string;
+  authLoginBtn: string;
+  authSignupBtn: string;
+  authHaveAccount: string;
+  authNoAccount: string;
+  authSwitchToLogin: string;
+  authSwitchToSignup: string;
+  authNameLabel: string;
+  authNamePlaceholder: string;
+  authErrPhone: string;
+  authErrPassword: string;
+  authErrMatch: string;
+  authErrTerms: string;
+  authErrName: string;
+  // forgot password flow
+  authForgotTitle: string;
+  authForgotPhoneSub: string;
+  authForgotSendOtpBtn: string;
+  authForgotOtpSub: string;
+  authOtpLabel: string;
+  authOtpPlaceholder: string;
+  authForgotVerifyBtn: string;
+  authForgotResendBtn: string;
+  authForgotNewPasswordSub: string;
+  authNewPasswordLabel: string;
+  authConfirmNewPasswordLabel: string;
+  authForgotResetBtn: string;
+  authForgotBackToLogin: string;
+  authForgotSuccessMsg: string;
+  authErrOtp: string;
+  logout: string;
+  balance: string;
+  myProfile: string;
+  deposit: string;
+
+  // mobile bottom nav bar
+  bottomNavHome: string;
+  bottomNavPromotion: string;
+  bottomNavServices: string;
+  bottomNavMember: string;
+
+  // profile page
+  profileHome: string;
+  profileVerified: string;
+  profileUnverified: string;
+  profileTabProfile: string;
+  profileTabWallet: string;
+  profileTabTurnover: string;
+  profileTabWithdraw: string;
+  profileTabSettings: string;
+  profileTabKyc: string;
+  profileTabReferral: string;
+  profileTabHistory: string;
+  profileGameHistoryTitle: string;
+  profileGameHistoryEmpty: string;
+  profileGameHistoryEmptyMonth: string;
+  profileGameHistoryAllMonths: string;
+  profileGameHistoryBet: string;
+  profileGameHistoryWin: string;
+  profileGameHistoryNet: string;
+  profileGameHistoryLoadMore: string;
+  profileDepositModalTitle: string;
+  profileSendMoneyTo: string;
+  profileCopy: string;
+  profileCopied: string;
+  profileSendInstructions: string;
+  profileTrxIdLabel: string;
+  profileTrxIdPlaceholder: string;
+  profileConfirmDeposit: string;
+  profileRequestSubmittedTitle: string;
+  profileRequestSubmittedDesc: string;
+  profileDone: string;
+  profileDepositBubble: string;
+  profileDepositSubmittedShort: string;
+  profileAccountDetails: string;
+  profileLabelFullName: string;
+  profileLabelPhone: string;
+  profileLabelAccountId: string;
+  profileLabelMemberSince: string;
+  profileLabelAccountLevel: string;
+  profileLabelStatus: string;
+  profileValueStandardPlayer: string;
+  profileActive: string;
+  profileAvailableToPlay: string;
+  profileTurnoverWallet: string;
+  profileTurnoverWalletDesc: string;
+  profileDepositTurnoverLabel: string;
+  profileTurnoverBonusesViewAll: string;
+  profileTurnoverEmpty: string;
+  profileRecentTransactions: string;
+  profileStatusCompleted: string;
+  profileStatusPending: string;
+  profileStatusFailed: string;
+  profileTxDeposit: string;
+  profileTxWithdraw: string;
+  profileTxFilterAll: string;
+  profileTxFilter24h: string;
+  profileTxFilterWeek: string;
+  profileTxFilterMonth: string;
+  profileTxEmpty: string;
+  profileMakeDeposit: string;
+  profilePaymentMethod: string;
+  profileQuickAmount: string;
+  profileCustomAmount: string;
+  profileEnterAmountPlaceholder: string;
+  profileNow: string;
+  profileErrSelectAmount: string;
+  profileDepositFootnote: string;
+  profileWithdrawFunds: string;
+  profileWithdrawMethod: string;
+  profileWithdrawFootnote: string;
+  depositWithdrawTitle: string;
+  noActiveAccountsForMethod: string;
+  profileWithdrawAccountLabel: string;
+  profileWithdrawAccountPlaceholder: string;
+  profileSubmitWithdrawal: string;
+  profileWithdrawRequestSubmittedTitle: string;
+  profileWithdrawRequestSubmittedDesc: string;
+  profileUpdatePasswordTitle: string;
+  profileUpdatePasswordDesc: string;
+  profileCurrentPasswordLabel: string;
+  profileCurrentPasswordPlaceholder: string;
+  profileNewPasswordLabel: string;
+  profileNewPasswordPlaceholder: string;
+  profileConfirmPasswordLabel: string;
+  profileConfirmPasswordPlaceholder: string;
+  profileErrEnterCurrentPwd: string;
+  profileErrNewPwdLength: string;
+  profileErrPwdMismatch: string;
+  profilePwdUpdateSuccess: string;
+  profileErrGeneric: string;
+  profileUpdatePasswordBtn: string;
+  profileUpdatingBtn: string;
+  profileShareEarnTitle: string;
+  profileShareEarnDesc: string;
+  profileReferralCodeLabel: string;
+  profileReferralLinkLabel: string;
+  profileCopyLink: string;
+  profileShareVia: string;
+  profileInstagramHint: string;
+  profileKycLoading: string;
+  profileKycVerifiedTitle: string;
+  profileKycVerifiedDesc: string;
+  profileKycChecklist: string[];
+  profileKycPendingTitle: string;
+  profileKycPendingDesc1: string;
+  profileKycPendingDesc2: string;
+  profileKycRejectedTitle: string;
+  profileTryAgain: string;
+  profileKycStartTitle: string;
+  profileKycStartDesc: string;
+  profileKycStartNote: string;
+  profileKycStartSteps: string[];
+  profileKycStartBtn: string;
+  profileKycStepLabels: string[];
+  profileKycPhoneTitle: string;
+  profileKycPhoneDesc: string;
+  profileKycPhonePlaceholder: string;
+  profileSendOtp: string;
+  profileKycOtpTitle: string;
+  profileKycOtpSentTo: string;
+  profileKycOtpDemo: string;
+  profileVerifyOtp: string;
+  profileChangePhone: string;
+  profileOtpSending: string;
+  profileOtpVerifying: string;
+  profileOtpResend: string;
+  profileOtpResendCooldown: string;
+  profileKycDocTypeTitle: string;
+  profileKycDocTypeDesc: string;
+  profileDocTypeLabels: string[];
+  profileContinue: string;
+  profileKycReviewTitle: string;
+  profileKycReviewDesc: string;
+  profileRetakeFront: string;
+  profileRetakeBack: string;
+  profileContinueToSelfie: string;
+  profileCaptureFrontTitle: string;
+  profileCaptureBackTitle: string;
+  profilePositionFrontDesc: string;
+  profilePositionBackDesc: string;
+  profileStepXOf2: string;
+  profileCamError: string;
+  profileCaptured: string;
+  profileFitDocument: string;
+  profileUseThisPhotoContinue: string;
+  profileUseThisPhoto: string;
+  profileRetakePhoto: string;
+  profileCapturePhoto: string;
+  profileKycSelfieTitle: string;
+  profileKycSelfieDesc: string;
+  profilePositionFace: string;
+  profileSubmitting: string;
+  profileSubmitVerification: string;
+
+  // game category labels (keyed by GameCategory from lib/games.ts)
+  categoryLabels: {
+    featured: string;
+    hot_games: string;
+    slots: string;
+    live_casino: string;
+    cards: string;
+    fishing: string;
+    mini_games: string;
+    sports: string;
+    esports: string;
+  };
+
+  // sub-tag filter chips (only within Slots today — see lib/games.ts SUB_TAGS)
+  subTagAll: string;
+  subTagMegaways: string;
+  subTagJackpot: string;
+  subTagTableGames: string;
+  subTagVideoPoker: string;
+  subTagCrashGames: string;
+  subTagArcade: string;
+  subTagBingo: string;
+  subTagScratches: string;
+};
+
+const T: Record<Lang, Translations> = {
+  en: {
+    nav: ["Home", "Live Casino", "Slots", "Sports", "Promotions", "Leaderboard"],
+    vipLevel: "VIP Level",
+    referralProgram: "Referral Program",
+    login: "Log In",
+    register: "Sign Up",
+
+    chatTitle: "Live Support",
+    chatSubtitle: "Online · Avg. reply < 1 min",
+    chatPlaceholder: "Type your message…",
+    chatWelcome: "👋 Hi! Welcome to 2XLbet. How can we help you today?",
+    chatAutoReply: "Thanks for reaching out! An agent will be with you shortly.",
+
+    statGames: "Casino Games",
+    statPlayers: "Active Players",
+    statSupport: "Live Support",
+
+    recommend: "Recommend",
+    viewAll: "View All",
+    loadMoreGames: "Load More Games",
+    loadMore: "Load More",
+
+    hotWord: "Hot",
+    hotHighlight: "Games",
+
+    liveNow: "Live Now",
+    sportsWord: "Live",
+    sportsHighlight: "Sports",
+    sportLabels: ["All Sports", "Football", "Cricket", "Tennis", "Basketball", "Volleyball"],
+    noMatches: "No live matches right now — check back soon.",
+
+    ctaTitle: "Test Your Luck Today",
+    ctaDesc: "Join over 500,000 players — your win is waiting",
+    ctaButton: "Create Free Account",
+
+    liveWinsLabel: "Live Wins",
+    liveWinsSub: "Real players, real payouts — right now",
+
+    lbBreadcrumb: "Leaderboard",
+    lbEyebrow: "This Week",
+    lbTitleWord: "Top",
+    lbTitleHighlight: "Winners",
+    lbDesc: "Ranked by total winnings this week — climb the ranks and earn bonus rewards.",
+    lbGames: "games",
+    lbWagered: "wagered",
+    lbPlace1: "Champion",
+    lbPlace2: "Runner-up",
+    lbPlace3: "3rd Place",
+
+    footerDesc:
+      "2xlbet is a premium online casino and sportsbook platform. Offering live casino games, slots, and sports betting with fast and secure payouts.",
+    footerResponsibilityTitle: "Responsibility",
+    footerResponsibilityDesc:
+      "This site offers games with risks involved. To become a user of our website, you must be at least 18 years of age. We are not responsible for violations of local online gaming laws. Play responsibly and have fun at 2xlbet online casino to win real money online casino games.",
+    footerAge:
+      "Play responsibly. Gambling can be addictive — for ages 18+ only. Licensed and regulated for fair, secure gameplay.",
+    footerCopyright: "© 2026 2XLbet Casino — All rights reserved.",
+
+    promoDesc: "Create your account now to claim this limited-time welcome offer.",
+    promoButton: "Claim Bonus",
+    promoLater: "Maybe later",
+
+    authLoginTitle: "Log In",
+    authRegisterTitle: "Create Account",
+    authLoginSub: "Enter your phone number to continue",
+    authRegisterSub: "Create your account in under a minute",
+    authPhoneLabel: "Phone Number",
+    authPhonePlaceholder: "+1 234 567 8900",
+    authPasswordLabel: "Password",
+    authPasswordPlaceholder: "••••••••",
+    authConfirmLabel: "Confirm Password",
+    authReferralLabel: "Referral Code",
+    authReferralOptional: "(optional)",
+    authReferralPlaceholder: "Enter code if you have one",
+    authConsent: "I am 18+ and agree to the",
+    authTerms: "Terms & Conditions",
+    authPrivacy: "Privacy Policy",
+    authForgot: "Forgot password?",
+    authLoginBtn: "Log In",
+    authSignupBtn: "Sign Up",
+    authHaveAccount: "Already have an account?",
+    authNoAccount: "Don't have an account?",
+    authSwitchToLogin: "Log In",
+    authSwitchToSignup: "Sign Up",
+    authErrPhone: "Please enter a valid phone number.",
+    authNameLabel: "Full Name",
+    authNamePlaceholder: "Enter your full name",
+    authErrName: "Please enter your name.",
+    authErrPassword: "Password must be at least 6 characters.",
+    authErrMatch: "Passwords do not match.",
+    authErrTerms: "Please agree to the terms.",
+    authForgotTitle: "Reset Password",
+    authForgotPhoneSub: "Enter your registered phone number to receive a verification code.",
+    authForgotSendOtpBtn: "Send Code",
+    authForgotOtpSub: "Enter the 6-digit code sent to your phone.",
+    authOtpLabel: "Verification Code",
+    authOtpPlaceholder: "Enter code",
+    authForgotVerifyBtn: "Verify Code",
+    authForgotResendBtn: "Resend code",
+    authForgotNewPasswordSub: "Set a new password for your account.",
+    authNewPasswordLabel: "New Password",
+    authConfirmNewPasswordLabel: "Confirm New Password",
+    authForgotResetBtn: "Reset Password",
+    authForgotBackToLogin: "Back to Log In",
+    authForgotSuccessMsg: "Password reset! You can now log in with your new password.",
+    authErrOtp: "Please enter the code sent to your phone.",
+    logout: "Log Out",
+    balance: "Balance",
+    myProfile: "My Profile",
+    deposit: "Deposit",
+
+    bottomNavHome: "Home",
+    bottomNavPromotion: "Promotion",
+    bottomNavServices: "Services",
+    bottomNavMember: "Member",
+
+    profileHome: "Home",
+    profileVerified: "Verified",
+    profileUnverified: "Unverified",
+    profileTabProfile: "Profile",
+    profileTabWallet: "Wallet",
+    profileTabTurnover: "Turnover Wallet",
+    profileTabWithdraw: "Withdraw",
+    profileTabSettings: "Settings",
+    profileTabKyc: "KYC",
+    profileTabReferral: "Referral",
+    profileTabHistory: "Game History",
+    profileGameHistoryTitle: "Game History",
+    profileGameHistoryEmpty: "No games played yet.",
+    profileGameHistoryEmptyMonth: "No games played in this month.",
+    profileGameHistoryAllMonths: "All months",
+    profileGameHistoryBet: "Bet",
+    profileGameHistoryWin: "Win",
+    profileGameHistoryNet: "Net",
+    profileGameHistoryLoadMore: "Load More",
+    profileDepositModalTitle: "Complete Your Deposit",
+    profileSendMoneyTo: "Send Money To",
+    profileCopy: "Copy",
+    profileCopied: "Copied!",
+    profileSendInstructions: "Send ৳{amount} to the {method} number above, then enter the Transaction ID (TrxID) you received below to confirm your deposit.",
+    profileTrxIdLabel: "Transaction ID",
+    profileTrxIdPlaceholder: "e.g. 8N7QK3PLXD",
+    profileConfirmDeposit: "Confirm Deposit",
+    profileRequestSubmittedTitle: "Request Submitted",
+    profileRequestSubmittedDesc: "Your deposit of ৳{amount} is pending verification. This usually takes a few minutes.",
+    profileDone: "Done",
+    profileDepositBubble: "Deposit ৳{amount}",
+    profileDepositSubmittedShort: "Deposit submitted",
+    profileAccountDetails: "Account Details",
+    profileLabelFullName: "Full Name",
+    profileLabelPhone: "Phone Number",
+    profileLabelAccountId: "Account ID",
+    profileLabelMemberSince: "Member Since",
+    profileLabelAccountLevel: "Account Level",
+    profileLabelStatus: "Status",
+    profileValueStandardPlayer: "Standard Player",
+    profileActive: "Active",
+    profileAvailableToPlay: "Available to play",
+    profileTurnoverWallet: "Turnover Wallet",
+    profileTurnoverWalletDesc: "Bonus money still wagering off its requirement. Each bonus moves into your Main Wallet automatically as soon as its own turnover is complete.",
+    profileDepositTurnoverLabel: "of your deposit is in Main Wallet, wagered",
+    profileTurnoverBonusesViewAll: "View all bonuses",
+    profileTurnoverEmpty: "Nothing pending — no active bonus or deposit turnover right now.",
+    profileRecentTransactions: "Recent Transactions",
+    profileStatusCompleted: "completed",
+    profileStatusPending: "pending",
+    profileStatusFailed: "failed",
+    profileTxDeposit: "Deposit",
+    profileTxWithdraw: "Withdrawal",
+    profileTxFilterAll: "All",
+    profileTxFilter24h: "24 Hours",
+    profileTxFilterWeek: "1 Week",
+    profileTxFilterMonth: "1 Month",
+    profileTxEmpty: "No transactions in this period yet.",
+    profileMakeDeposit: "Make a Deposit",
+    profilePaymentMethod: "Payment Method",
+    profileQuickAmount: "Quick Amount",
+    profileCustomAmount: "Custom Amount",
+    profileEnterAmountPlaceholder: "Enter amount",
+    profileNow: "Now",
+    profileErrSelectAmount: "Please select or enter an amount first.",
+    profileDepositFootnote: "Minimum ৳100 · SSL encrypted · Instant processing",
+    profileWithdrawFunds: "Withdraw Funds",
+    profileWithdrawMethod: "Withdraw Method",
+    profileWithdrawFootnote: "Minimum ৳100 · KYC required · Processed within 24 hours",
+    depositWithdrawTitle: "Deposit & Withdraw",
+    noActiveAccountsForMethod: "No active {method} account is available right now. Please choose another method or contact support.",
+    profileWithdrawAccountLabel: "Your {method} Account Number",
+    profileWithdrawAccountPlaceholder: "Enter your account number",
+    profileSubmitWithdrawal: "Request Withdrawal",
+    profileWithdrawRequestSubmittedTitle: "Withdrawal Requested",
+    profileWithdrawRequestSubmittedDesc: "Your withdrawal of ৳{amount} is being processed. This usually takes up to 24 hours.",
+    profileUpdatePasswordTitle: "Update Password",
+    profileUpdatePasswordDesc: "Change the password you use to log in to your account.",
+    profileCurrentPasswordLabel: "Current Password",
+    profileCurrentPasswordPlaceholder: "Enter current password",
+    profileNewPasswordLabel: "New Password",
+    profileNewPasswordPlaceholder: "At least 6 characters",
+    profileConfirmPasswordLabel: "Confirm New Password",
+    profileConfirmPasswordPlaceholder: "Re-enter new password",
+    profileErrEnterCurrentPwd: "Enter your current password.",
+    profileErrNewPwdLength: "New password must be at least 6 characters.",
+    profileErrPwdMismatch: "New passwords do not match.",
+    profilePwdUpdateSuccess: "Password updated successfully.",
+    profileErrGeneric: "Something went wrong. Please try again.",
+    profileUpdatePasswordBtn: "Update Password",
+    profileUpdatingBtn: "Updating...",
+    profileShareEarnTitle: "Share & Earn",
+    profileShareEarnDesc: "Invite friends with your referral code and earn rewards when they join.",
+    profileReferralCodeLabel: "Your Referral Code",
+    profileReferralLinkLabel: "Your Referral Link",
+    profileCopyLink: "Copy Link",
+    profileShareVia: "Share via",
+    profileInstagramHint: "Link copied! Paste it in your Instagram bio or story.",
+    profileKycLoading: "Loading verification status…",
+    profileKycVerifiedTitle: "You Are Verified!",
+    profileKycVerifiedDesc: "Your identity has been successfully verified. You have full access to all features.",
+    profileKycChecklist: ["Phone Verified", "ID Verified", "Address Verified", "Selfie Verified"],
+    profileKycPendingTitle: "Verification Under Review",
+    profileKycPendingDesc1: "We've received your {doc} and selfie.",
+    profileKycPendingDesc2: "Our team typically reviews submissions within 24 hours. You'll see the result here.",
+    profileKycRejectedTitle: "Verification Rejected",
+    profileTryAgain: "Try Again",
+    profileKycStartTitle: "Identity Verification",
+    profileKycStartDesc: "Verify your identity to unlock withdrawals and higher betting limits.",
+    profileKycStartNote: "Takes about 3 minutes · Your data is encrypted and secure",
+    profileKycStartSteps: ["Phone number verification", "Government-issued ID upload", "Address proof upload", "Face selfie with ID"],
+    profileKycStartBtn: "Start Verification",
+    profileKycStepLabels: ["Phone", "OTP", "Document", "Upload", "Selfie"],
+    profileKycPhoneTitle: "Verify Phone Number",
+    profileKycPhoneDesc: "Enter the phone number linked to your account.",
+    profileKycPhonePlaceholder: "Enter phone number",
+    profileSendOtp: "Send OTP",
+    profileKycOtpTitle: "Enter OTP",
+    profileKycOtpSentTo: "A 6-digit code was sent to",
+    profileKycOtpDemo: "The code expires in 5 minutes.",
+    profileVerifyOtp: "Verify OTP",
+    profileChangePhone: "← Change phone number",
+    profileOtpSending: "Sending…",
+    profileOtpVerifying: "Verifying…",
+    profileOtpResend: "Resend code",
+    profileOtpResendCooldown: "Resend available in a moment",
+    profileKycDocTypeTitle: "Choose Document Type",
+    profileKycDocTypeDesc: "Select the document you will upload for identity verification.",
+    profileDocTypeLabels: ["National ID", "Passport", "Driver's License"],
+    profileContinue: "Continue",
+    profileKycReviewTitle: "Review Your Document",
+    profileKycReviewDesc: "Both sides of your {doc} look good? Continue, or retake either side.",
+    profileRetakeFront: "Retake front",
+    profileRetakeBack: "Retake back",
+    profileContinueToSelfie: "Continue to Selfie",
+    profileCaptureFrontTitle: "Capture Front Side",
+    profileCaptureBackTitle: "Capture Back Side",
+    profilePositionFrontDesc: "Position the front of your {doc} inside the frame.",
+    profilePositionBackDesc: "Position the back of your {doc} inside the frame.",
+    profileStepXOf2: "Step {n} of 2",
+    profileCamError: "Camera permission denied. Please allow camera access in your browser.",
+    profileCaptured: "Captured",
+    profileFitDocument: "Fit the document inside the frame",
+    profileUseThisPhotoContinue: "Use This Photo — Continue to Back",
+    profileUseThisPhoto: "Use This Photo",
+    profileRetakePhoto: "Retake photo",
+    profileCapturePhoto: "Capture Photo",
+    profileKycSelfieTitle: "Take a Selfie",
+    profileKycSelfieDesc: "Hold your {doc} next to your face and look at the camera.",
+    profilePositionFace: "Position your face inside the oval",
+    profileSubmitting: "Submitting…",
+    profileSubmitVerification: "Submit Verification",
+
+    categoryLabels: {
+      featured: "Featured",
+      hot_games: "Hot Games",
+      slots: "Slots",
+      live_casino: "Live Casino",
+      cards: "Poker",
+      fishing: "Fishing",
+      mini_games: "Mini Games",
+      sports: "Live Sports",
+      esports: "Esports",
+    },
+
+    subTagAll: "All",
+    subTagMegaways: "Megaways",
+    subTagJackpot: "Jackpot",
+    subTagTableGames: "Table Games",
+    subTagVideoPoker: "Video Poker",
+    subTagCrashGames: "Crash Games",
+    subTagArcade: "Arcade",
+    subTagBingo: "Bingo",
+    subTagScratches: "Scratches",
+  },
+
+  bn: {
+    nav: ["হোম", "লাইভ ক্যাসিনো", "স্লট", "স্পোর্টস", "প্রমোশন", "লিডারবোর্ড"],
+    vipLevel: "ভিআইপি লেভেল",
+    referralProgram: "রেফারেল প্রোগ্রাম",
+    login: "লগইন",
+    register: "নিবন্ধন",
+
+    chatTitle: "লাইভ সাপোর্ট",
+    chatSubtitle: "অনলাইন · গড় রিপ্লাই < ১ মিনিট",
+    chatPlaceholder: "আপনার বার্তা লিখুন…",
+    chatWelcome: "👋 হ্যালো! 2XLbet-এ স্বাগতম। আজ আমরা আপনাকে কীভাবে সাহায্য করতে পারি?",
+    chatAutoReply: "আপনার বার্তার জন্য ধন্যবাদ! একজন এজেন্ট শীঘ্রই আপনার সাথে যোগাযোগ করবে।",
+
+    statGames: "ক্যাসিনো গেমস",
+    statPlayers: "সক্রিয় খেলোয়াড়",
+    statSupport: "লাইভ সাপোর্ট",
+
+    recommend: "প্রস্তাবিত",
+    viewAll: "সব দেখুন",
+    loadMoreGames: "আরও গেমস",
+    loadMore: "আরও লোড করুন",
+
+    hotWord: "হট",
+    hotHighlight: "গেমস",
+
+    liveNow: "এখন লাইভ",
+    sportsWord: "লাইভ",
+    sportsHighlight: "স্পোর্টস",
+    sportLabels: ["সব স্পোর্টস", "ফুটবল", "ক্রিকেট", "টেনিস", "বাস্কেটবল", "ভলিবল"],
+    noMatches: "এখন কোনো লাইভ ম্যাচ নেই — শীঘ্রই চেক করুন।",
+
+    ctaTitle: "আজই ভাগ্য পরীক্ষা করুন",
+    ctaDesc: "৫,০০,০০০+ খেলোয়াড়ের সাথে যোগ দিন — আপনার জয় অপেক্ষা করছে",
+    ctaButton: "বিনামূল্যে অ্যাকাউন্ট তৈরি করুন",
+
+    liveWinsLabel: "লাইভ জয়",
+    liveWinsSub: "আসল খেলোয়াড়, আসল পেআউট — এই মুহূর্তে",
+
+    lbBreadcrumb: "লিডারবোর্ড",
+    lbEyebrow: "এই সপ্তাহে",
+    lbTitleWord: "সেরা",
+    lbTitleHighlight: "বিজয়ীরা",
+    lbDesc: "এই সপ্তাহের মোট জয়ের ভিত্তিতে র‍্যাংক করা হয়েছে — র‍্যাংক বাড়ান এবং বোনাস পুরস্কার অর্জন করুন।",
+    lbGames: "গেমস",
+    lbWagered: "বাজি",
+    lbPlace1: "চ্যাম্পিয়ন",
+    lbPlace2: "রানার-আপ",
+    lbPlace3: "৩য় স্থান",
+
+    footerDesc:
+      "2xlbet হলো একটি প্রিমিয়াম অনলাইন ক্যাসিনো এবং স্পোর্টসবুক প্ল্যাটফর্ম। লাইভ ক্যাসিনো গেমস, স্লট এবং স্পোর্টস বেটিং অফার করে দ্রুত ও নিরাপদ পেআউট সহ।",
+    footerResponsibilityTitle: "দায়িত্ব",
+    footerResponsibilityDesc:
+      "এই সাইটে ঝুঁকিপূর্ণ গেমস অফার করা হয়। আমাদের ওয়েবসাইটের ব্যবহারকারী হতে হলে আপনার বয়স কমপক্ষে ১৮ বছর হতে হবে। স্থানীয় অনলাইন গেমিং আইন লঙ্ঘনের জন্য আমরা দায়ী নই। দায়িত্বের সাথে খেলুন এবং রিয়েল মানি জেতার জন্য 2xlbet অনলাইন ক্যাসিনোতে মজা করুন।",
+    footerAge: "দায়িত্বের সাথে খেলুন। জুয়া আসক্তিকর হতে পারে — শুধুমাত্র ১৮+ বছরের জন্য। ন্যায্য ও নিরাপদ গেমপ্লের জন্য লাইসেন্সপ্রাপ্ত।",
+    footerCopyright: "© ২০২৬ 2XLbet ক্যাসিনো — সর্বস্বত্ব সংরক্ষিত।",
+
+    promoDesc: "এই সীমিত সময়ের স্বাগত অফার পেতে এখনই অ্যাকাউন্ট তৈরি করুন।",
+    promoButton: "বোনাস নিন",
+    promoLater: "পরে দেখব",
+
+    authLoginTitle: "লগইন করুন",
+    authRegisterTitle: "অ্যাকাউন্ট তৈরি করুন",
+    authLoginSub: "চালিয়ে যেতে আপনার ফোন নম্বর দিন",
+    authRegisterSub: "এক মিনিটেরও কম সময়ে অ্যাকাউন্ট তৈরি করুন",
+    authPhoneLabel: "ফোন নম্বর",
+    authPhonePlaceholder: "+৮৮০ ১৭০০ ০০০০০০",
+    authPasswordLabel: "পাসওয়ার্ড",
+    authPasswordPlaceholder: "••••••••",
+    authConfirmLabel: "পাসওয়ার্ড নিশ্চিত করুন",
+    authReferralLabel: "রেফারেল কোড",
+    authReferralOptional: "(ঐচ্ছিক)",
+    authReferralPlaceholder: "কোড থাকলে এখানে দিন",
+    authConsent: "আমার বয়স ১৮+ এবং আমি রাজি",
+    authTerms: "নিয়ম ও শর্তাবলী",
+    authPrivacy: "গোপনীয়তা নীতি",
+    authForgot: "পাসওয়ার্ড ভুলে গেছেন?",
+    authLoginBtn: "লগইন",
+    authSignupBtn: "নিবন্ধন করুন",
+    authHaveAccount: "ইতিমধ্যে অ্যাকাউন্ট আছে?",
+    authNoAccount: "অ্যাকাউন্ট নেই?",
+    authSwitchToLogin: "লগইন করুন",
+    authSwitchToSignup: "নিবন্ধন করুন",
+    authErrPhone: "সঠিক ফোন নম্বর দিন।",
+    authNameLabel: "পূর্ণ নাম",
+    authNamePlaceholder: "আপনার পূর্ণ নাম লিখুন",
+    authErrName: "আপনার নাম লিখুন।",
+    authErrPassword: "পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে।",
+    authErrMatch: "পাসওয়ার্ড মিলছে না।",
+    authErrTerms: "শর্তাবলীতে সম্মত হন।",
+    authForgotTitle: "পাসওয়ার্ড রিসেট করুন",
+    authForgotPhoneSub: "যাচাইকরণ কোড পেতে আপনার নিবন্ধিত ফোন নম্বর লিখুন।",
+    authForgotSendOtpBtn: "কোড পাঠান",
+    authForgotOtpSub: "আপনার ফোনে পাঠানো ৬-সংখ্যার কোডটি লিখুন।",
+    authOtpLabel: "যাচাইকরণ কোড",
+    authOtpPlaceholder: "কোড লিখুন",
+    authForgotVerifyBtn: "কোড যাচাই করুন",
+    authForgotResendBtn: "আবার কোড পাঠান",
+    authForgotNewPasswordSub: "আপনার অ্যাকাউন্টের জন্য একটি নতুন পাসওয়ার্ড সেট করুন।",
+    authNewPasswordLabel: "নতুন পাসওয়ার্ড",
+    authConfirmNewPasswordLabel: "নতুন পাসওয়ার্ড নিশ্চিত করুন",
+    authForgotResetBtn: "পাসওয়ার্ড রিসেট করুন",
+    authForgotBackToLogin: "লগইনে ফিরে যান",
+    authForgotSuccessMsg: "পাসওয়ার্ড রিসেট হয়েছে! আপনি এখন নতুন পাসওয়ার্ড দিয়ে লগইন করতে পারেন।",
+    authErrOtp: "আপনার ফোনে পাঠানো কোডটি লিখুন।",
+    logout: "লগআউট",
+    balance: "ব্যালেন্স",
+    myProfile: "আমার প্রোফাইল",
+    deposit: "ডিপোজিট",
+
+    bottomNavHome: "হোম",
+    bottomNavPromotion: "প্রমোশন",
+    bottomNavServices: "সার্ভিস",
+    bottomNavMember: "মেম্বার",
+
+    profileHome: "হোম",
+    profileVerified: "ভেরিফাইড",
+    profileUnverified: "অযাচাইকৃত",
+    profileTabProfile: "প্রোফাইল",
+    profileTabWallet: "ওয়ালেট",
+    profileTabTurnover: "টার্নওভার ওয়ালেট",
+    profileTabWithdraw: "উত্তোলন",
+    profileTabSettings: "সেটিংস",
+    profileTabKyc: "কেওয়াইসি",
+    profileTabReferral: "রেফারেল",
+    profileTabHistory: "গেম হিস্টোরি",
+    profileGameHistoryTitle: "গেম হিস্টোরি",
+    profileGameHistoryEmpty: "এখনো কোনো গেম খেলা হয়নি।",
+    profileGameHistoryEmptyMonth: "এই মাসে কোনো গেম খেলা হয়নি।",
+    profileGameHistoryAllMonths: "সব মাস",
+    profileGameHistoryBet: "বাজি",
+    profileGameHistoryWin: "জয়",
+    profileGameHistoryNet: "নেট",
+    profileGameHistoryLoadMore: "আরও দেখুন",
+    profileDepositModalTitle: "আপনার ডিপোজিট সম্পন্ন করুন",
+    profileSendMoneyTo: "টাকা পাঠান এখানে",
+    profileCopy: "কপি",
+    profileCopied: "কপি হয়েছে!",
+    profileSendInstructions: "উপরের {method} নম্বরে ৳{amount} পাঠান, তারপর আপনার ডিপোজিট নিশ্চিত করতে নিচে ট্রানজেকশন আইডি (TrxID) লিখুন।",
+    profileTrxIdLabel: "ট্রানজেকশন আইডি",
+    profileTrxIdPlaceholder: "যেমন: 8N7QK3PLXD",
+    profileConfirmDeposit: "ডিপোজিট নিশ্চিত করুন",
+    profileRequestSubmittedTitle: "অনুরোধ জমা হয়েছে",
+    profileRequestSubmittedDesc: "আপনার ৳{amount} ডিপোজিট যাচাইয়ের অপেক্ষায় আছে। সাধারণত এতে কয়েক মিনিট সময় লাগে।",
+    profileDone: "সম্পন্ন",
+    profileDepositBubble: "ডিপোজিট ৳{amount}",
+    profileDepositSubmittedShort: "ডিপোজিট জমা হয়েছে",
+    profileAccountDetails: "অ্যাকাউন্ট বিবরণ",
+    profileLabelFullName: "পুরো নাম",
+    profileLabelPhone: "ফোন নম্বর",
+    profileLabelAccountId: "অ্যাকাউন্ট আইডি",
+    profileLabelMemberSince: "সদস্য হয়েছেন",
+    profileLabelAccountLevel: "অ্যাকাউন্ট লেভেল",
+    profileLabelStatus: "স্ট্যাটাস",
+    profileValueStandardPlayer: "স্ট্যান্ডার্ড প্লেয়ার",
+    profileActive: "সক্রিয়",
+    profileAvailableToPlay: "খেলার জন্য উপলব্ধ",
+    profileTurnoverWallet: "টার্নওভার ওয়ালেট",
+    profileTurnoverWalletDesc: "বোনাসের টাকা এখনো টার্নওভার শর্ত পূরণ করছে। প্রতিটি বোনাসের টার্নওভার শেষ হওয়ার সাথে সাথে তা স্বয়ংক্রিয়ভাবে আপনার মেইন ওয়ালেটে যোগ হয়ে যাবে।",
+    profileDepositTurnoverLabel: "আপনার ডিপোজিটের এই পরিমাণ মেইন ওয়ালেটে আছে, ওয়েজার্ড হয়েছে",
+    profileTurnoverBonusesViewAll: "সব বোনাস দেখুন",
+    profileTurnoverEmpty: "এখন কিছু অপেক্ষমাণ নেই — কোনো সক্রিয় বোনাস বা ডিপোজিট টার্নওভার নেই।",
+    profileRecentTransactions: "সাম্প্রতিক লেনদেন",
+    profileStatusCompleted: "সম্পন্ন",
+    profileStatusPending: "অপেক্ষমান",
+    profileStatusFailed: "ব্যর্থ",
+    profileTxDeposit: "জমা",
+    profileTxWithdraw: "উত্তোলন",
+    profileTxFilterAll: "সব",
+    profileTxFilter24h: "২৪ ঘণ্টা",
+    profileTxFilterWeek: "১ সপ্তাহ",
+    profileTxFilterMonth: "১ মাস",
+    profileTxEmpty: "এই সময়ের মধ্যে কোনো লেনদেন নেই।",
+    profileMakeDeposit: "ডিপোজিট করুন",
+    profilePaymentMethod: "পেমেন্ট পদ্ধতি",
+    profileQuickAmount: "দ্রুত পরিমাণ",
+    profileCustomAmount: "নিজের পরিমাণ",
+    profileEnterAmountPlaceholder: "পরিমাণ লিখুন",
+    profileNow: "এখন",
+    profileErrSelectAmount: "প্রথমে একটি পরিমাণ নির্বাচন করুন বা লিখুন।",
+    profileDepositFootnote: "সর্বনিম্ন ৳১০০ · SSL এনক্রিপ্টেড · তাৎক্ষণিক প্রসেসিং",
+    profileWithdrawFunds: "টাকা উত্তোলন করুন",
+    profileWithdrawMethod: "উত্তোলন পদ্ধতি",
+    profileWithdrawFootnote: "সর্বনিম্ন ৳১০০ · কেওয়াইসি প্রয়োজন · ২৪ ঘণ্টার মধ্যে প্রসেস হবে",
+    depositWithdrawTitle: "ডিপোজিট ও উত্তোলন",
+    noActiveAccountsForMethod: "এই মুহূর্তে কোনো সক্রিয় {method} অ্যাকাউন্ট নেই। অন্য পদ্ধতি বেছে নিন বা সাপোর্টে যোগাযোগ করুন।",
+    profileWithdrawAccountLabel: "আপনার {method} অ্যাকাউন্ট নম্বর",
+    profileWithdrawAccountPlaceholder: "আপনার অ্যাকাউন্ট নম্বর লিখুন",
+    profileSubmitWithdrawal: "উত্তোলনের অনুরোধ করুন",
+    profileWithdrawRequestSubmittedTitle: "উত্তোলনের অনুরোধ সম্পন্ন হয়েছে",
+    profileWithdrawRequestSubmittedDesc: "আপনার ৳{amount} উত্তোলনের অনুরোধ প্রক্রিয়াধীন। এতে সাধারণত ২৪ ঘণ্টা পর্যন্ত সময় লাগতে পারে।",
+    profileUpdatePasswordTitle: "পাসওয়ার্ড আপডেট করুন",
+    profileUpdatePasswordDesc: "আপনার অ্যাকাউন্টে লগইন করার পাসওয়ার্ড পরিবর্তন করুন।",
+    profileCurrentPasswordLabel: "বর্তমান পাসওয়ার্ড",
+    profileCurrentPasswordPlaceholder: "বর্তমান পাসওয়ার্ড লিখুন",
+    profileNewPasswordLabel: "নতুন পাসওয়ার্ড",
+    profileNewPasswordPlaceholder: "কমপক্ষে ৬ অক্ষর",
+    profileConfirmPasswordLabel: "নতুন পাসওয়ার্ড নিশ্চিত করুন",
+    profileConfirmPasswordPlaceholder: "নতুন পাসওয়ার্ড আবার লিখুন",
+    profileErrEnterCurrentPwd: "আপনার বর্তমান পাসওয়ার্ড লিখুন।",
+    profileErrNewPwdLength: "নতুন পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে।",
+    profileErrPwdMismatch: "নতুন পাসওয়ার্ড দুটি মিলছে না।",
+    profilePwdUpdateSuccess: "পাসওয়ার্ড সফলভাবে আপডেট হয়েছে।",
+    profileErrGeneric: "কিছু ভুল হয়েছে। আবার চেষ্টা করুন।",
+    profileUpdatePasswordBtn: "পাসওয়ার্ড আপডেট করুন",
+    profileUpdatingBtn: "আপডেট হচ্ছে...",
+    profileShareEarnTitle: "শেয়ার করুন ও আয় করুন",
+    profileShareEarnDesc: "আপনার রেফারেল কোড দিয়ে বন্ধুদের আমন্ত্রণ জানান এবং তারা যোগ দিলে পুরস্কার পান।",
+    profileReferralCodeLabel: "আপনার রেফারেল কোড",
+    profileReferralLinkLabel: "আপনার রেফারেল লিংক",
+    profileCopyLink: "লিংক কপি করুন",
+    profileShareVia: "শেয়ার করুন",
+    profileInstagramHint: "লিংক কপি হয়েছে! আপনার ইনস্টাগ্রাম বায়ো বা স্টোরিতে পেস্ট করুন।",
+    profileKycLoading: "ভেরিফিকেশন স্ট্যাটাস লোড হচ্ছে…",
+    profileKycVerifiedTitle: "আপনি ভেরিফাইড!",
+    profileKycVerifiedDesc: "আপনার পরিচয় সফলভাবে যাচাই করা হয়েছে। আপনি সব ফিচারে সম্পূর্ণ প্রবেশাধিকার পেয়েছেন।",
+    profileKycChecklist: ["ফোন ভেরিফাইড", "আইডি ভেরিফাইড", "ঠিকানা ভেরিফাইড", "সেলফি ভেরিফাইড"],
+    profileKycPendingTitle: "ভেরিফিকেশন পর্যালোচনাধীন",
+    profileKycPendingDesc1: "আমরা আপনার {doc} এবং সেলফি পেয়েছি।",
+    profileKycPendingDesc2: "আমাদের টিম সাধারণত ২৪ ঘণ্টার মধ্যে জমা পর্যালোচনা করে। ফলাফল এখানে দেখতে পাবেন।",
+    profileKycRejectedTitle: "ভেরিফিকেশন প্রত্যাখ্যাত",
+    profileTryAgain: "আবার চেষ্টা করুন",
+    profileKycStartTitle: "পরিচয় যাচাই",
+    profileKycStartDesc: "উত্তোলন এবং উচ্চতর বেটিং লিমিট আনলক করতে আপনার পরিচয় যাচাই করুন।",
+    profileKycStartNote: "প্রায় ৩ মিনিট সময় লাগে · আপনার তথ্য এনক্রিপ্টেড ও নিরাপদ",
+    profileKycStartSteps: ["ফোন নম্বর যাচাই", "সরকার অনুমোদিত আইডি আপলোড", "ঠিকানার প্রমাণ আপলোড", "আইডিসহ সেলফি"],
+    profileKycStartBtn: "ভেরিফিকেশন শুরু করুন",
+    profileKycStepLabels: ["ফোন", "ওটিপি", "ডকুমেন্ট", "আপলোড", "সেলফি"],
+    profileKycPhoneTitle: "ফোন নম্বর যাচাই করুন",
+    profileKycPhoneDesc: "আপনার অ্যাকাউন্টের সাথে যুক্ত ফোন নম্বর লিখুন।",
+    profileKycPhonePlaceholder: "ফোন নম্বর লিখুন",
+    profileSendOtp: "ওটিপি পাঠান",
+    profileKycOtpTitle: "ওটিপি লিখুন",
+    profileKycOtpSentTo: "৬ সংখ্যার কোড পাঠানো হয়েছে",
+    profileKycOtpDemo: "কোডটি ৫ মিনিটের মধ্যে মেয়াদ শেষ হবে।",
+    profileVerifyOtp: "ওটিপি যাচাই করুন",
+    profileChangePhone: "← ফোন নম্বর পরিবর্তন করুন",
+    profileOtpSending: "পাঠানো হচ্ছে…",
+    profileOtpVerifying: "যাচাই হচ্ছে…",
+    profileOtpResend: "আবার কোড পাঠান",
+    profileOtpResendCooldown: "কিছুক্ষণ পর আবার পাঠানো যাবে",
+    profileKycDocTypeTitle: "ডকুমেন্টের ধরন নির্বাচন করুন",
+    profileKycDocTypeDesc: "পরিচয় যাচাইয়ের জন্য আপনি যে ডকুমেন্ট আপলোড করবেন তা নির্বাচন করুন।",
+    profileDocTypeLabels: ["জাতীয় পরিচয়পত্র", "পাসপোর্ট", "ড্রাইভিং লাইসেন্স"],
+    profileContinue: "চালিয়ে যান",
+    profileKycReviewTitle: "আপনার ডকুমেন্ট পর্যালোচনা করুন",
+    profileKycReviewDesc: "আপনার {doc}-এর দুই পাশই ঠিক আছে? চালিয়ে যান, অথবা যেকোনো পাশ আবার তুলুন।",
+    profileRetakeFront: "সামনের পাশ আবার তুলুন",
+    profileRetakeBack: "পেছনের পাশ আবার তুলুন",
+    profileContinueToSelfie: "সেলফিতে চালিয়ে যান",
+    profileCaptureFrontTitle: "সামনের পাশ ক্যাপচার করুন",
+    profileCaptureBackTitle: "পেছনের পাশ ক্যাপচার করুন",
+    profilePositionFrontDesc: "আপনার {doc}-এর সামনের পাশ ফ্রেমের ভেতরে রাখুন।",
+    profilePositionBackDesc: "আপনার {doc}-এর পেছনের পাশ ফ্রেমের ভেতরে রাখুন।",
+    profileStepXOf2: "ধাপ {n} / ২",
+    profileCamError: "ক্যামেরা অনুমতি প্রত্যাখ্যাত হয়েছে। আপনার ব্রাউজারে ক্যামেরা অ্যাক্সেসের অনুমতি দিন।",
+    profileCaptured: "ক্যাপচার হয়েছে",
+    profileFitDocument: "ডকুমেন্টটি ফ্রেমের ভেতরে রাখুন",
+    profileUseThisPhotoContinue: "এই ছবি ব্যবহার করুন — পেছনের পাশে যান",
+    profileUseThisPhoto: "এই ছবি ব্যবহার করুন",
+    profileRetakePhoto: "ছবি আবার তুলুন",
+    profileCapturePhoto: "ছবি ক্যাপচার করুন",
+    profileKycSelfieTitle: "একটি সেলফি তুলুন",
+    profileKycSelfieDesc: "আপনার {doc} মুখের পাশে ধরুন এবং ক্যামেরার দিকে তাকান।",
+    profilePositionFace: "আপনার মুখ ডিম্বাকৃতির ভেতরে রাখুন",
+    profileSubmitting: "জমা হচ্ছে…",
+    profileSubmitVerification: "ভেরিফিকেশন জমা দিন",
+
+    categoryLabels: {
+      featured: "সেরা",
+      hot_games: "হট গেমস",
+      slots: "স্লট",
+      live_casino: "লাইভ",
+      cards: "তাস",
+      fishing: "মাছ ধরা",
+      mini_games: "মিনি গেমস",
+      sports: "লাইভ স্পোর্টস",
+      esports: "ই-স্পোর্টস",
+    },
+
+    subTagAll: "সব",
+    subTagMegaways: "মেগাওয়েজ",
+    subTagJackpot: "জ্যাকপট",
+    subTagTableGames: "টেবিল গেমস",
+    subTagVideoPoker: "ভিডিও পোকার",
+    subTagCrashGames: "ক্র্যাশ গেমস",
+    subTagArcade: "আর্কেড",
+    subTagBingo: "বিঙ্গো",
+    subTagScratches: "স্ক্র্যাচ",
+  },
+};
+
+type CtxValue = { lang: Lang; t: Translations; toggle: () => void };
+const Ctx = createContext<CtxValue>({ lang: "en", t: T.en, toggle: () => {} });
+
+export function LanguageProvider({ children }: { children: ReactNode }) {
+  const [lang, setLang] = useState<Lang>("en");
+  return (
+    <Ctx.Provider value={{ lang, t: T[lang], toggle: () => setLang((l) => (l === "en" ? "bn" : "en")) }}>
+      {children}
+    </Ctx.Provider>
+  );
+}
+
+export const useLang = () => useContext(Ctx);

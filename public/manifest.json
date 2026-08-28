@@ -1,0 +1,13 @@
+{
+  "name": "2XLbet",
+  "short_name": "2XLbet",
+  "description": "2XLbet — Online casino and sports betting in Bangladesh.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0A0612",
+  "theme_color": "#0A0612",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
