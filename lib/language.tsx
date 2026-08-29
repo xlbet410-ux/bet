@@ -212,6 +212,26 @@ export type Translations = {
   profileErrGeneric: string;
   profileUpdatePasswordBtn: string;
   profileUpdatingBtn: string;
+  profileWithdrawPasswordTitle: string;
+  profileWithdrawPasswordSetDesc: string;
+  profileWithdrawPasswordChangeDesc: string;
+  profileCurrentWithdrawPasswordLabel: string;
+  profileCurrentWithdrawPasswordPlaceholder: string;
+  profileNewWithdrawPasswordLabel: string;
+  profileNewWithdrawPasswordPlaceholder: string;
+  profileConfirmWithdrawPasswordLabel: string;
+  profileConfirmWithdrawPasswordPlaceholder: string;
+  profileErrEnterCurrentWithdrawPwd: string;
+  profileWithdrawPasswordSetSuccess: string;
+  profileWithdrawPasswordChangeSuccess: string;
+  profileSetWithdrawPasswordBtn: string;
+  profileChangeWithdrawPasswordBtn: string;
+  profileWithdrawVerifyTitle: string;
+  profileWithdrawVerifyKycLabel: string;
+  profileWithdrawVerifyPasswordLabel: string;
+  profileWithdrawVerifyPasswordPlaceholder: string;
+  profileWithdrawVerifyNotSet: string;
+  profileWithdrawVerifyNotSetLink: string;
   profileShareEarnTitle: string;
   profileShareEarnDesc: string;
   profileReferralCodeLabel: string;
@@ -507,6 +527,26 @@ const T: Record<Lang, Translations> = {
     profileErrGeneric: "Something went wrong. Please try again.",
     profileUpdatePasswordBtn: "Update Password",
     profileUpdatingBtn: "Updating...",
+    profileWithdrawPasswordTitle: "Withdrawal Password",
+    profileWithdrawPasswordSetDesc: "Set a separate password to withdraw funds without completing KYC.",
+    profileWithdrawPasswordChangeDesc: "Enter your current withdrawal password to set a new one.",
+    profileCurrentWithdrawPasswordLabel: "Current Withdrawal Password",
+    profileCurrentWithdrawPasswordPlaceholder: "Enter current withdrawal password",
+    profileNewWithdrawPasswordLabel: "New Withdrawal Password",
+    profileNewWithdrawPasswordPlaceholder: "At least 6 characters",
+    profileConfirmWithdrawPasswordLabel: "Confirm Withdrawal Password",
+    profileConfirmWithdrawPasswordPlaceholder: "Re-enter withdrawal password",
+    profileErrEnterCurrentWithdrawPwd: "Enter your current withdrawal password.",
+    profileWithdrawPasswordSetSuccess: "Withdrawal password set successfully.",
+    profileWithdrawPasswordChangeSuccess: "Withdrawal password updated successfully.",
+    profileSetWithdrawPasswordBtn: "Set Withdrawal Password",
+    profileChangeWithdrawPasswordBtn: "Change Withdrawal Password",
+    profileWithdrawVerifyTitle: "Verify Withdrawal",
+    profileWithdrawVerifyKycLabel: "Verified via KYC — no withdrawal password needed.",
+    profileWithdrawVerifyPasswordLabel: "Withdrawal Password",
+    profileWithdrawVerifyPasswordPlaceholder: "Enter your withdrawal password",
+    profileWithdrawVerifyNotSet: "You haven't completed KYC or set a withdrawal password yet.",
+    profileWithdrawVerifyNotSetLink: "Set a withdrawal password",
     profileShareEarnTitle: "Share & Earn",
     profileShareEarnDesc: "Invite friends with your referral code and earn rewards when they join.",
     profileReferralCodeLabel: "Your Referral Code",
@@ -798,6 +838,26 @@ const T: Record<Lang, Translations> = {
     profileErrGeneric: "কিছু ভুল হয়েছে। আবার চেষ্টা করুন।",
     profileUpdatePasswordBtn: "পাসওয়ার্ড আপডেট করুন",
     profileUpdatingBtn: "আপডেট হচ্ছে...",
+    profileWithdrawPasswordTitle: "উত্তোলন পাসওয়ার্ড",
+    profileWithdrawPasswordSetDesc: "কেওয়াইসি সম্পন্ন না করেই টাকা উত্তোলনের জন্য একটি আলাদা পাসওয়ার্ড সেট করুন।",
+    profileWithdrawPasswordChangeDesc: "নতুন পাসওয়ার্ড সেট করতে আপনার বর্তমান উত্তোলন পাসওয়ার্ড লিখুন।",
+    profileCurrentWithdrawPasswordLabel: "বর্তমান উত্তোলন পাসওয়ার্ড",
+    profileCurrentWithdrawPasswordPlaceholder: "বর্তমান উত্তোলন পাসওয়ার্ড লিখুন",
+    profileNewWithdrawPasswordLabel: "নতুন উত্তোলন পাসওয়ার্ড",
+    profileNewWithdrawPasswordPlaceholder: "কমপক্ষে ৬ অক্ষর",
+    profileConfirmWithdrawPasswordLabel: "উত্তোলন পাসওয়ার্ড নিশ্চিত করুন",
+    profileConfirmWithdrawPasswordPlaceholder: "উত্তোলন পাসওয়ার্ড আবার লিখুন",
+    profileErrEnterCurrentWithdrawPwd: "আপনার বর্তমান উত্তোলন পাসওয়ার্ড লিখুন।",
+    profileWithdrawPasswordSetSuccess: "উত্তোলন পাসওয়ার্ড সফলভাবে সেট হয়েছে।",
+    profileWithdrawPasswordChangeSuccess: "উত্তোলন পাসওয়ার্ড সফলভাবে আপডেট হয়েছে।",
+    profileSetWithdrawPasswordBtn: "উত্তোলন পাসওয়ার্ড সেট করুন",
+    profileChangeWithdrawPasswordBtn: "উত্তোলন পাসওয়ার্ড পরিবর্তন করুন",
+    profileWithdrawVerifyTitle: "উত্তোলন যাচাই করুন",
+    profileWithdrawVerifyKycLabel: "কেওয়াইসি দ্বারা যাচাইকৃত — কোনো উত্তোলন পাসওয়ার্ডের প্রয়োজন নেই।",
+    profileWithdrawVerifyPasswordLabel: "উত্তোলন পাসওয়ার্ড",
+    profileWithdrawVerifyPasswordPlaceholder: "আপনার উত্তোলন পাসওয়ার্ড লিখুন",
+    profileWithdrawVerifyNotSet: "আপনি এখনও কেওয়াইসি সম্পন্ন করেননি বা উত্তোলন পাসওয়ার্ড সেট করেননি।",
+    profileWithdrawVerifyNotSetLink: "উত্তোলন পাসওয়ার্ড সেট করুন",
     profileShareEarnTitle: "শেয়ার করুন ও আয় করুন",
     profileShareEarnDesc: "আপনার রেফারেল কোড দিয়ে বন্ধুদের আমন্ত্রণ জানান এবং তারা যোগ দিলে পুরস্কার পান।",
     profileReferralCodeLabel: "আপনার রেফারেল কোড",

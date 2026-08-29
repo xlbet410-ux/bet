@@ -16,6 +16,8 @@ import { getMyPaymentAccounts, type PaymentAccount, type PaymentMethod } from "@
 import { createCashIn, createCashOut } from "@/lib/cashTransactions";
 import { getApplicableDepositOffers, type DepositOffer } from "@/lib/offers";
 import { getWithdrawable, type WithdrawableInfo } from "@/lib/wallet";
+import { getMyKyc, type KycStatus } from "@/lib/kyc";
+import { getWithdrawPasswordStatus } from "@/lib/withdrawPassword";
 
 type PageTab = "deposit" | "withdraw";
 
@@ -41,6 +43,34 @@ function Tick({ size = 10, className = "" }: { size?: number; className?: string
     <svg viewBox="0 0 10 10" style={{ width: size, height: size }} className={`fill-none stroke-current stroke-2 ${className}`}>
       <polyline points="2,5.5 4,7.5 8,3" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
+  );
+}
+
+function EyeBtn({ visible, onToggle }: { visible: boolean; onToggle: () => void }) {
+  return (
+    <button
+      type="button"
+      tabIndex={-1}
+      onClick={onToggle}
+      className="absolute right-3 top-1/2 -translate-y-1/2 flex h-7 w-7 items-center justify-center rounded-lg text-gray-400 transition-colors hover:text-[#B8892E]"
+      aria-label={visible ? "Hide password" : "Show password"}
+    >
+      {visible ? (
+        /* eye-off */
+        <svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-2">
+          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" strokeLinecap="round"/>
+          <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" strokeLinecap="round"/>
+          <path d="M14.12 14.12a3 3 0 1 1-4.24-4.24" strokeLinecap="round"/>
+          <line x1="1" y1="1" x2="23" y2="23" strokeLinecap="round"/>
+        </svg>
+      ) : (
+        /* eye */
+        <svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-2">
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+          <circle cx="12" cy="12" r="3"/>
+        </svg>
+      )}
+    </button>
   );
 }
 
@@ -458,6 +488,16 @@ export default function DepositWithdrawPage() {
   const [withdrawSubmitError, setWithdrawSubmitError] = useState<string | null>(null);
   const [withdrawable, setWithdrawable] = useState<WithdrawableInfo | null>(null);
 
+  // withdraw verification — either a verified KYC or a correct withdrawal
+  // password satisfies the backend's gate (see TransactionsService.createCashOut),
+  // never both.
+  const [kycStatus, setKycStatus] = useState<KycStatus>(null);
+  const [kycStatusLoading, setKycStatusLoading] = useState(true);
+  const [wpIsSet, setWpIsSet] = useState(false);
+  const [wpStatusLoading, setWpStatusLoading] = useState(true);
+  const [withdrawPasswordInput, setWithdrawPasswordInput] = useState("");
+  const [showWithdrawPwd, setShowWithdrawPwd] = useState(false);
+
   useEffect(() => {
     if (!authLoading && !user) router.replace("/");
   }, [authLoading, user, router]);
@@ -470,6 +510,22 @@ export default function DepositWithdrawPage() {
       .catch(() => {}); // Non-critical — the form still works without this info box.
     return () => { cancelled = true; };
   }, [user, withdrawSubmitted]);
+
+  useEffect(() => {
+    if (!user) return;
+    getMyKyc()
+      .then((s) => setKycStatus(s))
+      .catch(() => setKycStatus(null))
+      .finally(() => setKycStatusLoading(false));
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (!user) return;
+    getWithdrawPasswordStatus()
+      .then((s) => setWpIsSet(s.isSet))
+      .catch(() => setWpIsSet(false))
+      .finally(() => setWpStatusLoading(false));
+  }, [user?.id]);
 
   useEffect(() => {
     function applyTabFromUrl() {
@@ -612,8 +668,10 @@ export default function DepositWithdrawPage() {
         method: withdrawMethod,
         amount: Number(withdrawAmt),
         reference: withdrawAccountNumber.trim(),
+        withdrawPassword: isKycVerified ? undefined : withdrawPasswordInput,
       });
       setWithdrawSubmitted(true);
+      setWithdrawPasswordInput("");
     } catch (err) {
       setWithdrawSubmitError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
     } finally {
@@ -634,7 +692,18 @@ export default function DepositWithdrawPage() {
 
   const depositStep1Valid = depositAmt !== "" && Number(depositAmt) >= 100 && !accountsLoading && !accountsError && depositAccounts.length > 0;
   const depositValid = depositStep1Valid && depositTrxId.trim() !== "";
-  const withdrawValid = withdrawAmt !== "" && Number(withdrawAmt) >= 100 && withdrawAccountNumber.trim() !== "";
+
+  const isKycVerified = kycStatus?.status === "verified";
+  // A withdrawal needs EITHER a verified KYC OR a correct withdrawal
+  // password — mirrors TransactionsService.createCashOut on the backend.
+  const withdrawVerified = isKycVerified || (wpIsSet && withdrawPasswordInput.trim() !== "");
+  const withdrawValid =
+    withdrawAmt !== "" &&
+    Number(withdrawAmt) >= 100 &&
+    withdrawAccountNumber.trim() !== "" &&
+    !kycStatusLoading &&
+    !wpStatusLoading &&
+    withdrawVerified;
 
   return (
     <>
@@ -795,6 +864,43 @@ export default function DepositWithdrawPage() {
                     placeholder={t.profileWithdrawAccountPlaceholder}
                     className="mb-6 w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 placeholder-gray-400 outline-none transition-all focus:border-[#D4AF37]"
                   />
+
+                  <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-gray-400">{t.profileWithdrawVerifyTitle}</p>
+                  {!kycStatusLoading && !wpStatusLoading && (
+                    isKycVerified ? (
+                      <div className="mb-6 flex items-center gap-2 rounded-xl px-4 py-3" style={{ background: "rgba(34,197,94,.08)", border: "1px solid rgba(34,197,94,.3)" }}>
+                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-white" style={{ background: "#22c55e" }}>
+                          <Tick size={9} />
+                        </span>
+                        <p className="text-xs font-semibold text-green-700">{t.profileWithdrawVerifyKycLabel}</p>
+                      </div>
+                    ) : (
+                      <div className="mb-6">
+                        {wpIsSet ? (
+                          <>
+                            <label className="mb-1.5 block text-xs font-medium text-gray-600">{t.profileWithdrawVerifyPasswordLabel}</label>
+                            <div className="relative">
+                              <input
+                                type={showWithdrawPwd ? "text" : "password"}
+                                value={withdrawPasswordInput}
+                                onChange={(e) => setWithdrawPasswordInput(e.target.value)}
+                                placeholder={t.profileWithdrawVerifyPasswordPlaceholder}
+                                className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 pr-11 text-sm text-gray-900 placeholder-gray-400 outline-none transition-all focus:border-[#D4AF37]"
+                              />
+                              <EyeBtn visible={showWithdrawPwd} onToggle={() => setShowWithdrawPwd((v) => !v)} />
+                            </div>
+                          </>
+                        ) : (
+                          <p className="rounded-xl px-4 py-3 text-xs text-gray-500" style={INNER}>
+                            {t.profileWithdrawVerifyNotSet}{" "}
+                            <Link href="/profile?tab=settings" className="font-bold text-[#B8892E] underline underline-offset-2">
+                              {t.profileWithdrawVerifyNotSetLink}
+                            </Link>
+                          </p>
+                        )}
+                      </div>
+                    )
+                  )}
 
                   {withdrawSubmitError && (
                     <p className="mb-3 text-center text-xs text-red-500">

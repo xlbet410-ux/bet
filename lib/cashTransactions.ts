@@ -34,6 +34,9 @@ type CreateCashTransactionInput = {
   // any promotions" — distinct from just omitting offerId — so the
   // backend never auto-applies some other eligible offer instead.
   noOffer?: boolean;
+  // Cash-out only — required unless the player is KYC-verified. See
+  // TransactionsService.createCashOut on the backend.
+  withdrawPassword?: string;
 };
 
 async function createCashTransaction(kind: "cash-in" | "cash-out", input: CreateCashTransactionInput) {

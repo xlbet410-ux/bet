@@ -12,6 +12,7 @@ import ShareLinkBar from "@/components/site/ShareLinkBar";
 import { useAuth } from "@/lib/auth";
 import { useLang } from "@/lib/language";
 import { getMyKyc, submitKyc, type KycStatus } from "@/lib/kyc";
+import { getWithdrawPasswordStatus, setWithdrawPassword } from "@/lib/withdrawPassword";
 import { sendKycOtp, verifyKycOtp } from "@/lib/otp";
 import { getMyCashTransactions, type MyCashTransaction } from "@/lib/cashTransactions";
 import { getMyVipStatus, type VipStatus } from "@/lib/vip";
@@ -323,6 +324,20 @@ export default function ProfilePage() {
   const [showNewPwd, setShowNewPwd]       = useState(false);
   const [showConfirmPwd, setShowConfirmPwd] = useState(false);
 
+  // settings — withdrawal password (separate from the login password above;
+  // lets a player withdraw without completing KYC — see deposit-withdraw page)
+  const [wpIsSet, setWpIsSet]             = useState(false);
+  const [wpStatusLoading, setWpStatusLoading] = useState(true);
+  const [oldWithdrawPwd, setOldWithdrawPwd]   = useState("");
+  const [newWithdrawPwd, setNewWithdrawPwd]   = useState("");
+  const [confirmWithdrawPwd, setConfirmWithdrawPwd] = useState("");
+  const [wpError, setWpError]             = useState("");
+  const [wpSuccess, setWpSuccess]         = useState("");
+  const [wpSubmitting, setWpSubmitting]   = useState(false);
+  const [showOldWPwd, setShowOldWPwd]         = useState(false);
+  const [showNewWPwd, setShowNewWPwd]         = useState(false);
+  const [showConfirmWPwd, setShowConfirmWPwd] = useState(false);
+
   // settings — share & earn
   const [codeCopied, setCodeCopied]   = useState(false);
   const [linkCopied, setLinkCopied]   = useState(false);
@@ -408,6 +423,14 @@ export default function ProfilePage() {
       .then((s) => setKycStatus(s))
       .catch(() => setKycStatus(null))
       .finally(() => setKycStatusLoading(false));
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (!user) return;
+    getWithdrawPasswordStatus()
+      .then((s) => setWpIsSet(s.isSet))
+      .catch(() => setWpIsSet(false))
+      .finally(() => setWpStatusLoading(false));
   }, [user?.id]);
 
   useEffect(() => {
@@ -693,6 +716,25 @@ export default function ProfilePage() {
       setPwdError(err instanceof Error ? err.message : t.profileErrGeneric);
     } finally {
       setPwdSubmitting(false);
+    }
+  }
+
+  async function handleSetWithdrawPassword() {
+    setWpError(""); setWpSuccess("");
+    if (wpIsSet && oldWithdrawPwd.length === 0) { setWpError(t.profileErrEnterCurrentWithdrawPwd); return; }
+    if (newWithdrawPwd.length < 6) { setWpError(t.profileErrNewPwdLength); return; }
+    if (newWithdrawPwd !== confirmWithdrawPwd) { setWpError(t.profileErrPwdMismatch); return; }
+
+    setWpSubmitting(true);
+    try {
+      await setWithdrawPassword({ oldPassword: wpIsSet ? oldWithdrawPwd : undefined, newPassword: newWithdrawPwd });
+      setWpSuccess(wpIsSet ? t.profileWithdrawPasswordChangeSuccess : t.profileWithdrawPasswordSetSuccess);
+      setWpIsSet(true);
+      setOldWithdrawPwd(""); setNewWithdrawPwd(""); setConfirmWithdrawPwd("");
+    } catch (err) {
+      setWpError(err instanceof Error ? err.message : t.profileErrGeneric);
+    } finally {
+      setWpSubmitting(false);
     }
   }
 
@@ -1182,6 +1224,65 @@ export default function ProfilePage() {
                         {pwdSubmitting ? t.profileUpdatingBtn : t.profileUpdatePasswordBtn}
                       </button>
                     </div>
+                  </div>
+
+                  {/* Withdrawal Password */}
+                  <div className="rounded-2xl p-6" style={CARD}>
+                    <h3 className="mb-1 text-lg font-extrabold text-white">{t.profileWithdrawPasswordTitle}</h3>
+                    <p className="mb-5 text-sm text-[#9B8EC4]">
+                      {wpStatusLoading ? "" : wpIsSet ? t.profileWithdrawPasswordChangeDesc : t.profileWithdrawPasswordSetDesc}
+                    </p>
+
+                    {!wpStatusLoading && (
+                      <div className="mx-auto max-w-sm space-y-4">
+                        {wpIsSet && (
+                          <div>
+                            <label className="mb-1.5 block text-xs font-medium text-[#C9B8E8]">{t.profileCurrentWithdrawPasswordLabel}</label>
+                            <div className="relative">
+                              <input type={showOldWPwd ? "text" : "password"} value={oldWithdrawPwd} onChange={(e) => setOldWithdrawPwd(e.target.value)}
+                                placeholder={t.profileCurrentWithdrawPasswordPlaceholder}
+                                className="w-full rounded-xl border border-[#7B2FBE]/40 bg-white/4 px-4 py-3 pr-11 text-sm text-white placeholder-[#8A7DB0] outline-none transition-all focus:border-[#D4AF37] focus:bg-white/[.07]" />
+                              <EyeBtn visible={showOldWPwd} onToggle={() => setShowOldWPwd((v) => !v)} />
+                            </div>
+                          </div>
+                        )}
+                        <div>
+                          <label className="mb-1.5 block text-xs font-medium text-[#C9B8E8]">{t.profileNewWithdrawPasswordLabel}</label>
+                          <div className="relative">
+                            <input type={showNewWPwd ? "text" : "password"} value={newWithdrawPwd} onChange={(e) => setNewWithdrawPwd(e.target.value)}
+                              placeholder={t.profileNewWithdrawPasswordPlaceholder}
+                              className="w-full rounded-xl border border-[#7B2FBE]/40 bg-white/4 px-4 py-3 pr-11 text-sm text-white placeholder-[#8A7DB0] outline-none transition-all focus:border-[#D4AF37] focus:bg-white/[.07]" />
+                            <EyeBtn visible={showNewWPwd} onToggle={() => setShowNewWPwd((v) => !v)} />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="mb-1.5 block text-xs font-medium text-[#C9B8E8]">{t.profileConfirmWithdrawPasswordLabel}</label>
+                          <div className="relative">
+                            <input type={showConfirmWPwd ? "text" : "password"} value={confirmWithdrawPwd} onChange={(e) => setConfirmWithdrawPwd(e.target.value)}
+                              placeholder={t.profileConfirmWithdrawPasswordPlaceholder}
+                              className="w-full rounded-xl border border-[#7B2FBE]/40 bg-white/4 px-4 py-3 pr-11 text-sm text-white placeholder-[#8A7DB0] outline-none transition-all focus:border-[#D4AF37] focus:bg-white/[.07]" />
+                            <EyeBtn visible={showConfirmWPwd} onToggle={() => setShowConfirmWPwd((v) => !v)} />
+                          </div>
+                        </div>
+
+                        {wpError && (
+                          <p className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-300">{wpError}</p>
+                        )}
+                        {wpSuccess && (
+                          <p className="rounded-lg border border-green-500/30 bg-green-500/10 px-3 py-2 text-xs text-green-300">{wpSuccess}</p>
+                        )}
+
+                        <button onClick={handleSetWithdrawPassword} disabled={wpSubmitting}
+                          className="w-full rounded-full py-3.5 text-sm font-bold text-[#0A0612] transition-all hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-60"
+                          style={{ background:"linear-gradient(to right,#D4AF37,#F5C842)" }}>
+                          {wpSubmitting
+                            ? t.profileUpdatingBtn
+                            : wpIsSet
+                              ? t.profileChangeWithdrawPasswordBtn
+                              : t.profileSetWithdrawPasswordBtn}
+                        </button>
+                      </div>
+                    )}
                   </div>
 
                 </div>
