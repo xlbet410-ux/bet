@@ -18,6 +18,7 @@ import { getApplicableDepositOffers, type DepositOffer } from "@/lib/offers";
 import { getWithdrawable, type WithdrawableInfo } from "@/lib/wallet";
 import { getMyKyc, type KycStatus } from "@/lib/kyc";
 import { getWithdrawPasswordStatus } from "@/lib/withdrawPassword";
+import { getWithdrawalSettings, type WithdrawalSettings } from "@/lib/withdrawalSettings";
 
 type PageTab = "deposit" | "withdraw";
 
@@ -497,6 +498,10 @@ export default function DepositWithdrawPage() {
   const [wpStatusLoading, setWpStatusLoading] = useState(true);
   const [withdrawPasswordInput, setWithdrawPasswordInput] = useState("");
   const [showWithdrawPwd, setShowWithdrawPwd] = useState(false);
+  // CRM-controlled — which verification method(s) are accepted at all.
+  // Defaults to both-on (today's behavior) until the real value loads.
+  const [wSettings, setWSettings] = useState<WithdrawalSettings>({ kycEnabled: true, withdrawPasswordEnabled: true });
+  const [wSettingsLoading, setWSettingsLoading] = useState(true);
 
   useEffect(() => {
     if (!authLoading && !user) router.replace("/");
@@ -526,6 +531,15 @@ export default function DepositWithdrawPage() {
       .catch(() => setWpIsSet(false))
       .finally(() => setWpStatusLoading(false));
   }, [user?.id]);
+
+  // Public endpoint — doesn't need a logged-in user, so this loads
+  // independently of the auth gate above.
+  useEffect(() => {
+    getWithdrawalSettings()
+      .then((s) => setWSettings(s))
+      .catch(() => {}) // Keep the both-on default on failure — same as today.
+      .finally(() => setWSettingsLoading(false));
+  }, []);
 
   useEffect(() => {
     function applyTabFromUrl() {
@@ -668,7 +682,10 @@ export default function DepositWithdrawPage() {
         method: withdrawMethod,
         amount: Number(withdrawAmt),
         reference: withdrawAccountNumber.trim(),
-        withdrawPassword: isKycVerified ? undefined : withdrawPasswordInput,
+        withdrawPassword:
+          wSettings.withdrawPasswordEnabled && !(wSettings.kycEnabled && isKycVerified)
+            ? withdrawPasswordInput
+            : undefined,
       });
       setWithdrawSubmitted(true);
       setWithdrawPasswordInput("");
@@ -694,15 +711,23 @@ export default function DepositWithdrawPage() {
   const depositValid = depositStep1Valid && depositTrxId.trim() !== "";
 
   const isKycVerified = kycStatus?.status === "verified";
-  // A withdrawal needs EITHER a verified KYC OR a correct withdrawal
-  // password — mirrors TransactionsService.createCashOut on the backend.
-  const withdrawVerified = isKycVerified || (wpIsSet && withdrawPasswordInput.trim() !== "");
+  // Which verification method(s) are accepted is CRM-controlled
+  // (wSettings) — mirrors TransactionsService.createCashOut on the backend.
+  const withdrawVerified =
+    wSettings.kycEnabled && wSettings.withdrawPasswordEnabled
+      ? isKycVerified || (wpIsSet && withdrawPasswordInput.trim() !== "")
+      : wSettings.kycEnabled
+        ? isKycVerified
+        : wSettings.withdrawPasswordEnabled
+          ? wpIsSet && withdrawPasswordInput.trim() !== ""
+          : true;
   const withdrawValid =
     withdrawAmt !== "" &&
     Number(withdrawAmt) >= 100 &&
     withdrawAccountNumber.trim() !== "" &&
     !kycStatusLoading &&
     !wpStatusLoading &&
+    !wSettingsLoading &&
     withdrawVerified;
 
   return (
@@ -865,19 +890,34 @@ export default function DepositWithdrawPage() {
                     className="mb-6 w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 placeholder-gray-400 outline-none transition-all focus:border-[#D4AF37]"
                   />
 
-                  <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-gray-400">{t.profileWithdrawVerifyTitle}</p>
-                  {!kycStatusLoading && !wpStatusLoading && (
-                    isKycVerified ? (
-                      <div className="mb-6 flex items-center gap-2 rounded-xl px-4 py-3" style={{ background: "rgba(34,197,94,.08)", border: "1px solid rgba(34,197,94,.3)" }}>
-                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-white" style={{ background: "#22c55e" }}>
-                          <Tick size={9} />
-                        </span>
-                        <p className="text-xs font-semibold text-green-700">{t.profileWithdrawVerifyKycLabel}</p>
-                      </div>
-                    ) : (
-                      <div className="mb-6">
-                        {wpIsSet ? (
-                          <>
+                  {(wSettings.kycEnabled || wSettings.withdrawPasswordEnabled) && (
+                    <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-gray-400">{t.profileWithdrawVerifyTitle}</p>
+                  )}
+                  {!kycStatusLoading && !wpStatusLoading && !wSettingsLoading && (
+                    <div className="mb-6 space-y-3">
+                      {wSettings.kycEnabled && (
+                        isKycVerified ? (
+                          <div className="flex items-center gap-2 rounded-xl px-4 py-3" style={{ background: "rgba(34,197,94,.08)", border: "1px solid rgba(34,197,94,.3)" }}>
+                            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-white" style={{ background: "#22c55e" }}>
+                              <Tick size={9} />
+                            </span>
+                            <p className="text-xs font-semibold text-green-700">{t.profileWithdrawVerifyKycLabel}</p>
+                          </div>
+                        ) : (
+                          !wSettings.withdrawPasswordEnabled && (
+                            <p className="rounded-xl px-4 py-3 text-xs text-gray-500" style={INNER}>
+                              {t.profileWithdrawVerifyKycRequired}{" "}
+                              <Link href="/profile?tab=kyc" className="font-bold text-[#B8892E] underline underline-offset-2">
+                                {t.profileWithdrawVerifyKycRequiredLink}
+                              </Link>
+                            </p>
+                          )
+                        )
+                      )}
+
+                      {wSettings.withdrawPasswordEnabled && !(wSettings.kycEnabled && isKycVerified) && (
+                        wpIsSet ? (
+                          <div>
                             <label className="mb-1.5 block text-xs font-medium text-gray-600">{t.profileWithdrawVerifyPasswordLabel}</label>
                             <div className="relative">
                               <input
@@ -889,17 +929,17 @@ export default function DepositWithdrawPage() {
                               />
                               <EyeBtn visible={showWithdrawPwd} onToggle={() => setShowWithdrawPwd((v) => !v)} />
                             </div>
-                          </>
+                          </div>
                         ) : (
                           <p className="rounded-xl px-4 py-3 text-xs text-gray-500" style={INNER}>
-                            {t.profileWithdrawVerifyNotSet}{" "}
+                            {wSettings.kycEnabled ? t.profileWithdrawVerifyNotSet : t.profileWithdrawVerifyPasswordRequired}{" "}
                             <Link href="/profile?tab=withdrawPassword" className="font-bold text-[#B8892E] underline underline-offset-2">
                               {t.profileWithdrawVerifyNotSetLink}
                             </Link>
                           </p>
-                        )}
-                      </div>
-                    )
+                        )
+                      )}
+                    </div>
                   )}
 
                   {withdrawSubmitError && (

@@ -232,6 +232,9 @@ export type Translations = {
   profileWithdrawVerifyPasswordPlaceholder: string;
   profileWithdrawVerifyNotSet: string;
   profileWithdrawVerifyNotSetLink: string;
+  profileWithdrawVerifyKycRequired: string;
+  profileWithdrawVerifyKycRequiredLink: string;
+  profileWithdrawVerifyPasswordRequired: string;
   profileShareEarnTitle: string;
   profileShareEarnDesc: string;
   profileReferralCodeLabel: string;
@@ -547,6 +550,9 @@ const T: Record<Lang, Translations> = {
     profileWithdrawVerifyPasswordPlaceholder: "Enter your withdrawal password",
     profileWithdrawVerifyNotSet: "You haven't completed KYC or set a withdrawal password yet.",
     profileWithdrawVerifyNotSetLink: "Set a withdrawal password",
+    profileWithdrawVerifyKycRequired: "You need to complete KYC verification before you can withdraw.",
+    profileWithdrawVerifyKycRequiredLink: "Complete KYC verification",
+    profileWithdrawVerifyPasswordRequired: "You need to set a withdrawal password before you can withdraw.",
     profileShareEarnTitle: "Share & Earn",
     profileShareEarnDesc: "Invite friends with your referral code and earn rewards when they join.",
     profileReferralCodeLabel: "Your Referral Code",
@@ -858,6 +864,9 @@ const T: Record<Lang, Translations> = {
     profileWithdrawVerifyPasswordPlaceholder: "আপনার উত্তোলন পাসওয়ার্ড লিখুন",
     profileWithdrawVerifyNotSet: "আপনি এখনও কেওয়াইসি সম্পন্ন করেননি বা উত্তোলন পাসওয়ার্ড সেট করেননি।",
     profileWithdrawVerifyNotSetLink: "উত্তোলন পাসওয়ার্ড সেট করুন",
+    profileWithdrawVerifyKycRequired: "উত্তোলন করার আগে আপনাকে কেওয়াইসি যাচাইকরণ সম্পন্ন করতে হবে।",
+    profileWithdrawVerifyKycRequiredLink: "কেওয়াইসি যাচাইকরণ সম্পন্ন করুন",
+    profileWithdrawVerifyPasswordRequired: "উত্তোলন করার আগে আপনাকে একটি উত্তোলন পাসওয়ার্ড সেট করতে হবে।",
     profileShareEarnTitle: "শেয়ার করুন ও আয় করুন",
     profileShareEarnDesc: "আপনার রেফারেল কোড দিয়ে বন্ধুদের আমন্ত্রণ জানান এবং তারা যোগ দিলে পুরস্কার পান।",
     profileReferralCodeLabel: "আপনার রেফারেল কোড",
