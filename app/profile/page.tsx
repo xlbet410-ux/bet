@@ -34,10 +34,10 @@ const METHOD_LABELS: Record<string, string> = {
 
 type TxFilter = "all" | "24h" | "week" | "month";
 
-type Tab     = "profile" | "wallet" | "turnover" | "deposit" | "withdraw" | "history" | "settings" | "kyc" | "referral";
+type Tab     = "profile" | "wallet" | "turnover" | "deposit" | "withdraw" | "history" | "settings" | "withdrawPassword" | "kyc" | "referral";
 type KycStep = "idle" | "phone" | "otp" | "docType" | "upload" | "selfie" | "done";
 
-const TABS: Tab[] = ["profile", "wallet", "turnover", "deposit", "withdraw", "history", "settings", "kyc", "referral"];
+const TABS: Tab[] = ["profile", "wallet", "turnover", "deposit", "withdraw", "history", "settings", "withdrawPassword", "kyc", "referral"];
 
 function DocTypeIcon({ id, className = "" }: { id: string; className?: string }) {
   if (id === "passport") {
@@ -754,6 +754,7 @@ export default function ProfilePage() {
     { id:"withdraw",label:t.profileTabWithdraw,icon:<svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-2"><path d="M12 21V9m0 0 4 4m-4-4-4 4" strokeLinecap="round" strokeLinejoin="round"/><path d="M20 3H4" strokeLinecap="round"/></svg> },
     { id:"history", label:t.profileTabHistory, icon:<svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2" strokeLinecap="round" strokeLinejoin="round"/></svg> },
     { id:"settings",label:t.profileTabSettings,icon:<svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> },
+    { id:"withdrawPassword",label:t.profileWithdrawPasswordTitle,icon:<svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-2"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4" strokeLinecap="round"/><circle cx="12" cy="16" r="1.5" className="fill-current stroke-none"/></svg> },
     { id:"kyc",     label:t.profileTabKyc,     icon:<svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9,12 11,14 15,10" strokeLinecap="round" strokeLinejoin="round"/></svg> },
     { id:"referral",label:t.profileTabReferral,icon:<svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-2"><circle cx="9" cy="7" r="3"/><path d="M2 20c0-3.3 2.7-6 6-6h2c3.3 0 6 2.7 6 6" strokeLinecap="round"/><path d="M17 8a3 3 0 1 1 0 6" strokeLinecap="round"/><path d="M20.5 20c0-2.5-1.8-4.6-4.2-5.4" strokeLinecap="round"/></svg> },
   ];
@@ -1226,7 +1227,12 @@ export default function ProfilePage() {
                     </div>
                   </div>
 
-                  {/* Withdrawal Password */}
+                </div>
+              )}
+
+              {/* ════ WITHDRAWAL PASSWORD ════ */}
+              {tab === "withdrawPassword" && (
+                <div className="space-y-4">
                   <div className="rounded-2xl p-6" style={CARD}>
                     <h3 className="mb-1 text-lg font-extrabold text-white">{t.profileWithdrawPasswordTitle}</h3>
                     <p className="mb-5 text-sm text-[#9B8EC4]">
@@ -1284,7 +1290,6 @@ export default function ProfilePage() {
                       </div>
                     )}
                   </div>
-
                 </div>
               )}
 

@@ -893,7 +893,7 @@ export default function DepositWithdrawPage() {
                         ) : (
                           <p className="rounded-xl px-4 py-3 text-xs text-gray-500" style={INNER}>
                             {t.profileWithdrawVerifyNotSet}{" "}
-                            <Link href="/profile?tab=settings" className="font-bold text-[#B8892E] underline underline-offset-2">
+                            <Link href="/profile?tab=withdrawPassword" className="font-bold text-[#B8892E] underline underline-offset-2">
                               {t.profileWithdrawVerifyNotSetLink}
                             </Link>
                           </p>
