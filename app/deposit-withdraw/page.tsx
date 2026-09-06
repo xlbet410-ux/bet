@@ -209,8 +209,8 @@ function OfferPicker({
 }) {
   const strings =
     lang === "bn"
-      ? { heading: "প্রমোশন", noneLabel: "কোনো প্রমোশনে অংশগ্রহণ করবেন না", turnover: "টার্নওভার", validity: "মেয়াদ", days: "দিন", terms: "শর্তাবলী" }
-      : { heading: "Promotions", noneLabel: "Do not participate in any promotions", turnover: "TURNOVER", validity: "VALID", days: "days", terms: "TERMS" };
+      ? { heading: "প্রমোশন", noneLabel: "কোনো প্রমোশনে অংশগ্রহণ করবেন না", validity: "মেয়াদ", days: "দিন", terms: "শর্তাবলী" }
+      : { heading: "Promotions", noneLabel: "Do not participate in any promotions", validity: "VALID", days: "days", terms: "TERMS" };
 
   if (loading || offers.length === 0) return null;
 
@@ -251,14 +251,19 @@ function OfferPicker({
                 <span className="shrink-0 text-xs font-black text-[#D4AF37]">+৳{Number(o.potentialReward).toLocaleString()}</span>
               </div>
 
-              {selected && (
+              {/* Turnover is deliberately not shown here — validity and the
+                  terms are. The requirement itself still applies and is
+                  still enforced; it's just not surfaced at the point of
+                  choosing a promotion. */}
+              {selected && (o.bonusValidityDays || terms) && (
                 <div className="mt-2.5 border-t border-[#D4AF37]/20 pt-2.5 text-xs text-gray-500">
-                  <p>
-                    {strings.turnover}: {o.turnoverMultiplier}x
-                    {o.bonusValidityDays ? ` · ${strings.validity}: ${o.bonusValidityDays} ${strings.days}` : ""}
-                  </p>
+                  {o.bonusValidityDays ? (
+                    <p>
+                      {strings.validity}: {o.bonusValidityDays} {strings.days}
+                    </p>
+                  ) : null}
                   {terms && (
-                    <p className="mt-1.5 leading-relaxed">
+                    <p className={`leading-relaxed${o.bonusValidityDays ? " mt-1.5" : ""}`}>
                       <span className="font-semibold text-gray-600">{strings.terms}: </span>
                       {terms}
                     </p>
