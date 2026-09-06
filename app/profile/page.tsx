@@ -13,6 +13,7 @@ import { useAuth } from "@/lib/auth";
 import { useLang } from "@/lib/language";
 import { getMyKyc, submitKyc, type KycStatus } from "@/lib/kyc";
 import { getWithdrawPasswordStatus, setWithdrawPassword } from "@/lib/withdrawPassword";
+import AddToHomeScreen from "@/components/site/AddToHomeScreen";
 import { sendKycOtp, verifyKycOtp } from "@/lib/otp";
 import { getMyCashTransactions, type MyCashTransaction } from "@/lib/cashTransactions";
 import { getMyVipStatus, type VipStatus } from "@/lib/vip";
@@ -34,10 +35,10 @@ const METHOD_LABELS: Record<string, string> = {
 
 type TxFilter = "all" | "24h" | "week" | "month";
 
-type Tab     = "profile" | "wallet" | "turnover" | "deposit" | "withdraw" | "history" | "settings" | "withdrawPassword" | "kyc" | "referral";
+type Tab     = "profile" | "wallet" | "turnover" | "deposit" | "withdraw" | "history" | "settings" | "withdrawPassword" | "kyc" | "referral" | "install";
 type KycStep = "idle" | "phone" | "otp" | "docType" | "upload" | "selfie" | "done";
 
-const TABS: Tab[] = ["profile", "wallet", "turnover", "deposit", "withdraw", "history", "settings", "withdrawPassword", "kyc", "referral"];
+const TABS: Tab[] = ["profile", "wallet", "turnover", "deposit", "withdraw", "history", "settings", "withdrawPassword", "kyc", "referral", "install"];
 
 function DocTypeIcon({ id, className = "" }: { id: string; className?: string }) {
   if (id === "passport") {
@@ -757,6 +758,7 @@ export default function ProfilePage() {
     { id:"withdrawPassword",label:t.profileWithdrawPasswordTitle,icon:<svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-2"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4" strokeLinecap="round"/><circle cx="12" cy="16" r="1.5" className="fill-current stroke-none"/></svg> },
     { id:"kyc",     label:t.profileTabKyc,     icon:<svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9,12 11,14 15,10" strokeLinecap="round" strokeLinejoin="round"/></svg> },
     { id:"referral",label:t.profileTabReferral,icon:<svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-2"><circle cx="9" cy="7" r="3"/><path d="M2 20c0-3.3 2.7-6 6-6h2c3.3 0 6 2.7 6 6" strokeLinecap="round"/><path d="M17 8a3 3 0 1 1 0 6" strokeLinecap="round"/><path d="M20.5 20c0-2.5-1.8-4.6-4.2-5.4" strokeLinecap="round"/></svg> },
+    { id:"install",label:t.profileTabInstall,icon:<svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-2"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M12 8v7" strokeLinecap="round"/><path d="M9 12l3 3 3-3" strokeLinecap="round" strokeLinejoin="round"/></svg> },
   ];
 
   // Deposit/Withdraw now live on their own page — every other tab still
@@ -1768,6 +1770,9 @@ export default function ProfilePage() {
                   </div>
                 </div>
               )}
+
+              {/* ════ ADD TO HOME SCREEN ════ */}
+              {tab === "install" && <AddToHomeScreen />}
 
             </div>
           </div>

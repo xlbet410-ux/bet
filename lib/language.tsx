@@ -131,6 +131,17 @@ export type Translations = {
   profileTabSettings: string;
   profileTabKyc: string;
   profileTabReferral: string;
+  profileTabInstall: string;
+  profileInstallTitle: string;
+  profileInstallDesc: string;
+  profileInstallBtn: string;
+  profileInstallDone: string;
+  profileInstallDoneDesc: string;
+  profileInstallIosTitle: string;
+  profileInstallIosStep1: string;
+  profileInstallIosStep2: string;
+  profileInstallIosStep3: string;
+  profileInstallFallback: string;
   profileTabHistory: string;
   profileGameHistoryTitle: string;
   profileGameHistoryEmpty: string;
@@ -449,6 +460,17 @@ const T: Record<Lang, Translations> = {
     profileTabSettings: "Settings",
     profileTabKyc: "KYC",
     profileTabReferral: "Referral",
+    profileTabInstall: "Add to Home Screen",
+    profileInstallTitle: "Add 2XLbet to Your Home Screen",
+    profileInstallDesc: "Install 2XLbet like an app. It opens full screen straight from your home screen, with no browser bar.",
+    profileInstallBtn: "Add to Home Screen",
+    profileInstallDone: "Already installed",
+    profileInstallDoneDesc: "You're using 2XLbet from your home screen right now.",
+    profileInstallIosTitle: "On iPhone or iPad, add it in three steps:",
+    profileInstallIosStep1: "Tap the Share button at the bottom of Safari.",
+    profileInstallIosStep2: "Scroll down and tap \"Add to Home Screen\".",
+    profileInstallIosStep3: "Tap \"Add\" in the top right corner.",
+    profileInstallFallback: "Open your browser menu and choose \"Add to Home Screen\" or \"Install app\".",
     profileTabHistory: "Game History",
     profileGameHistoryTitle: "Game History",
     profileGameHistoryEmpty: "No games played yet.",
@@ -763,6 +785,17 @@ const T: Record<Lang, Translations> = {
     profileTabSettings: "সেটিংস",
     profileTabKyc: "কেওয়াইসি",
     profileTabReferral: "রেফারেল",
+    profileTabInstall: "হোম স্ক্রিনে যুক্ত করুন",
+    profileInstallTitle: "2XLbet হোম স্ক্রিনে যুক্ত করুন",
+    profileInstallDesc: "অ্যাপের মতো করে 2XLbet ইনস্টল করুন। হোম স্ক্রিন থেকেই ফুল স্ক্রিনে খুলবে, কোনো ব্রাউজার বার ছাড়াই।",
+    profileInstallBtn: "হোম স্ক্রিনে যুক্ত করুন",
+    profileInstallDone: "ইতিমধ্যে ইনস্টল করা আছে",
+    profileInstallDoneDesc: "আপনি এখন হোম স্ক্রিন থেকেই 2XLbet ব্যবহার করছেন।",
+    profileInstallIosTitle: "আইফোন বা আইপ্যাডে তিনটি ধাপে যুক্ত করুন:",
+    profileInstallIosStep1: "সাফারির নিচে শেয়ার বোতামে চাপ দিন।",
+    profileInstallIosStep2: "নিচে স্ক্রল করে \"Add to Home Screen\" চাপুন।",
+    profileInstallIosStep3: "উপরে ডান কোণায় \"Add\" চাপুন।",
+    profileInstallFallback: "ব্রাউজারের মেনু খুলে \"Add to Home Screen\" বা \"Install app\" বেছে নিন।",
     profileTabHistory: "গেম হিস্টোরি",
     profileGameHistoryTitle: "গেম হিস্টোরি",
     profileGameHistoryEmpty: "এখনো কোনো গেম খেলা হয়নি।",
