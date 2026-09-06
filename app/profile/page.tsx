@@ -382,7 +382,10 @@ export default function ProfilePage() {
 
   // Game history — bet-by-bet, profile "Game History" tab
   const [gameHistory, setGameHistory] = useState<MyGameHistoryEntry[]>([]);
-  const [gameHistoryTotal, setGameHistoryTotal] = useState(0);
+  // `total` from the API counts raw callbacks, not rounds, so it can't be
+  // compared against the rendered list. The API says outright whether more
+  // history exists.
+  const [gameHistoryHasMore, setGameHistoryHasMore] = useState(false);
   const [gameHistoryPage, setGameHistoryPage] = useState(1);
   const [gameHistoryLoading, setGameHistoryLoading] = useState(true);
   const [gameHistoryLoadingMore, setGameHistoryLoadingMore] = useState(false);
@@ -501,7 +504,7 @@ export default function ProfilePage() {
           const result = await getMyGameHistory(1, GAME_HISTORY_PAGE_SIZE);
           if (!cancelled) {
             setGameHistory(result.games);
-            setGameHistoryTotal(result.total);
+            setGameHistoryHasMore(result.hasMore);
             setGameHistoryPage(1);
             setGameHistoryLoading(false);
           }
@@ -532,7 +535,7 @@ export default function ProfilePage() {
       const nextPage = gameHistoryPage + 1;
       const result = await getMyGameHistory(nextPage, GAME_HISTORY_PAGE_SIZE);
       setGameHistory((prev) => [...prev, ...result.games]);
-      setGameHistoryTotal(result.total);
+      setGameHistoryHasMore(result.hasMore);
       setGameHistoryPage(nextPage);
     } catch {
       // Load More failure is non-critical — the list already shown stays intact.
@@ -1162,7 +1165,7 @@ export default function ProfilePage() {
                         })}
                       </div>
 
-                      {gameHistory.length < gameHistoryTotal && (
+                      {gameHistoryHasMore && (
                         <button
                           onClick={loadMoreGameHistory}
                           disabled={gameHistoryLoadingMore}

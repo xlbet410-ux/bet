@@ -26,7 +26,11 @@ export type MyGameHistoryEntry = {
 };
 
 export type MyGameHistoryPage = {
+  // Counts raw provider callbacks, while `games` counts rounds — a round is
+  // normally two callbacks — so this can't be compared against games.length
+  // to decide whether older history exists. Use hasMore for that.
   total: number;
+  hasMore: boolean;
   games: MyGameHistoryEntry[];
 };
 
