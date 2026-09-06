@@ -15,6 +15,7 @@ import LiveWinsTicker from "@/components/home/LiveWinsTicker";
 import LiveGames from "@/components/home/LiveGames";
 import CtaStrip from "@/components/home/CtaStrip";
 import ChatSupport from "@/components/site/ChatSupport";
+import SocialFab from "@/components/site/SocialFab";
 import { AGENT_CODE_KEY } from "@/lib/auth";
 
 // This route is entirely client-rendered (all data loads via useEffect), so
@@ -101,6 +102,7 @@ export default function Home() {
 
         <Footer />
         <ChatSupport onOpenAuth={setAuthMode} />
+        <SocialFab />
         <BackToTop />
         <MobileBottomNav onOpenAuth={setAuthMode} />
       </div>
